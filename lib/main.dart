@@ -4,10 +4,12 @@ import 'package:qqnotificationreply/page/mainpages.dart';
 import 'global/g.dart';
 
 void main() {
-  G.init().then((e) {
-    runApp(MyApp());
-  });
+  runApp(MyApp());
 }
+//  G.init().then((e) {
+//    runApp(MyApp());
+//  });
+//}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.

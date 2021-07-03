@@ -1,5 +1,5 @@
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'appruntime.dart';
 import 'useraccount.dart';
@@ -13,17 +13,26 @@ class G {
   static UserSettings st;
   static UserAccount ac;
 
+  static SharedPreferences _prefs;
+
+  static bool get isRelease =>
+      bool.fromEnvironment("dart.vm.product"); // 是否是release版
+
   static Future init() async {
-    // 需要权限
-    //    rt = new AppRuntime(
-    //        dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
-    //        cachePath: (await getTemporaryDirectory()).path + '/',
-    //        storagePath: (await getExternalStorageDirectory()).path + '/');
-    rt = new AppRuntime(
-        dataPath: '',
-        cachePath: '',
-        storagePath: '');
-    st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
-    ac = new UserAccount();
+    _prefs = await SharedPreferences.getInstance();
+    var _profile = _prefs.getString("profile");
+    if (_profile != null) {
+      try {} catch (e) {
+        print(e);
+      }
+
+      rt = new AppRuntime(
+          dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
+          cachePath: (await getTemporaryDirectory()).path + '/',
+          storagePath: (await getExternalStorageDirectory()).path + '/');
+      print('data path: ' + rt.dataPath);
+      st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
+      ac = new UserAccount();
+    }
   }
 }
