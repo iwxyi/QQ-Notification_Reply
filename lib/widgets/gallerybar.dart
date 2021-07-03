@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-const Color _kAppBackgroundColor = const Color(0xFF20c2f0);
+const Color _kAppBackgroundColor = const Color(0xFFEEEEEE);
 const Duration _kScrollDuration = const Duration(milliseconds: 400);
 const Curve _kScrollCurve = Curves.fastOutSlowIn;
 
@@ -712,9 +712,9 @@ class SectionTitle extends StatelessWidget {
   static const TextStyle sectionTitleStyle = const TextStyle(
     fontFamily: 'Raleway',
     inherit: false,
-    fontSize: 20.0,
+    fontSize: 22.0,
     fontWeight: FontWeight.w500,
-    color: Colors.white,
+    color: Colors.white, // 这个是大标题的文字颜色
     textBaseline: TextBaseline.alphabetic,
   );
 

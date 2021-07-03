@@ -13,26 +13,17 @@ class G {
   static UserSettings st;
   static UserAccount ac;
 
-  static SharedPreferences _prefs;
-
   static bool get isRelease =>
       bool.fromEnvironment("dart.vm.product"); // 是否是release版
 
-  static Future init() async {
-    _prefs = await SharedPreferences.getInstance();
-    var _profile = _prefs.getString("profile");
-    if (_profile != null) {
-      try {} catch (e) {
-        print(e);
-      }
-
-      rt = new AppRuntime(
-          dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
-          cachePath: (await getTemporaryDirectory()).path + '/',
-          storagePath: (await getExternalStorageDirectory()).path + '/');
-      print('data path: ' + rt.dataPath);
-      st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
-      ac = new UserAccount();
-    }
+  static Future<String> init() async {
+    if (rt != null) return 'OK';
+    ac = new UserAccount();
+    rt = new AppRuntime(
+        dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
+        cachePath: (await getTemporaryDirectory()).path + '/',
+        storagePath: (await getExternalStorageDirectory()).path + '/');
+    st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
+    return 'init successed';
   }
 }

@@ -5,7 +5,9 @@ class UserSettings extends MySettings {
   String host; // 主机地址
   String token; // 连接秘钥
   
-  UserSettings({@required String iniPath}) : super(iniPath: iniPath);
+  UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
+    readFromFile();
+  }
   
   /// 读取配置文件
   @override
