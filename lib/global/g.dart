@@ -1,5 +1,5 @@
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qqnotificationreply/services/cqhttpservice.dart';
 
 import 'appruntime.dart';
 import 'useraccount.dart';
@@ -12,6 +12,7 @@ class G {
   static AppRuntime rt;
   static UserSettings st;
   static UserAccount ac;
+  static CqhttpService cs;
 
   static bool get isRelease =>
       bool.fromEnvironment("dart.vm.product"); // 是否是release版
@@ -24,6 +25,7 @@ class G {
         cachePath: (await getTemporaryDirectory()).path + '/',
         storagePath: (await getExternalStorageDirectory()).path + '/');
     st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
+    cs = new CqhttpService(rt: rt, st: st);
     return 'init successed';
   }
 }
