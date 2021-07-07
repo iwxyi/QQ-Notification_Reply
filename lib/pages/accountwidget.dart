@@ -32,13 +32,16 @@ class _AccountWidgetState extends State<AccountWidget> {
                     Icons.person,
                     color: Colors.red,
                   ),
-                  title: Text('点击登录'),
+                  title: Text(G.ac.connectState > 0 ? G.ac.selfInfo() : '点击登录'),
                   trailing: Icon(Icons.arrow_right),
                   onTap: () {
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
                       return LoginWidget();
-                    }));
+                    })).then((value) {
+                      // 可能登录了，刷新一下界面
+                      setState(() {});
+                    });
                   },
                 ),
               ],

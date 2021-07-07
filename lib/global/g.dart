@@ -25,7 +25,7 @@ class G {
         cachePath: (await getTemporaryDirectory()).path + '/',
         storagePath: (await getExternalStorageDirectory()).path + '/');
     st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
-    cs = new CqhttpService(rt: rt, st: st);
+    cs = new CqhttpService(rt: rt, st: st, ac: ac);
     return 'init successed';
   }
 }
