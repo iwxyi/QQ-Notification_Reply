@@ -1,3 +1,5 @@
+import 'package:event_bus/event_bus.dart';
+
 class UserAccount {
 	String nickname = ''; // QQ昵称
 	int qqId = 0; // QQ ID
@@ -6,6 +8,8 @@ class UserAccount {
 	Map<int, String> friendNames = {};
 	Map<int, String> groupNames = {};
 	Map<int, Map<int, String>> groupMemberNames = {};
+	
+	EventBus eventBus = new EventBus(); // 事件总线
 	
 	String selfInfo() => nickname + '(' + qqId.toString() + ')';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/pages/loginwidget.dart';
 
@@ -9,6 +10,28 @@ class AccountWidget extends StatefulWidget {
 }
 
 class _AccountWidgetState extends State<AccountWidget> {
+  var eventBusFn;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 注册监听器，订阅 eventBus
+    eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
+      if (event.event == Event.loginInfo) {
+        setState(() {});
+      }
+      // print(event.obj);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    //取消订阅
+    eventBusFn.cancel();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(

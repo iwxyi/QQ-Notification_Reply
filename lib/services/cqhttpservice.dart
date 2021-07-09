@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:qqnotificationreply/global/appruntime.dart';
+import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/global/usersettings.dart';
 import 'package:web_socket_channel/io.dart';
@@ -23,11 +24,12 @@ class CqhttpService {
     channel.stream.listen((message) {
       print('ws收到消息:' + message.toString());
       processReceivedData(json.decode(message.toString()));
+      ac.eventBus.fire(EventFn(Event.loginSuccess, {}));
     });
 
     st.setConfig('account/host', host);
     st.setConfig('account/token', token);
-    
+
     return true;
   }
 
@@ -80,54 +82,33 @@ class CqhttpService {
       print('未处理类型的数据：' + obj.toString());
     }
   }
-  
+
   void parseLifecycle(final obj) {
     int userId = obj['self_id']; // 自己的QQ号
     ac.qqId = userId;
     ac.connectState = 1;
+    ac.eventBus.fire(EventFn(Event.loginInfo, {'qqId': userId}));
   }
-  
-  void parseEchoMessage(final obj) {
-  
-  }
-  
-  void parsePrivateMessage(final obj) {
-  
-  }
-  
-  void parseGroupMessage(final obj) {
-  
-  }
-  
-  void parseGroupUpload(final obj) {
-  
-  }
-  
-  void parseOfflineFile(final obj) {
-  
-  }
-  
-  void parseMessageSent(final obj) {
-  
-  }
-  
-  void refreshFriend() {
-  
-  }
-  
-  void refreshGroups() {
-  
-  }
-  
-  void refreshGroupMembers(int groupId) {
-  
-  }
-  
-  void sendUserMessage(int userId, String message) {
-  
-  }
-  
-  void sendGroupMessage(int groupId, String message) {
-  
-  }
+
+  void parseEchoMessage(final obj) {}
+
+  void parsePrivateMessage(final obj) {}
+
+  void parseGroupMessage(final obj) {}
+
+  void parseGroupUpload(final obj) {}
+
+  void parseOfflineFile(final obj) {}
+
+  void parseMessageSent(final obj) {}
+
+  void refreshFriend() {}
+
+  void refreshGroups() {}
+
+  void refreshGroupMembers(int groupId) {}
+
+  void sendUserMessage(int userId, String message) {}
+
+  void sendGroupMessage(int groupId, String message) {}
 }
