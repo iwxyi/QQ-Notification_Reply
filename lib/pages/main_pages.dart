@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/pages/accountwidget.dart';
+import 'package:qqnotificationreply/pages/notification_widget.dart';
 
 import '../widgets/gallerybar.dart';
 
@@ -15,7 +16,6 @@ List<CardSection> allSections;
 
 class MainPages extends StatefulWidget {
   MainPages() {
-    
     allSections = <CardSection>[
       CardSection(
         title: '账号信息',
@@ -27,7 +27,7 @@ class MainPages extends StatefulWidget {
           title: '通知设置',
           leftColor: _mariner,
           rightColor: _mySin,
-          contentWidget: Center(child: Text('Page Two'))),
+          contentWidget: NotificationWidget()),
       CardSection(
           title: '数据记录',
           leftColor: _mySin,

@@ -7,6 +7,8 @@ enum Event {
   loginInfo, // 登录成功后的信息
   loginOffline, // 断开连接
   logout, // 退出登录
+  friendList,
+  groupList,
 }
 
 class EventFn {

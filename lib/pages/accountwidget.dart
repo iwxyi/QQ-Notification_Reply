@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
-import 'package:qqnotificationreply/pages/loginwidget.dart';
+import 'package:qqnotificationreply/pages/login_widget.dart';
 
 class AccountWidget extends StatefulWidget {
   @override
@@ -18,8 +18,9 @@ class _AccountWidgetState extends State<AccountWidget> {
 
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
-      if (event.event == Event.loginInfo) {
-        print('event.data:' + event.data.toString());
+      if (event.event == Event.loginInfo ||
+          event.event == Event.friendList ||
+          event.event == Event.groupList) {
         setState(() {});
       }
       // print(event.obj);

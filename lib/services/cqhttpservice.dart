@@ -22,7 +22,7 @@ class CqhttpService {
 
     // 监听消息
     channel.stream.listen((message) {
-      print('ws收到消息:' + message.toString());
+      // print('ws收到消息:' + message.toString());
       processReceivedData(json.decode(message.toString()));
       ac.eventBus.fire(EventFn(Event.loginSuccess, {}));
     });
@@ -93,12 +93,13 @@ class CqhttpService {
 
     // 发送获取登录号信息
     send({'action': 'get_login_info', 'echo': 'get_login_info'});
+    getFriendList();
+    getGroupList();
   }
 
   void parseEchoMessage(final obj) {
     String echo = obj['echo'];
     if (echo == 'get_login_info') {
-      // TODO: 登录信息
       var data = obj['data'];
       ac.qqId = data['user_id'];
       ac.nickname = data['nickname'];
@@ -106,9 +107,26 @@ class CqhttpService {
       ac.eventBus.fire(
           EventFn(Event.loginInfo, {'qqId': ac.qqId, 'nickname': ac.nickname}));
     } else if (echo == 'get_friend_list') {
-      // TODO: 好友列表
+      ac.friendNames.clear();
+      List data = obj['data']; // 好友数组
+      print('好友数量: ' + data.length.toString());
+      data.forEach((friend) {
+        int userId = friend['user_id'];
+        String nickname = friend['nickname'];
+        if (friend.containsKey('remark')) nickname = friend['remark'];
+        ac.friendNames[userId] = nickname;
+      });
+      ac.eventBus.fire(EventFn(Event.friendList, {}));
     } else if (echo == 'get_group_list') {
-      // TODO: 群组列表
+      ac.groupNames.clear();
+      List data = obj['data']; // 好友数组
+      print('群组数量: ' + data.length.toString());
+      data.forEach((friend) {
+        int groupId = friend['group_id'];
+        String groupName = friend['group_name'];
+        ac.groupNames[groupId] = groupName;
+      });
+      ac.eventBus.fire(EventFn(Event.groupList, {}));
     } else if (echo == 'send_private_msg' || echo == 'send_group_msg') {
       // 发送消息的回复，不做处理
     } else if (echo.startsWith('get_group_member_list')) {
@@ -133,6 +151,14 @@ class CqhttpService {
   void refreshGroups() {}
 
   void refreshGroupMembers(int groupId) {}
+
+  void getFriendList() {
+    send({'action': 'get_friend_list', 'echo': 'get_friend_list'});
+  }
+
+  void getGroupList() {
+    send({'action': 'get_group_list', 'echo': 'get_group_list'});
+  }
 
   void sendUserMessage(int userId, String message) {}
 

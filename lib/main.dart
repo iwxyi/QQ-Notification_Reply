@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qqnotificationreply/pages/mainpages.dart';
+import 'package:qqnotificationreply/pages/main_pages.dart';
 
 import 'global/g.dart';
 
