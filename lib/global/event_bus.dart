@@ -11,7 +11,7 @@ enum Event {
 
 class EventFn {
   Event event;
-  dynamic obj;
+  dynamic data;
 
-  EventFn(this.event, this.obj);
+  EventFn(this.event, this.data);
 }

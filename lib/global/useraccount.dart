@@ -11,5 +11,5 @@ class UserAccount {
 	
 	EventBus eventBus = new EventBus(); // 事件总线
 	
-	String selfInfo() => nickname + '(' + qqId.toString() + ')';
+	String selfInfo() => nickname + ' (' + qqId.toString() + ')';
 }

@@ -34,7 +34,9 @@ class CqhttpService {
   }
 
   void send(Map<String, dynamic> obj) {
-    channel.sink.add(obj);
+    String text = json.encode(obj);
+    print('发送数据：' + text);
+    channel.sink.add(text);
   }
 
   void processReceivedData(Map<String, dynamic> obj) {
@@ -83,14 +85,38 @@ class CqhttpService {
     }
   }
 
+  /// 连接上，必定会触发这个
   void parseLifecycle(final obj) {
     int userId = obj['self_id']; // 自己的QQ号
     ac.qqId = userId;
     ac.connectState = 1;
-    ac.eventBus.fire(EventFn(Event.loginInfo, {'qqId': userId}));
+
+    // 发送获取登录号信息
+    send({'action': 'get_login_info', 'echo': 'get_login_info'});
   }
 
-  void parseEchoMessage(final obj) {}
+  void parseEchoMessage(final obj) {
+    String echo = obj['echo'];
+    if (echo == 'get_login_info') {
+      // TODO: 登录信息
+      var data = obj['data'];
+      ac.qqId = data['user_id'];
+      ac.nickname = data['nickname'];
+      print('登录账号：' + ac.nickname + "  " + ac.qqId.toString());
+      ac.eventBus.fire(
+          EventFn(Event.loginInfo, {'qqId': ac.qqId, 'nickname': ac.nickname}));
+    } else if (echo == 'get_friend_list') {
+      // TODO: 好友列表
+    } else if (echo == 'get_group_list') {
+      // TODO: 群组列表
+    } else if (echo == 'send_private_msg' || echo == 'send_group_msg') {
+      // 发送消息的回复，不做处理
+    } else if (echo.startsWith('get_group_member_list')) {
+      // TODO: 获取群组：get_group_member_list:123456
+    } else {
+      print('未处理类型的echo: ' + echo);
+    }
+  }
 
   void parsePrivateMessage(final obj) {}
 

@@ -19,6 +19,7 @@ class _AccountWidgetState extends State<AccountWidget> {
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.loginInfo) {
+        print('event.data:' + event.data.toString());
         setState(() {});
       }
       // print(event.obj);
