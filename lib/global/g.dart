@@ -26,6 +26,11 @@ class G {
         storagePath: (await getExternalStorageDirectory()).path + '/');
     st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
     cs = new CqhttpService(rt: rt, st: st, ac: ac);
+    
+    // 自动登录
+    if (st.host != null && st.host.isNotEmpty) {
+      cs.connect(st.host, st.token);
+    }
     return 'init successed';
   }
 }

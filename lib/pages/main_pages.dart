@@ -2,8 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:qqnotificationreply/global/event_bus.dart';
+import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/pages/accountwidget.dart';
 import 'package:qqnotificationreply/pages/notification_widget.dart';
+import 'package:qqnotificationreply/services/msgbean.dart';
 
 import '../widgets/gallerybar.dart';
 
@@ -51,9 +55,26 @@ class MainPages extends StatefulWidget {
 }
 
 class _MainPagesState extends State<MainPages> {
+  var eventBusFn;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
   @override
   void initState() {
     super.initState();
+
+    // 注册监听器，订阅 eventBus
+    eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
+      if (event.event == Event.message) {
+        showNotification(event.data);
+      }
+    });
+
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var iOS = new IOSInitializationSettings();
+    var initSettings = new InitializationSettings(android, iOS);
+    flutterLocalNotificationsPlugin.initialize(initSettings,
+        onSelectNotification: onSelectNotification);
   }
 
   @override
@@ -61,5 +82,41 @@ class _MainPagesState extends State<MainPages> {
     return AnimateTabNavigation(
       sectionList: allSections,
     );
+  }
+
+  void showNotification(MsgBean msg) async {
+    if (msg.isPrivate()) {
+      if (!msg.isFile()) {
+        // 私聊消息
+      } else {
+        // 私聊文件
+      }
+    } else if (msg.isGroup()) {
+      if (!msg.isFile()) {
+        // 群聊消息
+        var android = new AndroidNotificationDetails(
+            'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
+            priority: Priority.High,importance: Importance.Max
+        );
+        var iOS = new IOSNotificationDetails();
+        var platform = new NotificationDetails(android, iOS);
+        await flutterLocalNotificationsPlugin.show(
+            0, 'New Video is out', 'Flutter Local Notification', platform,
+            payload: 'Nitish Kumar Singh is part time Youtuber');
+      } else {
+        // 群聊文件
+      }
+    }
+  }
+
+  /// 菜单点击回调
+  Future onSelectNotification(String payload) {
+    print('通知.payload: $payload');
+    showDialog(
+        context: context,
+        builder: (_) => new AlertDialog(
+              title: new Text('Notification'),
+              content: new Text('$payload'),
+            ));
   }
 }

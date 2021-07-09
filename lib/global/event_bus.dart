@@ -9,6 +9,7 @@ enum Event {
   logout, // 退出登录
   friendList,
   groupList,
+  message
 }
 
 class EventFn {

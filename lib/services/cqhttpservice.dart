@@ -1,23 +1,29 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/global/appruntime.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/global/usersettings.dart';
+import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:web_socket_channel/io.dart';
 
 /// WebSocket使用说明：https://zhuanlan.zhihu.com/p/133849780
 class CqhttpService {
-  IOWebSocketChannel channel;
   AppRuntime rt;
   UserSettings st;
   UserAccount ac;
+
+  IOWebSocketChannel channel;
 
   CqhttpService({this.rt, this.st, this.ac});
 
   Future<bool> connect(String host, String token) async {
     print('ws连接: ' + host + ' ' + token);
     Map<String, dynamic> headers = new Map();
-    headers['Authorization'] = 'Bearer ' + token;
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer ' + token;
+    }
     channel = IOWebSocketChannel.connect(host, headers: headers);
 
     // 监听消息
@@ -130,7 +136,7 @@ class CqhttpService {
     } else if (echo == 'send_private_msg' || echo == 'send_group_msg') {
       // 发送消息的回复，不做处理
     } else if (echo.startsWith('get_group_member_list')) {
-      // TODO: 获取群组：get_group_member_list:123456
+      // TODO: 获取群组，echo字段格式为：get_group_member_list:123456
     } else {
       print('未处理类型的echo: ' + echo);
     }
@@ -138,7 +144,42 @@ class CqhttpService {
 
   void parsePrivateMessage(final obj) {}
 
-  void parseGroupMessage(final obj) {}
+  void parseGroupMessage(final obj) {
+    String subType = obj['sub_type'];
+    String message = obj['message'];
+    String rawMessage = obj['raw_message'];
+    int groupId = obj['group_id'];
+    int messageId = obj['message_id'];
+
+    var sender = obj['sender'];
+    int userId = sender['user_id']; // 发送者QQ，大概率是别人，也可能是自己
+    String nickname = sender['nickname'];
+    String card = sender['card']; // 群名片，可能为空
+    String role = sender['role']; // 角色：owner/admin/member
+
+    if (subType == 'anonymous') {
+      // 匿名消息，不作处理
+    }
+
+    String groupName =
+        ac.groupNames.containsKey(groupId) ? ac.groupNames[groupId] : '';
+    if (ac.friendNames.containsKey(userId)) nickname = ac.friendNames[userId];
+
+    print(
+        '收到群消息：' + ac.groupNames[groupId] + " - " + nickname + " : " + message);
+
+    MsgBean msg = MsgBean(
+        subType: subType,
+        groupId: groupId,
+        groupName: groupName,
+        senderId: userId,
+        nickname: nickname,
+        groupCard: card,
+        messageId: messageId,
+        message: message,
+        role: role);
+    showNotification(msg);
+  }
 
   void parseGroupUpload(final obj) {}
 
@@ -163,4 +204,8 @@ class CqhttpService {
   void sendUserMessage(int userId, String message) {}
 
   void sendGroupMessage(int groupId, String message) {}
+
+  void showNotification(MsgBean msg) {
+    ac.eventBus.fire(EventFn(Event.message, msg));
+  }
 }

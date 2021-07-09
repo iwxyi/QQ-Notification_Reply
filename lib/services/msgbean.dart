@@ -16,8 +16,8 @@ class MsgBean {
   int fileSize;
   String fileUrl;
 
+  String role; // 角色：owner/admin/member
   String imageId; // 显示唯一图片（经常不一定有）
-
   String display; // 显示的纯文本
   int timestamp; // 毫秒级时间戳
 
@@ -36,9 +36,12 @@ class MsgBean {
       this.fileName,
       this.fileSize,
       this.fileUrl,
+      this.role,
       this.timestamp});
 
   bool isPrivate() => groupId == 0;
 
   bool isGroup() => groupId != 0;
+
+  bool isFile() => fileId != null && fileId.isNotEmpty;
 }
