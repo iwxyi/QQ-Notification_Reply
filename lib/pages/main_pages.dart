@@ -65,7 +65,7 @@ class _MainPagesState extends State<MainPages> {
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.message) {
-        showNotification(event.data);
+        messageReceived(event.data);
       }
     });
 
@@ -84,7 +84,12 @@ class _MainPagesState extends State<MainPages> {
     );
   }
 
-  void showNotification(MsgBean msg) async {
+  /// 所有msg都会到这里来
+  void messageReceived(MsgBean msg) {
+    // 保存msg
+    G.ac.allMessages.add(msg);
+    
+    // 显示通知
     if (msg.isPrivate()) {
       if (!msg.isFile()) {
         // 私聊消息
@@ -94,19 +99,22 @@ class _MainPagesState extends State<MainPages> {
     } else if (msg.isGroup()) {
       if (!msg.isFile()) {
         // 群聊消息
-        var android = new AndroidNotificationDetails(
-            'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
-            priority: Priority.High,importance: Importance.Max
-        );
-        var iOS = new IOSNotificationDetails();
-        var platform = new NotificationDetails(android, iOS);
-        await flutterLocalNotificationsPlugin.show(
-            0, 'New Video is out', 'Flutter Local Notification', platform,
-            payload: 'Nitish Kumar Singh is part time Youtuber');
+        showPlatNotification(msg.groupName + "-" + msg.nickname, msg.message, msg.messageId.toString());
       } else {
         // 群聊文件
       }
     }
+  }
+
+  void showPlatNotification(
+      String title, String content, String payload) async {
+    var android = new AndroidNotificationDetails(
+        'channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
+        priority: Priority.High, importance: Importance.Max);
+    var iOS = new IOSNotificationDetails();
+    var platform = new NotificationDetails(android, iOS);
+    await flutterLocalNotificationsPlugin.show(0, title, content, platform,
+        payload: payload);
   }
 
   /// 菜单点击回调

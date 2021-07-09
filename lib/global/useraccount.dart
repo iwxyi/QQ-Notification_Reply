@@ -1,4 +1,5 @@
 import 'package:event_bus/event_bus.dart';
+import 'package:qqnotificationreply/services/msgbean.dart';
 
 class UserAccount {
 	String nickname = ''; // QQ昵称
@@ -8,6 +9,7 @@ class UserAccount {
 	Map<int, String> friendNames = {};
 	Map<int, String> groupNames = {};
 	Map<int, Map<int, String>> groupMemberNames = {};
+	List<MsgBean> allMessages = [];
 	
 	EventBus eventBus = new EventBus(); // 事件总线
 	
