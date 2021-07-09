@@ -14,4 +14,13 @@ class UserAccount {
 	EventBus eventBus = new EventBus(); // 事件总线
 	
 	String selfInfo() => nickname + ' (' + qqId.toString() + ')';
+	
+	MsgBean getMsgById(int msgId) {
+		int index = allMessages.indexWhere((element) => element.messageId == msgId);
+		if (index == -1) {
+			print('未找到的MessageId: ' + msgId.toString());
+			return null;
+		}
+		return allMessages[index];
+	}
 }

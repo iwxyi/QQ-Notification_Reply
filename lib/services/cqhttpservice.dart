@@ -164,6 +164,7 @@ class CqhttpService {
     String groupName =
         ac.groupNames.containsKey(groupId) ? ac.groupNames[groupId] : '';
     if (ac.friendNames.containsKey(userId)) nickname = ac.friendNames[userId];
+    if (card != null && card.isNotEmpty) nickname = card;
 
     print(
         '收到群消息：' + ac.groupNames[groupId] + " - " + nickname + " : " + message);

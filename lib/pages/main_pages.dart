@@ -120,11 +120,13 @@ class _MainPagesState extends State<MainPages> {
   /// 菜单点击回调
   Future onSelectNotification(String payload) {
     print('通知.payload: $payload');
+    MsgBean msg = G.ac.getMsgById(int.parse(payload));
+    
     showDialog(
         context: context,
         builder: (_) => new AlertDialog(
-              title: new Text('Notification'),
-              content: new Text('$payload'),
+              title: new Text(msg.groupName + ' - ' + msg.nickname),
+              content: new Text(msg.message),
             ));
   }
 }
