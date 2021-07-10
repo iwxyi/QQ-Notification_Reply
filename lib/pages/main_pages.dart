@@ -96,7 +96,7 @@ class _MainPagesState extends State<MainPages> {
     if (msg.isPrivate()) {
       if (!msg.isFile()) {
         // 私聊消息
-        showPlatNotification('private_message', '私聊消息', 'QQ私聊消息',
+        showPlatNotification(msg.friendId, 'private_message', '私聊消息', 'QQ私聊消息',
             msg.username(), msg.message, msg.messageId.toString());
       } else {
         // 私聊文件
@@ -104,7 +104,7 @@ class _MainPagesState extends State<MainPages> {
     } else if (msg.isGroup()) {
       if (!msg.isFile()) {
         // 群聊消息
-        showPlatNotification('group_message', '群组消息', 'QQ群组消息', msg.groupName,
+        showPlatNotification(msg.groupId, 'group_message', '群组消息', 'QQ群组消息', msg.groupName,
             msg.nickname + ' : ' + msg.message, msg.messageId.toString());
       } else {
         // 群聊文件
@@ -120,6 +120,7 @@ class _MainPagesState extends State<MainPages> {
   /// @param content: 通知内容
   /// @param payload: 回调的字符串
   void showPlatNotification(
+      int notificationId,
       String channelId,
       String channelName,
       String channelDescription,
@@ -131,7 +132,7 @@ class _MainPagesState extends State<MainPages> {
         priority: Priority.High, importance: Importance.Max);
     var iOS = new IOSNotificationDetails();
     var platform = new NotificationDetails(android, iOS);
-    await flutterLocalNotificationsPlugin.show(0, title, content, platform,
+    await flutterLocalNotificationsPlugin.show(notificationId, title, content, platform,
         payload: payload);
   }
 
