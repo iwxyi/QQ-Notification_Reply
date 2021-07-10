@@ -150,12 +150,14 @@ class _MainPagesState extends State<MainPages> {
       // &web_src=qq.com
     } else {
       url =
-          'mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=' +
-              msg.groupId.toString();
+          'mqq://im/chat?chat_type=group&uin=' +
+              msg.groupId.toString()+
+              '&version=1&src_type=web';
     }
 
     // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
-
+    // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
+    
     if (url == null || url.isEmpty) {
       print('没有可打开URL');
       return;
