@@ -2,11 +2,13 @@ class MsgBean {
   int senderId;
   String nickname;
   String message;
+  String rawMessage;
   int messageId;
   String subType;
   String remark; // 好友备注
   int targetId; // 准备发给谁，给对方还是给自己
 
+  int friendId;
   int groupId;
   String groupName;
   String groupCard; // 群昵称
@@ -26,9 +28,11 @@ class MsgBean {
       this.nickname,
       this.message,
       this.messageId,
+      this.rawMessage,
       this.subType,
       this.remark,
       this.targetId,
+      this.friendId,
       this.groupId,
       this.groupName,
       this.groupCard,
@@ -39,7 +43,13 @@ class MsgBean {
       this.role,
       this.timestamp});
 
-  bool isPrivate() => groupId == 0;
+  String username() => (groupCard != null && groupCard.isNotEmpty)
+      ? groupCard
+      : (remark != null && remark.isNotEmpty)
+          ? remark
+          : nickname;
+
+  bool isPrivate() => groupId == null || groupId == 0;
 
   bool isGroup() => groupId != 0;
 

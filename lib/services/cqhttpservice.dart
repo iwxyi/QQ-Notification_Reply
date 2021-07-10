@@ -20,6 +20,10 @@ class CqhttpService {
 
   Future<bool> connect(String host, String token) async {
     print('ws连接: ' + host + ' ' + token);
+    if (!host.contains('://')) {
+      host = 'ws://' + host;
+    }
+
     Map<String, dynamic> headers = new Map();
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer ' + token;
@@ -142,7 +146,36 @@ class CqhttpService {
     }
   }
 
-  void parsePrivateMessage(final obj) {}
+  void parsePrivateMessage(final obj) {
+    String subType = obj['sub_type'];
+    String message = obj['message'];
+    String rawMessage = obj['raw_message'];
+    int messageId = obj['message_id'];
+    int targetId = obj['target_id'];
+
+    var sender = obj['sender'];
+    int senderId = sender['user_id']; // 发送者QQ，大概率是别人，也可能是自己
+    String nickname = sender['nickname'];
+
+    int friendId = (senderId == ac.qqId ? targetId : senderId);
+
+    MsgBean msg = new MsgBean(
+        subType: subType,
+        senderId: senderId,
+        targetId: targetId,
+        message: message,
+        rawMessage: rawMessage,
+        messageId: messageId,
+        nickname: nickname,
+        remark: ac.friendNames.containsKey(friendId)
+            ? ac.friendNames[friendId]
+            : null,
+        friendId: friendId);
+
+    print('收到私聊消息：' + msg.username() + " : " + message);
+
+    showNotification(msg);
+  }
 
   void parseGroupMessage(final obj) {
     String subType = obj['sub_type'];
@@ -152,19 +185,18 @@ class CqhttpService {
     int messageId = obj['message_id'];
 
     var sender = obj['sender'];
-    int userId = sender['user_id']; // 发送者QQ，大概率是别人，也可能是自己
+    int senderId = sender['user_id']; // 发送者QQ，大概率是别人，也可能是自己
     String nickname = sender['nickname'];
     String card = sender['card']; // 群名片，可能为空
     String role = sender['role']; // 角色：owner/admin/member
 
     if (subType == 'anonymous') {
-      // 匿名消息，不作处理
+      // 匿名消息，不想作处理
     }
 
-    String groupName =
-        ac.groupNames.containsKey(groupId) ? ac.groupNames[groupId] : '';
-    if (ac.friendNames.containsKey(userId)) nickname = ac.friendNames[userId];
-    if (card != null && card.isNotEmpty) nickname = card;
+    String groupName = ac.groupNames.containsKey(groupId)
+        ? ac.groupNames[groupId]
+        : groupId.toString();
 
     print(
         '收到群消息：' + ac.groupNames[groupId] + " - " + nickname + " : " + message);
@@ -173,11 +205,15 @@ class CqhttpService {
         subType: subType,
         groupId: groupId,
         groupName: groupName,
-        senderId: userId,
+        senderId: senderId,
         nickname: nickname,
         groupCard: card,
         messageId: messageId,
         message: message,
+        rawMessage: rawMessage,
+        remark: ac.friendNames.containsKey(senderId)
+            ? ac.friendNames[senderId]
+            : null,
         role: role);
     showNotification(msg);
   }
