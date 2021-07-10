@@ -19,40 +19,36 @@ const Color _mediumPurple = const Color(0xFF8266D4);
 const Color _tomato = const Color(0xFFF95B57);
 const Color _mySin = const Color(0xFFF3A646);
 
-List<CardSection> allSections;
+List<CardSection> allSections = <CardSection>[
+  CardSection(
+    title: '账号信息',
+    leftColor: _mediumPurple,
+    rightColor: _mariner,
+    contentWidget: AccountWidget(),
+  ),
+  CardSection(
+      title: '通知设置',
+      leftColor: _mariner,
+      rightColor: _mySin,
+      contentWidget: NotificationWidget()),
+  CardSection(
+      title: '数据记录',
+      leftColor: _mySin,
+      rightColor: _tomato,
+      contentWidget: Center(child: Text('Page Three'))),
+  CardSection(
+      title: '辅助功能',
+      leftColor: _tomato,
+      rightColor: Colors.blue,
+      contentWidget: Center(child: Text('Page Four'))),
+  CardSection(
+      title: '关于程序',
+      leftColor: Colors.blue,
+      rightColor: _mediumPurple,
+      contentWidget: Center(child: Text('Page Five'))),
+];
 
 class MainPages extends StatefulWidget {
-  MainPages() {
-    allSections = <CardSection>[
-      CardSection(
-        title: '账号信息',
-        leftColor: _mediumPurple,
-        rightColor: _mariner,
-        contentWidget: AccountWidget(),
-      ),
-      CardSection(
-          title: '通知设置',
-          leftColor: _mariner,
-          rightColor: _mySin,
-          contentWidget: NotificationWidget()),
-      CardSection(
-          title: '数据记录',
-          leftColor: _mySin,
-          rightColor: _tomato,
-          contentWidget: Center(child: Text('Page Three'))),
-      CardSection(
-          title: '辅助功能',
-          leftColor: _tomato,
-          rightColor: Colors.blue,
-          contentWidget: Center(child: Text('Page Four'))),
-      CardSection(
-          title: '关于程序',
-          leftColor: Colors.blue,
-          rightColor: _mediumPurple,
-          contentWidget: Center(child: Text('Page Five'))),
-    ];
-  }
-
   @override
   _MainPagesState createState() => _MainPagesState();
 }
@@ -71,13 +67,35 @@ class _MainPagesState extends State<MainPages> {
         messageReceived(event.data);
       }
     });
+    
+    // requireNotificationPermission();
 
-    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    // 初始化通知
+    /*flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
     var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
     var iOS = new IOSInitializationSettings();
     var initSettings = new InitializationSettings(android, iOS);
     flutterLocalNotificationsPlugin.initialize(initSettings,
         onSelectNotification: onSelectNotification);
+    G.flutterLocalNotificationsPlugin = flutterLocalNotificationsPlugin;*/
+
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/appicon');
+    final IOSInitializationSettings initializationSettingsIOS =
+        IOSInitializationSettings(
+            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+    final MacOSInitializationSettings initializationSettingsMacOS =
+        MacOSInitializationSettings();
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsIOS,
+            macOS: initializationSettingsMacOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+    G.flutterLocalNotificationsPlugin = flutterLocalNotificationsPlugin;
   }
 
   @override
@@ -104,11 +122,49 @@ class _MainPagesState extends State<MainPages> {
     } else if (msg.isGroup()) {
       if (!msg.isFile()) {
         // 群聊消息
-        showPlatNotification(msg.groupId, 'group_message', '群组消息', 'QQ群组消息', msg.groupName,
-            msg.nickname + ' : ' + msg.message, msg.messageId.toString());
+        showPlatNotification(
+            msg.groupId,
+            'group_message',
+            '群组消息',
+            'QQ群组消息',
+            msg.groupName,
+            msg.nickname + ' : ' + msg.message,
+            msg.messageId.toString());
       } else {
         // 群聊文件
       }
+    }
+  }
+
+  /// 对于 iOS 和 MacOS，需要获取通知权限
+  void requireNotificationPermission() async {
+    bool result = true;
+    if (Platform.isIOS) {
+      result = await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    } else if (Platform.isMacOS) {
+      result = await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              MacOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    }
+    if (!result) {
+      Fluttertoast.showToast(
+        msg: "请授权通知权限，否则本程序无法正常使用",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+      );
     }
   }
 
@@ -127,16 +183,19 @@ class _MainPagesState extends State<MainPages> {
       String title,
       String content,
       String payload) async {
-    var android = new AndroidNotificationDetails(
-        channelId, channelName, channelDescription,
-        priority: Priority.High, importance: Importance.Max);
-    var iOS = new IOSNotificationDetails();
-    var platform = new NotificationDetails(android, iOS);
-    await flutterLocalNotificationsPlugin.show(notificationId, title, content, platform,
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(channelId, channelName, channelDescription,
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: false);
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+        notificationId, title, content, platformChannelSpecifics,
         payload: payload);
   }
 
-  /// 菜单点击回调
+  /// 通知点击回调
   // ignore: missing_return
   Future onSelectNotification(String payload) async {
     print('通知.payload: $payload');
@@ -150,15 +209,14 @@ class _MainPagesState extends State<MainPages> {
           '&version=1&src_type=web';
       // &web_src=qq.com
     } else {
-      url =
-          'mqq://im/chat?chat_type=group&uin=' +
-              msg.groupId.toString()+
-              '&version=1&src_type=web';
+      url = 'mqq://im/chat?chat_type=group&uin=' +
+          msg.groupId.toString() +
+          '&version=1&src_type=web';
     }
 
     // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
     // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
-    
+
     if (url == null || url.isEmpty) {
       print('没有可打开URL');
       return;
@@ -172,20 +230,14 @@ class _MainPagesState extends State<MainPages> {
       // 自己封装的一个 Toast
       print('无法启动QQ: ' + url);
       Fluttertoast.showToast(
-          msg: "无法启动QQ",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0);
+        msg: "无法启动QQ",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+      );
     }
-
-    /*showDialog(
-        context: context,
-        builder: (_) => new AlertDialog(
-              title: new Text(msg.groupName),
-              content: new Text(msg.nickname + ' : ' + msg.message),
-            ));*/
   }
+
+  Future onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) {}
 }

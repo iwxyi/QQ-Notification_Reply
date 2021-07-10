@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/pages/login_widget.dart';
@@ -22,6 +23,15 @@ class _AccountWidgetState extends State<AccountWidget> {
           event.event == Event.friendList ||
           event.event == Event.groupList) {
         setState(() {});
+
+        if (event.event == Event.loginInfo) {
+          Fluttertoast.showToast(
+            msg: "登录成功",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+          );
+        }
       }
       // print(event.obj);
     });
@@ -40,6 +50,11 @@ class _AccountWidgetState extends State<AccountWidget> {
       color: Colors.grey.shade200,
       child: ListView(
         children: <Widget>[
+          new DecoratedBox(
+              decoration: new BoxDecoration(
+                  image: new DecorationImage(
+            image: new AssetImage('assets/icons/cat_chat.png'),
+          ))),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
@@ -86,19 +101,19 @@ class _AccountWidgetState extends State<AccountWidget> {
               children: <Widget>[
                 ListTile(
                   leading: Icon(
-                    Icons.phone,
+                    Icons.contact_phone,
                     color: Colors.blue,
                   ),
                   title: Text('好友数量：' + G.ac.friendNames.length.toString()),
-                  trailing: Icon(Icons.arrow_right),
+                  onTap: () => G.cs.getFriendList(),
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.location_on,
+                    Icons.group,
                     color: Colors.blue,
                   ),
                   title: Text('群组数量：' + G.ac.groupNames.length.toString()),
-                  trailing: Icon(Icons.arrow_right),
+                  onTap: () => G.cs.getGroupList(),
                 )
               ],
             ),
