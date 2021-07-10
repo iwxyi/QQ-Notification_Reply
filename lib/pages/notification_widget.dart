@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/global/useraccount.dart';
 
 class NotificationWidget extends StatefulWidget {
   @override
@@ -83,18 +84,29 @@ class _NotificationWidgetState extends State<NotificationWidget> {
   }
 
   void testOperator() async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        G.flutterLocalNotificationsPlugin;
+    const List<String> lines = <String>[
+      'Alex Faarborg  Check this out',
+      'Jeff Chang    Launch Party'
+    ];
 
-    final List<PendingNotificationRequest> pendingNotificationRequests =
-        await flutterLocalNotificationsPlugin.pendingNotificationRequests();
-    print('pending: ' + pendingNotificationRequests.length.toString());
+    const InboxStyleInformation inboxStyleInformation = InboxStyleInformation(
+        lines,
+        contentTitle: '2 messages',
+        summaryText: 'janedoe@example.com');
 
-    final List<ActiveNotification> activeNotifications =
-        await flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
-            ?.getActiveNotifications();
-    print('active: ' + activeNotifications.length.toString());
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+            'groupChannelId', 'groupChannelName', 'groupChannelDescription',
+            styleInformation: inboxStyleInformation,
+            groupKey: 'groupKey',
+            priority: Priority.high,
+            setAsGroupSummary: true,
+            importance: Importance.max);
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await UserAccount.flutterLocalNotificationsPlugin
+        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/accountwidget.dart';
 import 'package:qqnotificationreply/pages/notification_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -67,20 +68,11 @@ class _MainPagesState extends State<MainPages> {
         messageReceived(event.data);
       }
     });
-    
-    // requireNotificationPermission();
+
+    requireNotificationPermission();
 
     // 初始化通知
-    /*flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
-    var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
-    var iOS = new IOSInitializationSettings();
-    var initSettings = new InitializationSettings(android, iOS);
-    flutterLocalNotificationsPlugin.initialize(initSettings,
-        onSelectNotification: onSelectNotification);
-    G.flutterLocalNotificationsPlugin = flutterLocalNotificationsPlugin;*/
-
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/appicon');
     final IOSInitializationSettings initializationSettingsIOS =
@@ -95,7 +87,8 @@ class _MainPagesState extends State<MainPages> {
             macOS: initializationSettingsMacOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: onSelectNotification);
-    G.flutterLocalNotificationsPlugin = flutterLocalNotificationsPlugin;
+    UserAccount.flutterLocalNotificationsPlugin =
+        flutterLocalNotificationsPlugin;
   }
 
   @override
@@ -107,23 +100,34 @@ class _MainPagesState extends State<MainPages> {
 
   /// 所有msg都会到这里来
   void messageReceived(MsgBean msg) {
-    // 保存msg
-    G.ac.allMessages.add(msg);
+    G.ac.allMessages.add(msg); // 保存所有 msg 记录
+    int id = UserAccount.notificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
+
+    // 判断是否需要通知
+    if (msg.senderId == G.ac.qqId) {
+      // 自己发的，一定不需要再通知了
+      // 甚至还需要消除掉自己的通知
+      flutterLocalNotificationsPlugin.cancel(id);
+      return;
+    }
+    // TODO: 判断群组通知
 
     // 显示通知
     if (msg.isPrivate()) {
+      print('-----------------id private:' + msg.friendId.toString() + '  ' + id.toString());
       if (!msg.isFile()) {
         // 私聊消息
-        showPlatNotification(msg.friendId, 'private_message', '私聊消息', 'QQ私聊消息',
+        showPlatNotification(id, 'private_message', '私聊消息', 'QQ私聊消息',
             msg.username(), msg.message, msg.messageId.toString());
       } else {
-        // 私聊文件
+        // TODO: 私聊文件
       }
     } else if (msg.isGroup()) {
+      print('-----------------id group:' + msg.groupId.toString() + '  ' + id.toString());
       if (!msg.isFile()) {
         // 群聊消息
         showPlatNotification(
-            msg.groupId,
+            id,
             'group_message',
             '群组消息',
             'QQ群组消息',
@@ -131,40 +135,8 @@ class _MainPagesState extends State<MainPages> {
             msg.nickname + ' : ' + msg.message,
             msg.messageId.toString());
       } else {
-        // 群聊文件
+        // TODO: 群聊文件
       }
-    }
-  }
-
-  /// 对于 iOS 和 MacOS，需要获取通知权限
-  void requireNotificationPermission() async {
-    bool result = true;
-    if (Platform.isIOS) {
-      result = await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-    } else if (Platform.isMacOS) {
-      result = await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              MacOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-    }
-    if (!result) {
-      Fluttertoast.showToast(
-        msg: "请授权通知权限，否则本程序无法正常使用",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-      );
     }
   }
 
@@ -181,17 +153,35 @@ class _MainPagesState extends State<MainPages> {
       String channelName,
       String channelDescription,
       String title,
-      String content,
+      String body,
       String payload) async {
+    // 获取现有通知
+    final List<ActiveNotification> activeNotifications =
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.getActiveNotifications();
+    bool exists = false;
+    activeNotifications.forEach((notification) {
+      if (notification.id != notificationId) {
+        return;
+      }
+      // 就是这个通知了，加上对应的消息
+      body += '\n' + notification.body;
+      exists = true;
+    });
+
+    // 添加新的通知
     AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(channelId, channelName, channelDescription,
             importance: Importance.max,
             priority: Priority.high,
-            showWhen: false);
+            showWhen: false,
+        playSound: exists ? false : true);
     NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-        notificationId, title, content, platformChannelSpecifics,
+        notificationId, title, body, platformChannelSpecifics,
         payload: payload);
   }
 
@@ -238,6 +228,40 @@ class _MainPagesState extends State<MainPages> {
     }
   }
 
+  /// 这个是 iOS 的通知回调
+  // ignore: missing_return
   Future onDidReceiveLocalNotification(
       int id, String title, String body, String payload) {}
+
+  /// 对于 iOS 和 MacOS，需要获取通知权限
+  void requireNotificationPermission() async {
+    bool result = true;
+    if (Platform.isIOS) {
+      result = await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    } else if (Platform.isMacOS) {
+      result = await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              MacOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    }
+    if (!result) {
+      Fluttertoast.showToast(
+        msg: "请授权通知权限，否则本程序无法正常使用",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+      );
+    }
+  }
 }

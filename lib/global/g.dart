@@ -13,8 +13,7 @@ class G {
   static UserSettings st;
   static UserAccount ac;
   static CqhttpService cs;
-  static var flutterLocalNotificationsPlugin;
-
+  
   static bool get isRelease =>
       bool.fromEnvironment("dart.vm.product"); // 是否是release版
 
