@@ -99,7 +99,7 @@ class _MainPagesState extends State<MainPages> {
   }
 
   /// 所有msg都会到这里来
-  void messageReceived(MsgBean msg) {
+  void messageReceived(MsgBean msg) async {
     G.ac.allMessages.add(msg); // 保存所有 msg 记录
     int id = UserAccount.notificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
 
@@ -110,33 +110,114 @@ class _MainPagesState extends State<MainPages> {
       flutterLocalNotificationsPlugin.cancel(id);
       return;
     }
-    // TODO: 判断群组通知
+    // TODO: 判断群组通知白名单
 
     // 显示通知
     if (msg.isPrivate()) {
-      print('-----------------id private:' + msg.friendId.toString() + '  ' + id.toString());
+      /*print('-----------------id private:' +
+          msg.friendId.toString() +
+          '  ' +
+          id.toString());*/
+
+      String uri = 'mqq://im/chat?chat_type=wpa&uin=' +
+          msg.friendId.toString() +
+          '&version=1&src_type=web';
+
+      Person person = new Person(
+          bot: false, important: true, name: msg.username(), uri: uri);
+
+      Message message = new Message(msg.message, DateTime.now(), person);
+
+      if (!G.ac.privateMessages.containsKey(msg.friendId)) {
+        G.ac.privateMessages[msg.friendId] = [];
+      }
+      G.ac.privateMessages[msg.friendId].add(message);
+
       if (!msg.isFile()) {
         // 私聊消息
-        showPlatNotification(id, 'private_message', '私聊消息', 'QQ私聊消息',
-            msg.username(), msg.message, msg.messageId.toString());
+        /*showPlatNotification(id, 'private_message', '私聊消息', 'QQ私聊消息',
+            msg.username(), msg.message, msg.messageId.toString());*/
       } else {
         // TODO: 私聊文件
+        return;
       }
+
+      MessagingStyleInformation messagingStyleInformation =
+          new MessagingStyleInformation(person,
+              conversationTitle: msg.username(),
+              messages: G.ac.privateMessages[msg.friendId]);
+
+      AndroidNotificationDetails androidPlatformChannelSpecifics =
+          AndroidNotificationDetails('private_message', '私聊消息', 'QQ好友消息/临时会话',
+              styleInformation: messagingStyleInformation,
+              groupKey: 'chat',
+              priority: Priority.high,
+              setAsGroupSummary: true,
+              importance: Importance.high);
+
+      NotificationDetails platformChannelSpecifics =
+          NotificationDetails(android: androidPlatformChannelSpecifics);
+
+      await flutterLocalNotificationsPlugin.show(
+          id, msg.username(), msg.message, platformChannelSpecifics,
+          payload: msg.messageId.toString());
     } else if (msg.isGroup()) {
-      print('-----------------id group:' + msg.groupId.toString() + '  ' + id.toString());
+      /*print('-----------------id group:' +
+          msg.groupId.toString() +
+          '  ' +
+          id.toString());*/
+
+      String uri = 'mqq://im/chat?chat_type=group&uin=' +
+          msg.groupId.toString() +
+          '&version=1&src_type=web';
+
+      Person person = new Person(
+          bot: false, important: false, name: msg.username(), uri: uri);
+
+      Message message = new Message(msg.message, DateTime.now(), person);
+
+      if (!G.ac.groupMessages.containsKey(msg.groupId)) {
+        G.ac.groupMessages[msg.groupId] = [];
+      }
+      G.ac.groupMessages[msg.groupId].add(message);
+
+      Person group =
+          new Person(bot: true, important: true, name: msg.groupName, uri: uri);
+
       if (!msg.isFile()) {
         // 群聊消息
-        showPlatNotification(
+        /*showPlatNotification(
             id,
             'group_message',
             '群组消息',
             'QQ群组消息',
             msg.groupName,
             msg.nickname + ' : ' + msg.message,
-            msg.messageId.toString());
+            msg.messageId.toString());*/
       } else {
         // TODO: 群聊文件
+        return;
       }
+
+      MessagingStyleInformation messagingStyleInformation =
+          new MessagingStyleInformation(group,
+              conversationTitle: msg.groupName,
+              messages: G.ac.groupMessages[msg.groupId]);
+
+      AndroidNotificationDetails androidPlatformChannelSpecifics =
+          AndroidNotificationDetails('group_message', '群组消息', 'QQ群组消息',
+              styleInformation: messagingStyleInformation,
+              groupKey: 'chat',
+              priority: Priority.high,
+              setAsGroupSummary: true,
+              importance: Importance.high);
+
+      NotificationDetails platformChannelSpecifics =
+          NotificationDetails(android: androidPlatformChannelSpecifics);
+
+      await flutterLocalNotificationsPlugin.show(
+          id, msg.username(), msg.message, platformChannelSpecifics,
+          payload: msg.messageId.toString());
     }
   }
 
@@ -177,7 +258,7 @@ class _MainPagesState extends State<MainPages> {
             importance: Importance.max,
             priority: Priority.high,
             showWhen: false,
-        playSound: exists ? false : true);
+            playSound: exists ? false : true);
     NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
@@ -194,11 +275,13 @@ class _MainPagesState extends State<MainPages> {
     String url;
     // android 和 ios 的 QQ 启动 url scheme 是不同的
     if (msg.isPrivate()) {
+      G.ac.privateMessages[msg.friendId].clear();
       url = 'mqq://im/chat?chat_type=wpa&uin=' +
           msg.friendId.toString() +
           '&version=1&src_type=web';
       // &web_src=qq.com
     } else {
+      G.ac.groupMessages[msg.groupId].clear();
       url = 'mqq://im/chat?chat_type=group&uin=' +
           msg.groupId.toString() +
           '&version=1&src_type=web';

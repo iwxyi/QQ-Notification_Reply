@@ -14,7 +14,7 @@
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="qqnotificationreply"
+        android:label="QQ通知回复"
         android:icon="@mipmap/appicon">
         <activity
             android:name=".MainActivity"

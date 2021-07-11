@@ -1,4 +1,5 @@
 import 'package:event_bus/event_bus.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
 class UserAccount {
@@ -11,12 +12,10 @@ class UserAccount {
   Map<int, String> friendNames = {};
   Map<int, String> groupNames = {};
   Map<int, Map<int, String>> groupMemberNames = {};
-  
+
   // 消息记录
   List<MsgBean> allMessages = [];
-  Map<int, List<MsgBean>> privateMessages = {};
-  Map<int, List<MsgBean>> groupMessages = {};
-  
+
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
 
@@ -24,6 +23,9 @@ class UserAccount {
   // 消息通知
   static var flutterLocalNotificationsPlugin;
   static Map<int, int> notificationIdMap = {};
+
+  Map<int, List<Message>> privateMessages = {};
+  Map<int, List<Message>> groupMessages = {};
 
   // QQ号增加只12位，与QQ群分开
   static int notificationId(MsgBean msg) {
