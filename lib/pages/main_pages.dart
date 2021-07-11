@@ -102,6 +102,7 @@ class _MainPagesState extends State<MainPages> {
   void messageReceived(MsgBean msg) async {
     G.ac.allMessages.add(msg); // 保存所有 msg 记录
     int id = UserAccount.notificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
+    String displayMessage = _getMessageDisplay(msg);
 
     // 判断是否需要通知
     if (msg.senderId == G.ac.qqId) {
@@ -126,7 +127,7 @@ class _MainPagesState extends State<MainPages> {
       Person person = new Person(
           bot: false, important: true, name: msg.username(), uri: uri);
 
-      Message message = new Message(msg.message, DateTime.now(), person);
+      Message message = new Message(displayMessage, DateTime.now(), person);
 
       if (!G.ac.privateMessages.containsKey(msg.friendId)) {
         G.ac.privateMessages[msg.friendId] = [];
@@ -135,8 +136,6 @@ class _MainPagesState extends State<MainPages> {
 
       if (!msg.isFile()) {
         // 私聊消息
-        /*showPlatNotification(id, 'private_message', '私聊消息', 'QQ私聊消息',
-            msg.username(), msg.message, msg.messageId.toString());*/
       } else {
         // TODO: 私聊文件
         return;
@@ -159,7 +158,7 @@ class _MainPagesState extends State<MainPages> {
           NotificationDetails(android: androidPlatformChannelSpecifics);
 
       await flutterLocalNotificationsPlugin.show(
-          id, msg.username(), msg.message, platformChannelSpecifics,
+          id, msg.username(), displayMessage, platformChannelSpecifics,
           payload: msg.messageId.toString());
     } else if (msg.isGroup()) {
       /*print('-----------------id group:' +
@@ -174,7 +173,7 @@ class _MainPagesState extends State<MainPages> {
       Person person = new Person(
           bot: false, important: false, name: msg.username(), uri: uri);
 
-      Message message = new Message(msg.message, DateTime.now(), person);
+      Message message = new Message(displayMessage, DateTime.now(), person);
 
       if (!G.ac.groupMessages.containsKey(msg.groupId)) {
         G.ac.groupMessages[msg.groupId] = [];
@@ -186,14 +185,6 @@ class _MainPagesState extends State<MainPages> {
 
       if (!msg.isFile()) {
         // 群聊消息
-        /*showPlatNotification(
-            id,
-            'group_message',
-            '群组消息',
-            'QQ群组消息',
-            msg.groupName,
-            msg.nickname + ' : ' + msg.message,
-            msg.messageId.toString());*/
       } else {
         // TODO: 群聊文件
         return;
@@ -216,54 +207,28 @@ class _MainPagesState extends State<MainPages> {
           NotificationDetails(android: androidPlatformChannelSpecifics);
 
       await flutterLocalNotificationsPlugin.show(
-          id, msg.username(), msg.message, platformChannelSpecifics,
+          id, msg.username(), displayMessage, platformChannelSpecifics,
           payload: msg.messageId.toString());
     }
   }
 
-  /// 显示通知根方法
-  /// @param channelId: 是通知分类ID，相同ID会导致覆盖
-  /// @param channelName: 是分类名字
-  /// @param channelDescription: 是分类点进设置后的底部说明
-  /// @param title: 通知标题
-  /// @param content: 通知内容
-  /// @param payload: 回调的字符串
-  void showPlatNotification(
-      int notificationId,
-      String channelId,
-      String channelName,
-      String channelDescription,
-      String title,
-      String body,
-      String payload) async {
-    // 获取现有通知
-    final List<ActiveNotification> activeNotifications =
-        await flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
-            ?.getActiveNotifications();
-    bool exists = false;
-    activeNotifications.forEach((notification) {
-      if (notification.id != notificationId) {
-        return;
-      }
-      // 就是这个通知了，加上对应的消息
-      body += '\n' + notification.body;
-      exists = true;
-    });
+  /// msg.message CQ文本，转换为显示的内容
+  String _getMessageDisplay(MsgBean msg) {
+    String text = msg.message;
 
-    // 添加新的通知
-    AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(channelId, channelName, channelDescription,
-            importance: Importance.max,
-            priority: Priority.high,
-            showWhen: false,
-            playSound: exists ? false : true);
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-        notificationId, title, body, platformChannelSpecifics,
-        payload: payload);
+    // 表情： [CQ:face,id=12]
+    text = text.replaceAll(RegExp(r"\[CQ:face,id=(\d+)\]"), '[表情]');
+    text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
+    text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
+    text = text.replaceAll(RegExp(r"\[CQ:reply,.+?\]"), '[回复]');
+    text = text.replaceAll(RegExp(r"\[CQ:at,qq=(\d+)\]"), r'@\1');
+    text = text.replaceAll(RegExp(r"\[CQ:json,.+\]"), '[json]');
+    text = text.replaceAll(RegExp(r"\[CQ:video,.+\]"), '[视频]');
+    text = text.replaceAll(RegExp(r"\[CQ:(\w+),.+\]"), r'[\1]');
+    text = text.replaceAll('&#91;', '[');
+    text = text.replaceAll('&#93;', ']');
+
+    return text;
   }
 
   /// 通知点击回调
