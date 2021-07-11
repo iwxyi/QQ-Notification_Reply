@@ -101,7 +101,28 @@ class _MainPagesState extends State<MainPages> {
   /// 所有msg都会到这里来
   void messageReceived(MsgBean msg) async {
     G.ac.allMessages.add(msg); // 保存所有 msg 记录
-    int id = UserAccount.notificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
+    int id = UserAccount.getNotificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
+
+    int time = DateTime.now().millisecondsSinceEpoch;
+    if (msg.isPrivate()) {
+      G.ac.privateMessageTimes[msg.friendId] = time;
+    } else if (msg.isGroup()) {
+      G.ac.groupMessageTimes[msg.groupId] = time;
+      // 判断群组是否通知
+      if (!G.st.enabledGroups.contains(msg.groupId)) {
+        return;
+      }
+    }
+
+    // 判断自己的通知
+    if (msg.senderId == G.ac.qqId) {
+      // 自己发的，一定不需要再通知了
+      // 甚至还需要消除掉自己的通知
+      flutterLocalNotificationsPlugin.cancel(id);
+      return;
+    }
+
+    // 显示通知
     String personUri =
         'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
     String displayMessage = _getMessageDisplay(msg);
@@ -110,16 +131,6 @@ class _MainPagesState extends State<MainPages> {
     Message message = new Message(displayMessage, DateTime.now(), person);
     AndroidNotificationDetails androidPlatformChannelSpecifics;
 
-    // 判断是否需要通知
-    if (msg.senderId == G.ac.qqId) {
-      // 自己发的，一定不需要再通知了
-      // 甚至还需要消除掉自己的通知
-      flutterLocalNotificationsPlugin.cancel(id);
-      return;
-    }
-    // TODO: 判断群组通知白名单
-
-    // 显示通知
     if (msg.isPrivate()) {
       /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
 

@@ -15,6 +15,8 @@ class UserAccount {
 
   // 消息记录
   List<MsgBean> allMessages = [];
+  Map<int, int> privateMessageTimes = {};
+  Map<int, int> groupMessageTimes = {};
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
@@ -28,7 +30,7 @@ class UserAccount {
   Map<int, List<Message>> groupMessages = {};
 
   // QQ号增加只12位，与QQ群分开
-  static int notificationId(MsgBean msg) {
+  static int getNotificationId(MsgBean msg) {
     int id = msg.isGroup()
         ? msg.groupId
         : msg.isPrivate()

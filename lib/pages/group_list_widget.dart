@@ -10,8 +10,9 @@ class GroupInfo {
   int id;
   String name;
   int importance; // -1不重要，0默认，1普通通知，2重点通知
+  int time;
 
-  GroupInfo(this.id, this.name, this.importance);
+  GroupInfo(this.id, this.name, this.importance, this.time);
 }
 
 class _GroupListWidgetState extends State<GroupListWidget> {
@@ -24,8 +25,14 @@ class _GroupListWidgetState extends State<GroupListWidget> {
   void initState() {
     // 初始化群组内容
     Map<int, String> groupNames = G.ac.groupNames;
-    groupNames.forEach((key, value) {
-      groups.add(new GroupInfo(key, value, 0));
+    groupNames.forEach((id, name) {
+      int time = G.ac.groupMessageTimes.containsKey(id)
+          ? G.ac.groupMessageTimes[id]
+          : 0;
+      groups.add(new GroupInfo(id, name, 0, time));
+    });
+    groups.sort((GroupInfo a, GroupInfo b) {
+      return b.time.compareTo(a.time);
     });
 
     // 初始化显示
@@ -96,6 +103,7 @@ class _GroupListWidgetState extends State<GroupListWidget> {
                 RaisedButton(
                   onPressed: () {
                     G.st.enabledGroups = G.ac.groupNames.keys.toList();
+                    G.st.switchEnabledGroup(0);
                     setState(() {});
                   },
                   child: new Text('全选'),
@@ -109,6 +117,7 @@ class _GroupListWidgetState extends State<GroupListWidget> {
                         G.st.enabledGroups.add(id);
                       }
                     });
+                    G.st.switchEnabledGroup(0);
                     setState(() {});
                   },
                   child: new Text('反选'),
