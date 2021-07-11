@@ -88,7 +88,9 @@ class _GroupListWidgetState extends State<GroupListWidget> {
                     },
                     trailing: Checkbox(
                       onChanged: (bool val) {
-                        G.st.switchEnabledGroup(info.id);
+                        setState(() {
+                          G.st.switchEnabledGroup(info.id);
+                        });
                       },
                       value: G.st.enabledGroups.contains(info.id),
                     ),

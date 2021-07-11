@@ -256,7 +256,7 @@ class _MainPagesState extends State<MainPages> {
       // 自己封装的一个 Toast
       print('无法打开URL: ' + url);
       Fluttertoast.showToast(
-        msg: "无法打开URL" + url,
+        msg: "无法打开URL：" + url,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
