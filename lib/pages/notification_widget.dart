@@ -88,7 +88,32 @@ class _NotificationWidgetState extends State<NotificationWidget> {
   }
 
   void testOperator() async {
-    Person person = new Person(
+    const List<String> lines = <String>[
+      'Alex Faarborg  Check this out',
+      'Jeff Chang    Launch Party'
+    ];
+
+    const InboxStyleInformation inboxStyleInformation = InboxStyleInformation(
+        lines,
+        contentTitle: '2 messages',
+        summaryText: 'janedoe@example.com');
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+            'groupChannelId', 'groupChannelName', 'groupChannelDescription',
+            styleInformation: inboxStyleInformation,
+            groupKey: 'groupKey',
+            priority: Priority.high,
+            setAsGroupSummary: true,
+            importance: Importance.max);
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await UserAccount.flutterLocalNotificationsPlugin
+        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);
+  
+    /*Person person = new Person(
         bot: false, important: true, name: 'name', uri: 'http://baidu.com');
     Person person2 = new Person(
         bot: false, important: true, name: 'suyu', uri: 'http://baidu.com');
@@ -116,6 +141,6 @@ class _NotificationWidgetState extends State<NotificationWidget> {
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await UserAccount.flutterLocalNotificationsPlugin
-        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);
+        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);*/
   }
 }

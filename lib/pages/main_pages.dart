@@ -11,6 +11,7 @@ import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/account_widget.dart';
 import 'package:qqnotificationreply/pages/notification_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/gallerybar.dart';
@@ -93,15 +94,21 @@ class _MainPagesState extends State<MainPages> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimateTabNavigation(
+    return AppRetainWidget(child: AnimateTabNavigation(
       sectionList: allSections,
-    );
+    ),);
   }
 
   /// 所有msg都会到这里来
   void messageReceived(MsgBean msg) async {
     G.ac.allMessages.add(msg); // 保存所有 msg 记录
     int id = UserAccount.getNotificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
+    Fluttertoast.showToast(
+      msg: msg.username() + " : " + msg.message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+    );
 
     int time = DateTime.now().millisecondsSinceEpoch;
     if (msg.isPrivate()) {

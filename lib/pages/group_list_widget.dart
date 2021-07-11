@@ -68,7 +68,6 @@ class _GroupListWidgetState extends State<GroupListWidget> {
                   borderRadius: BorderRadius.all(Radius.circular(24)),
                 ),
               ),
-              keyboardType: TextInputType.number,
               onChanged: (value) {
                 filterKey = value;
                 filterSearch(filterKey);
