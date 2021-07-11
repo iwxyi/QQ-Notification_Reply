@@ -88,50 +88,25 @@ class _NotificationWidgetState extends State<NotificationWidget> {
   }
 
   void testOperator() async {
-    const List<String> lines = <String>[
+    /*List<String> lines = <String>[
       'Alex Faarborg  Check this out',
       'Jeff Chang    Launch Party'
     ];
 
-    const InboxStyleInformation inboxStyleInformation = InboxStyleInformation(
-        lines,
-        contentTitle: '2 messages',
-        summaryText: 'janedoe@example.com');
+    InboxStyleInformation inboxStyleInformation = InboxStyleInformation(lines,
+        contentTitle: '2 messages', summaryText: 'janedoe@example.com');
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails androidPlatformChannelSpecifics0 =
         AndroidNotificationDetails(
-            'groupChannelId', 'groupChannelName', 'groupChannelDescription',
-            styleInformation: inboxStyleInformation,
-            groupKey: 'groupKey',
+            'channelId', 'channelName', 'channelDescription',
+            importance: Importance.max,
             priority: Priority.high,
-            setAsGroupSummary: true,
-            importance: Importance.max);
-
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await UserAccount.flutterLocalNotificationsPlugin
-        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);
-  
-    /*Person person = new Person(
-        bot: false, important: true, name: 'name', uri: 'http://baidu.com');
-    Person person2 = new Person(
-        bot: false, important: true, name: 'suyu', uri: 'http://baidu.com');
-    List<Message> messages = [
-      new Message('textextextext', DateTime.now(), person),
-      new Message('hhhhhhhhhhhhh', DateTime.now(), person),
-      new Message('aaaaaaaaaaaaaaaa', DateTime.now(), person2),
-      new Message('qweqweqweqwe', DateTime.now(), person2)
-    ];
-
-    MessagingStyleInformation messagingStyleInformation =
-        new MessagingStyleInformation(person,
-            conversationTitle: 'Title', messages: messages);
+            showWhen: false);
 
     AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
             'groupChannelId', 'groupChannelName', 'groupChannelDescription',
-            styleInformation: messagingStyleInformation,
+            styleInformation: inboxStyleInformation,
             groupKey: 'groupKey',
             priority: Priority.high,
             setAsGroupSummary: true,
@@ -142,5 +117,33 @@ class _NotificationWidgetState extends State<NotificationWidget> {
 
     await UserAccount.flutterLocalNotificationsPlugin
         .show(0, 'Attention', 'Two messages', platformChannelSpecifics);*/
+  }
+
+  /// 显示通知根方法
+  /// @param channelId: 是通知分类ID，相同ID会导致覆盖
+  /// @param channelName: 是分类名字
+  /// @param channelDescription: 是分类点进设置后的底部说明
+  /// @param title: 通知标题
+  /// @param content: 通知内容
+  /// @param payload: 回调的字符串
+  void showPlatNotification(
+      int notificationId,
+      String channelId,
+      String channelName,
+      String channelDescription,
+      String title,
+      String body,
+      String payload) async {
+    // 添加新的通知
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(channelId, channelName, channelDescription,
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: false);
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await UserAccount.flutterLocalNotificationsPlugin.show(
+        notificationId, title, body, platformChannelSpecifics,
+        payload: payload);
   }
 }

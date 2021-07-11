@@ -50,11 +50,6 @@ class _AccountWidgetState extends State<AccountWidget> {
       color: Colors.grey.shade200,
       child: ListView(
         children: <Widget>[
-          new DecoratedBox(
-              decoration: new BoxDecoration(
-                  image: new DecorationImage(
-            image: new AssetImage('assets/icons/cat_chat.png'),
-          ))),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(

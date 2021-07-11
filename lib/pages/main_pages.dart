@@ -103,12 +103,12 @@ class _MainPagesState extends State<MainPages> {
   void messageReceived(MsgBean msg) async {
     G.ac.allMessages.add(msg); // 保存所有 msg 记录
     int id = UserAccount.getNotificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
-    Fluttertoast.showToast(
+    /*Fluttertoast.showToast(
       msg: msg.username() + " : " + msg.message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,
-    );
+    );*/
 
     int time = DateTime.now().millisecondsSinceEpoch;
     if (msg.isPrivate()) {
@@ -156,7 +156,6 @@ class _MainPagesState extends State<MainPages> {
           styleInformation: messagingStyleInformation,
           groupKey: 'chat',
           priority: Priority.high,
-          setAsGroupSummary: true,
           importance: Importance.high);
     } else if (msg.isGroup()) {
       if (!G.ac.groupMessages.containsKey(msg.groupId)) {
@@ -177,7 +176,6 @@ class _MainPagesState extends State<MainPages> {
           styleInformation: messagingStyleInformation,
           groupKey: 'chat',
           priority: Priority.high,
-          setAsGroupSummary: true,
           importance: Importance.high);
     }
     if (androidPlatformChannelSpecifics == null) {
