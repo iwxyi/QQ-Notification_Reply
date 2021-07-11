@@ -216,17 +216,19 @@ class _MainPagesState extends State<MainPages> {
   String _getMessageDisplay(MsgBean msg) {
     String text = msg.message;
 
-    // 表情： [CQ:face,id=12]
     text = text.replaceAll(RegExp(r"\[CQ:face,id=(\d+)\]"), '[表情]');
     text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
     text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
     text = text.replaceAll(RegExp(r"\[CQ:reply,.+?\]"), '[回复]');
-    text = text.replaceAll(RegExp(r"\[CQ:at,qq=(\d+)\]"), r'@\1');
-    text = text.replaceAll(RegExp(r"\[CQ:json,.+\]"), '[json]');
-    text = text.replaceAll(RegExp(r"\[CQ:video,.+\]"), '[视频]');
-    text = text.replaceAll(RegExp(r"\[CQ:(\w+),.+\]"), r'[\1]');
-    text = text.replaceAll('&#91;', '[');
-    text = text.replaceAll('&#93;', ']');
+    text = text.replaceAllMapped(
+        RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) => '@${match[1]}');
+    text = text.replaceAllMapped(
+        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*\]'), (match) => '${match[1]}');
+    text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[卡片]');
+    text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');
+    text = text.replaceAllMapped(
+        RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '@${match[1]}');
+    text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');
 
     return text;
   }
