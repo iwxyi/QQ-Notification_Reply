@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
+import 'package:qqnotificationreply/pages/group_list_widget.dart';
 
 class NotificationWidget extends StatefulWidget {
   @override
@@ -45,7 +46,15 @@ class _NotificationWidgetState extends State<NotificationWidget> {
                   ),
                   title: Text('开启通知的群组'),
                   trailing: Icon(Icons.arrow_right),
-                  onTap: selectEnabledGroup,
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return GroupListWidget();
+                    })).then((value) {
+                      // 可能登录了，刷新一下界面
+                      setState(() {});
+                    });
+                  },
                 ),
               ],
             ),
@@ -78,37 +87,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
     );
   }
 
-  /// 选择开启通知的群组
-  void selectEnabledGroup() {
-    // TODO: 多选对话框
-  }
-
   void testOperator() async {
-    /*const List<String> lines = <String>[
-      'Alex Faarborg  Check this out',
-      'Jeff Chang    Launch Party'
-    ];
-
-    const InboxStyleInformation inboxStyleInformation = InboxStyleInformation(
-        lines,
-        contentTitle: '2 messages',
-        summaryText: 'janedoe@example.com');
-
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-            'groupChannelId', 'groupChannelName', 'groupChannelDescription',
-            styleInformation: inboxStyleInformation,
-            groupKey: 'groupKey',
-            priority: Priority.high,
-            setAsGroupSummary: true,
-            importance: Importance.max);
-
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await UserAccount.flutterLocalNotificationsPlugin
-        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);*/
-
     Person person = new Person(
         bot: false, important: true, name: 'name', uri: 'http://baidu.com');
     Person person2 = new Person(

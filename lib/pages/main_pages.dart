@@ -8,7 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
-import 'package:qqnotificationreply/pages/accountwidget.dart';
+import 'package:qqnotificationreply/pages/account_widget.dart';
 import 'package:qqnotificationreply/pages/notification_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -102,7 +102,13 @@ class _MainPagesState extends State<MainPages> {
   void messageReceived(MsgBean msg) async {
     G.ac.allMessages.add(msg); // 保存所有 msg 记录
     int id = UserAccount.notificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
+    String personUri =
+        'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
     String displayMessage = _getMessageDisplay(msg);
+    Person person = new Person(
+        bot: false, important: false, name: msg.username(), uri: personUri);
+    Message message = new Message(displayMessage, DateTime.now(), person);
+    AndroidNotificationDetails androidPlatformChannelSpecifics;
 
     // 判断是否需要通知
     if (msg.senderId == G.ac.qqId) {
@@ -115,101 +121,57 @@ class _MainPagesState extends State<MainPages> {
 
     // 显示通知
     if (msg.isPrivate()) {
-      /*print('-----------------id private:' +
-          msg.friendId.toString() +
-          '  ' +
-          id.toString());*/
-
-      String uri = 'mqq://im/chat?chat_type=wpa&uin=' +
-          msg.friendId.toString() +
-          '&version=1&src_type=web';
-
-      Person person = new Person(
-          bot: false, important: true, name: msg.username(), uri: uri);
-
-      Message message = new Message(displayMessage, DateTime.now(), person);
+      /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
 
       if (!G.ac.privateMessages.containsKey(msg.friendId)) {
         G.ac.privateMessages[msg.friendId] = [];
       }
       G.ac.privateMessages[msg.friendId].add(message);
 
-      if (!msg.isFile()) {
-        // 私聊消息
-      } else {
-        // TODO: 私聊文件
-        return;
-      }
-
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(person,
               conversationTitle: msg.username(),
               messages: G.ac.privateMessages[msg.friendId]);
 
-      AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails('private_message', '私聊消息', 'QQ好友消息/临时会话',
-              styleInformation: messagingStyleInformation,
-              groupKey: 'chat',
-              priority: Priority.high,
-              setAsGroupSummary: true,
-              importance: Importance.high);
-
-      NotificationDetails platformChannelSpecifics =
-          NotificationDetails(android: androidPlatformChannelSpecifics);
-
-      await flutterLocalNotificationsPlugin.show(
-          id, msg.username(), displayMessage, platformChannelSpecifics,
-          payload: msg.messageId.toString());
+      androidPlatformChannelSpecifics = AndroidNotificationDetails(
+          'private_message', '私聊消息', 'QQ好友消息/临时会话',
+          styleInformation: messagingStyleInformation,
+          groupKey: 'chat',
+          priority: Priority.high,
+          setAsGroupSummary: true,
+          importance: Importance.high);
     } else if (msg.isGroup()) {
-      /*print('-----------------id group:' +
-          msg.groupId.toString() +
-          '  ' +
-          id.toString());*/
-
-      String uri = 'mqq://im/chat?chat_type=group&uin=' +
-          msg.groupId.toString() +
-          '&version=1&src_type=web';
-
-      Person person = new Person(
-          bot: false, important: false, name: msg.username(), uri: uri);
-
-      Message message = new Message(displayMessage, DateTime.now(), person);
-
       if (!G.ac.groupMessages.containsKey(msg.groupId)) {
         G.ac.groupMessages[msg.groupId] = [];
       }
       G.ac.groupMessages[msg.groupId].add(message);
 
-      Person group =
-          new Person(bot: true, important: true, name: msg.groupName, uri: uri);
-
-      if (!msg.isFile()) {
-        // 群聊消息
-      } else {
-        // TODO: 群聊文件
-        return;
-      }
+      Person group = new Person(
+          bot: true, important: true, name: msg.groupName, uri: personUri);
 
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(group,
               conversationTitle: msg.groupName,
               messages: G.ac.groupMessages[msg.groupId]);
 
-      AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails('group_message', '群组消息', 'QQ群组消息',
-              styleInformation: messagingStyleInformation,
-              groupKey: 'chat',
-              priority: Priority.high,
-              setAsGroupSummary: true,
-              importance: Importance.high);
-
-      NotificationDetails platformChannelSpecifics =
-          NotificationDetails(android: androidPlatformChannelSpecifics);
-
-      await flutterLocalNotificationsPlugin.show(
-          id, msg.username(), displayMessage, platformChannelSpecifics,
-          payload: msg.messageId.toString());
+      androidPlatformChannelSpecifics = AndroidNotificationDetails(
+          'group_message', '群组消息', 'QQ群组消息',
+          styleInformation: messagingStyleInformation,
+          groupKey: 'chat',
+          priority: Priority.high,
+          setAsGroupSummary: true,
+          importance: Importance.high);
     }
+    if (androidPlatformChannelSpecifics == null) {
+      return;
+    }
+
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+        id, msg.username(), displayMessage, platformChannelSpecifics,
+        payload: msg.messageId.toString());
   }
 
   /// msg.message CQ文本，转换为显示的内容
@@ -223,7 +185,8 @@ class _MainPagesState extends State<MainPages> {
     text = text.replaceAllMapped(
         RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) => '@${match[1]}');
     text = text.replaceAllMapped(
-        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*\]'), (match) => '${match[1]}');
+        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*\]'),
+        (match) => '${match[1]}');
     text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[卡片]');
     text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');
     text = text.replaceAllMapped(
