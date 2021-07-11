@@ -94,9 +94,11 @@ class _MainPagesState extends State<MainPages> {
 
   @override
   Widget build(BuildContext context) {
-    return AppRetainWidget(child: AnimateTabNavigation(
-      sectionList: allSections,
-    ),);
+    return AppRetainWidget(
+      child: AnimateTabNavigation(
+        sectionList: allSections,
+      ),
+    );
   }
 
   /// 所有msg都会到这里来
@@ -198,6 +200,7 @@ class _MainPagesState extends State<MainPages> {
     text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
     text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
     text = text.replaceAll(RegExp(r"\[CQ:reply,.+?\]"), '[回复]');
+    text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
     text = text.replaceAllMapped(
         RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) => '@${match[1]}');
     text = text.replaceAllMapped(
@@ -242,14 +245,18 @@ class _MainPagesState extends State<MainPages> {
     }
 
     // 确认一下url是否可启动
-    if (await canLaunch(url)) {
+    if (true || await canLaunch(url)) {
       print('打开URL: ' + url);
-      await launch(url); // 启动QQ
+      try {
+        await launch(url); // 启动QQ
+      } catch (e) {
+        print('打开URL失败：' + e.toString());
+      }
     } else {
       // 自己封装的一个 Toast
-      print('无法启动QQ: ' + url);
+      print('无法打开URL: ' + url);
       Fluttertoast.showToast(
-        msg: "无法启动QQ",
+        msg: "无法打开URL" + url,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
