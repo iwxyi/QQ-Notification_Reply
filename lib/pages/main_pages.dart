@@ -112,6 +112,7 @@ class _MainPagesState extends State<MainPages> {
       timeInSecForIosWeb: 1,
     );*/
 
+    // 刷新收到消息的时间（用于排序）
     int time = DateTime.now().millisecondsSinceEpoch;
     if (msg.isPrivate()) {
       G.ac.privateMessageTimes[msg.friendId] = time;
@@ -122,11 +123,14 @@ class _MainPagesState extends State<MainPages> {
         return;
       }
     }
+    
+    // 进入所有消息日志
+    G.ac.allMessages.add(msg);
 
     // 判断自己的通知
     if (msg.senderId == G.ac.qqId) {
       // 自己发的，一定不需要再通知了
-      // 甚至还需要消除掉自己的通知
+      // 还需要消除掉该聊天对象的通知
       flutterLocalNotificationsPlugin.cancel(id);
       return;
     }
@@ -143,15 +147,15 @@ class _MainPagesState extends State<MainPages> {
     if (msg.isPrivate()) {
       /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
 
-      if (!G.ac.privateMessages.containsKey(msg.friendId)) {
-        G.ac.privateMessages[msg.friendId] = [];
+      if (!G.ac.unreadPrivateMessages.containsKey(msg.friendId)) {
+        G.ac.unreadPrivateMessages[msg.friendId] = [];
       }
-      G.ac.privateMessages[msg.friendId].add(message);
+      G.ac.unreadPrivateMessages[msg.friendId].add(message);
 
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(person,
               conversationTitle: msg.username(),
-              messages: G.ac.privateMessages[msg.friendId]);
+              messages: G.ac.unreadPrivateMessages[msg.friendId]);
 
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'private_message', '私聊消息', 'QQ好友消息/临时会话',
@@ -160,10 +164,10 @@ class _MainPagesState extends State<MainPages> {
           priority: Priority.high,
           importance: Importance.high);
     } else if (msg.isGroup()) {
-      if (!G.ac.groupMessages.containsKey(msg.groupId)) {
-        G.ac.groupMessages[msg.groupId] = [];
+      if (!G.ac.unreadGroupMessages.containsKey(msg.groupId)) {
+        G.ac.unreadGroupMessages[msg.groupId] = [];
       }
-      G.ac.groupMessages[msg.groupId].add(message);
+      G.ac.unreadGroupMessages[msg.groupId].add(message);
 
       Person group = new Person(
           bot: true, important: true, name: msg.groupName, uri: personUri);
@@ -171,7 +175,7 @@ class _MainPagesState extends State<MainPages> {
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(group,
               conversationTitle: msg.groupName,
-              messages: G.ac.groupMessages[msg.groupId]);
+              messages: G.ac.unreadGroupMessages[msg.groupId]);
 
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'group_message', '群组消息', 'QQ群组消息',
@@ -224,13 +228,13 @@ class _MainPagesState extends State<MainPages> {
     String url;
     // android 和 ios 的 QQ 启动 url scheme 是不同的
     if (msg.isPrivate()) {
-      G.ac.privateMessages[msg.friendId].clear();
+      G.ac.unreadPrivateMessages[msg.friendId].clear();
       url = 'mqq://im/chat?chat_type=wpa&uin=' +
           msg.friendId.toString() +
           '&version=1&src_type=web';
       // &web_src=qq.com
     } else {
-      G.ac.groupMessages[msg.groupId].clear();
+      G.ac.unreadGroupMessages[msg.groupId].clear();
       url = 'mqq://im/chat?chat_type=group&uin=' +
           msg.groupId.toString() +
           '&version=1&src_type=web';
@@ -245,7 +249,8 @@ class _MainPagesState extends State<MainPages> {
     }
 
     // 确认一下url是否可启动
-    if (true || await canLaunch(url)) {
+    const forceTry = true;
+    if (await canLaunch(url) || forceTry) {
       print('打开URL: ' + url);
       try {
         await launch(url); // 启动QQ

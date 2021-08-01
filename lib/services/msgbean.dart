@@ -54,4 +54,18 @@ class MsgBean {
   bool isGroup() => groupId != 0;
 
   bool isFile() => fileId != null && fileId.isNotEmpty;
+
+  String simpleString() {
+    String showed = message;
+    //    showed = showed.replaceAll(RegExp(r"\[CQ:(\w+),.*\]"), '1');
+    showed = showed.replaceAllMapped(
+        RegExp(r"\[CQ:(\w+),.*\]"), (match) => "[${match[1]}]");
+    if (isPrivate()) {
+      return "$nickname: $showed";
+    } else if (isGroup()) {
+      return "[$groupName] $nickname: $showed";
+    } else {
+      return "unknow message";
+    }
+  }
 }

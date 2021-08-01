@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/pages/all_messages_page.dart';
 import 'package:qqnotificationreply/pages/login_widget.dart';
 
 class AccountWidget extends StatefulWidget {
@@ -21,7 +22,8 @@ class _AccountWidgetState extends State<AccountWidget> {
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.loginInfo ||
           event.event == Event.friendList ||
-          event.event == Event.groupList) {
+          event.event == Event.groupList ||
+          event.event == Event.message) {
         setState(() {});
 
         if (event.event == Event.loginInfo) {
@@ -109,7 +111,24 @@ class _AccountWidgetState extends State<AccountWidget> {
                   ),
                   title: Text('群组数量：' + G.ac.groupNames.length.toString()),
                   onTap: () => G.cs.getGroupList(),
-                )
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.person,
+                    color: Colors.red,
+                  ),
+                  title: Text('消息记录：' + G.ac.allMessages.length.toString()),
+                  trailing: Icon(Icons.arrow_right),
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return AllMessageListWidget();
+                    })).then((value) {
+                      // 可能登录了，刷新一下界面
+                      setState(() {});
+                    });
+                  },
+                ),
               ],
             ),
           ),

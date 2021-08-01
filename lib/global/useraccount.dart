@@ -26,8 +26,8 @@ class UserAccount {
   static var flutterLocalNotificationsPlugin;
   static Map<int, int> notificationIdMap = {};
 
-  Map<int, List<Message>> privateMessages = {};
-  Map<int, List<Message>> groupMessages = {};
+  Map<int, List<Message>> unreadPrivateMessages = {};
+  Map<int, List<Message>> unreadGroupMessages = {};
 
   // QQ号增加只12位，与QQ群分开
   static int getNotificationId(MsgBean msg) {

@@ -28,13 +28,16 @@ class CqhttpService {
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer ' + token;
     }
+
+    // 旧的 channel 还在时依旧连接的话，会导致重复接收到消息
+    // TODO: 目前不知道怎么删除对象，也没找到关闭的 API
+    channel = null;
     channel = IOWebSocketChannel.connect(host, headers: headers);
 
     // 监听消息
     channel.stream.listen((message) {
       // print('ws收到消息:' + message.toString());
       processReceivedData(json.decode(message.toString()));
-      ac.eventBus.fire(EventFn(Event.loginSuccess, {}));
     });
 
     st.setConfig('account/host', host);
@@ -105,6 +108,7 @@ class CqhttpService {
     send({'action': 'get_login_info', 'echo': 'get_login_info'});
     getFriendList();
     getGroupList();
+    ac.eventBus.fire(EventFn(Event.loginSuccess, {}));
   }
 
   void parseEchoMessage(final obj) {
