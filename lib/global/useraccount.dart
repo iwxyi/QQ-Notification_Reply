@@ -17,6 +17,8 @@ class UserAccount {
   List<MsgBean> allMessages = [];
   Map<int, int> privateMessageTimes = {};
   Map<int, int> groupMessageTimes = {};
+  Map<int, List<Message>> unreadPrivateMessages = {};
+  Map<int, List<Message>> unreadGroupMessages = {};
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
@@ -26,8 +28,6 @@ class UserAccount {
   static var flutterLocalNotificationsPlugin;
   static Map<int, int> notificationIdMap = {};
 
-  Map<int, List<Message>> unreadPrivateMessages = {};
-  Map<int, List<Message>> unreadGroupMessages = {};
 
   // QQ号增加只12位，与QQ群分开
   static int getNotificationId(MsgBean msg) {

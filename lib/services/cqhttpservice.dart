@@ -10,33 +10,42 @@ import 'package:web_socket_channel/io.dart';
 
 /// WebSocket使用说明：https://zhuanlan.zhihu.com/p/133849780
 class CqhttpService {
+  final debugMode = true;
   AppRuntime rt;
   UserSettings st;
   UserAccount ac;
 
   IOWebSocketChannel channel;
+  List<String> wsReceives = [];
 
   CqhttpService({this.rt, this.st, this.ac});
 
   Future<bool> connect(String host, String token) async {
+    ac.allMessages.clear();
+    wsReceives.clear();
+
     print('ws连接: ' + host + ' ' + token);
     if (!host.contains('://')) {
       host = 'ws://' + host;
     }
-
     Map<String, dynamic> headers = new Map();
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer ' + token;
     }
 
     // 旧的 channel 还在时依旧连接的话，会导致重复接收到消息
-    // TODO: 目前不知道怎么删除对象，也没找到关闭的 API
-    channel = null;
+    if (channel != null && channel.innerWebSocket != null) {
+      channel.innerWebSocket.close();
+    }
     channel = IOWebSocketChannel.connect(host, headers: headers);
 
     // 监听消息
     channel.stream.listen((message) {
-      // print('ws收到消息:' + message.toString());
+      if (debugMode) {
+        print('ws收到消息:' + message.toString());
+        wsReceives.insert(0, message.toString());
+      }
+
       processReceivedData(json.decode(message.toString()));
     });
 
