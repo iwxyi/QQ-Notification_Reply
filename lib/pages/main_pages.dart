@@ -103,7 +103,6 @@ class _MainPagesState extends State<MainPages> {
 
   /// 所有msg都会到这里来
   void messageReceived(MsgBean msg) async {
-    G.ac.allMessages.add(msg); // 保存所有 msg 记录
     int id = UserAccount.getNotificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
     /*Fluttertoast.showToast(
       msg: msg.username() + " : " + msg.message,
@@ -123,7 +122,7 @@ class _MainPagesState extends State<MainPages> {
         return;
       }
     }
-    
+
     // 进入所有消息日志
     G.ac.allMessages.add(msg);
 
@@ -135,6 +134,15 @@ class _MainPagesState extends State<MainPages> {
       return;
     }
 
+    /* if (msg.isPrivate()) {
+      Fluttertoast.showToast(
+        msg: msg.username() + " : " + msg.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+      );
+    } */
+
     // 显示通知
     String personUri =
         'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
@@ -145,8 +153,6 @@ class _MainPagesState extends State<MainPages> {
     AndroidNotificationDetails androidPlatformChannelSpecifics;
 
     if (msg.isPrivate()) {
-      /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
-
       if (!G.ac.unreadPrivateMessages.containsKey(msg.friendId)) {
         G.ac.unreadPrivateMessages[msg.friendId] = [];
       }

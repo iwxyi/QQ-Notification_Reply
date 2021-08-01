@@ -41,12 +41,13 @@ class CqhttpService {
 
     // 监听消息
     channel.stream.listen((message) {
+      String s = message.toString();
       if (debugMode) {
-        print('ws收到消息:' + message.toString());
-        wsReceives.insert(0, message.toString());
+        print('ws收到消息:' + s);
+        wsReceives.insert(0, s);
       }
 
-      processReceivedData(json.decode(message.toString()));
+      processReceivedData(json.decode(s));
     });
 
     st.setConfig('account/host', host);
