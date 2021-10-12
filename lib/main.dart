@@ -3,14 +3,10 @@ import 'package:qqnotificationreply/pages/main_pages.dart';
 
 import 'global/g.dart';
 
-//void main() {
-//  runApp(MyApp());
-//}
-
 void main() {
-  /*G.init().then((e) {
-    runApp(MyApp());
-  });*/
+  print("Init global variables");
+  G.init();
+  print("Application startup");
   runApp(MyApp());
 }
 
@@ -23,17 +19,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: FutureBuilder(
-        future: G.init(),
-        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-          if (snapshot.data == null) {
-            return Center(
-              child: Text("加载中"),
-            );
-          }
-          return  MainPages();
-        },
-      ),
+      home:  MainPages()
     );
   }
 }

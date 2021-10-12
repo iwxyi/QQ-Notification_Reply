@@ -17,13 +17,12 @@ class G {
   static bool get isRelease =>
       bool.fromEnvironment("dart.vm.product"); // 是否是release版
 
-  static Future<String> init() async {
+  static String init() {
     if (rt != null) return 'OK';
 
     rt = new AppRuntime(
-        dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
-        cachePath: (await getTemporaryDirectory()).path + '/',
-        storagePath: (await getExternalStorageDirectory()).path + '/');
+        dataPath: 'data/',
+        cachePath: 'data/cache/');
     st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
     ac = new UserAccount();
     cs = new CqhttpService(rt: rt, st: st, ac: ac);
@@ -32,6 +31,7 @@ class G {
     if (st.host != null && st.host.isNotEmpty) {
       cs.connect(st.host, st.token);
     }
+    print("init successed");
     return 'init successed';
   }
 }
