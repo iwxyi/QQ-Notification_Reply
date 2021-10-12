@@ -103,14 +103,8 @@ class _MainPagesState extends State<MainPages> {
 
   /// 所有msg都会到这里来
   void messageReceived(MsgBean msg) async {
-    G.ac.allMessages.add(msg); // 保存所有 msg 记录
+    G.ac.allMessages.add(msg); // 保存所有 msg 记录（此处的是所有消息）
     int id = UserAccount.getNotificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
-    /*Fluttertoast.showToast(
-      msg: msg.username() + " : " + msg.message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 1,
-    );*/
 
     // 刷新收到消息的时间（用于排序）
     int time = DateTime.now().millisecondsSinceEpoch;
@@ -123,9 +117,6 @@ class _MainPagesState extends State<MainPages> {
         return;
       }
     }
-    
-    // 进入所有消息日志
-    G.ac.allMessages.add(msg);
 
     // 判断自己的通知
     if (msg.senderId == G.ac.qqId) {
@@ -144,9 +135,8 @@ class _MainPagesState extends State<MainPages> {
     Message message = new Message(displayMessage, DateTime.now(), person);
     AndroidNotificationDetails androidPlatformChannelSpecifics;
 
-    if (msg.isPrivate()) {
+    if (msg.isPrivate()) { // 私聊消息
       /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
-
       if (!G.ac.unreadPrivateMessages.containsKey(msg.friendId)) {
         G.ac.unreadPrivateMessages[msg.friendId] = [];
       }
@@ -163,7 +153,7 @@ class _MainPagesState extends State<MainPages> {
           groupKey: 'chat',
           priority: Priority.high,
           importance: Importance.high);
-    } else if (msg.isGroup()) {
+    } else if (msg.isGroup()) { // 群聊消息
       if (!G.ac.unreadGroupMessages.containsKey(msg.groupId)) {
         G.ac.unreadGroupMessages[msg.groupId] = [];
       }
@@ -220,8 +210,7 @@ class _MainPagesState extends State<MainPages> {
   }
 
   /// 通知点击回调
-  // ignore: missing_return
-  Future onSelectNotification(String payload) async {
+  void onSelectNotification(String payload) async {
     print('通知.payload: $payload');
     MsgBean msg = G.ac.getMsgById(int.parse(payload));
 
@@ -256,6 +245,12 @@ class _MainPagesState extends State<MainPages> {
         await launch(url); // 启动QQ
       } catch (e) {
         print('打开URL失败：' + e.toString());
+        Fluttertoast.showToast(
+          msg: "打开URL失败：" + url,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+        );
       }
     } else {
       // 自己封装的一个 Toast

@@ -34,7 +34,7 @@ class UserAccount {
     int id = msg.isGroup()
         ? msg.groupId
         : msg.isPrivate()
-            ? msg.friendId + 1e2
+            ? msg.friendId + 1e12
             : 0;
     if (!notificationIdMap.containsKey(id)) {
       notificationIdMap[id] = notificationIdMap.length + 1;
