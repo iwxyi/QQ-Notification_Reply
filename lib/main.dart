@@ -3,10 +3,6 @@ import 'package:qqnotificationreply/pages/main_pages.dart';
 
 import 'global/g.dart';
 
-//void main() {
-//  runApp(MyApp());
-//}
-
 void main() {
   /*G.init().then((e) {
     runApp(MyApp());
@@ -31,7 +27,7 @@ class MyApp extends StatelessWidget {
               child: Text("加载中"),
             );
           }
-          return  MainPages();
+          return MainPages();
         },
       ),
     );
