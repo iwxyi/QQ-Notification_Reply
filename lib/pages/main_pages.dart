@@ -30,7 +30,7 @@ class MainPages extends StatefulWidget {
     FileUtil.createDir(G.rt.cachePath + "user_header");
     FileUtil.createDir(G.rt.cachePath + "group_header");
   }
-  
+
   @override
   _MainPagesState createState() => _MainPagesState();
 }
@@ -108,7 +108,7 @@ class _MainPagesState extends State<MainPages> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QQ通知'),
+        title: const Text('CatlikeQQ'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.add_alert),
@@ -170,28 +170,14 @@ class _MainPagesState extends State<MainPages> {
   /// 所有msg raw都会到这里来
   /// 进行数据的处理操作，例如准备头像的显示
   void messageReceived(MsgBean msg) {
-    G.ac.allMessages.add(msg); // 保存所有 msg 记录（此处的是所有消息）
-
-    // 刷新收到消息的时间（用于排序）
-    int time = DateTime.now().millisecondsSinceEpoch;
-    if (msg.isPrivate()) {
-      G.ac.privateMessageTimes[msg.friendId] = time;
-    } else if (msg.isGroup()) {
-      G.ac.groupMessageTimes[msg.groupId] = time;
-      // 判断群组是否通知
-      if (!G.st.enabledGroups.contains(msg.groupId)) {
-        return;
-      }
-    }
-
     // 准备显示的资源
     if (G.st.enableHeader) {
-      if (!FileUtil.isFileExists(G.rt.userHeader(msg.senderId))) {
+      /* if (!FileUtil.isFileExists(G.rt.userHeader(msg.senderId))) {
         CqhttpService.downloadUserHeader(msg.senderId);
       }
       if (msg.isGroup()) {
         CqhttpService.downloadGroupHeader(msg.groupId);
-      }
+      } */
     }
     G.ac.eventBus.fire(EventFn(Event.messageReady, msg));
 
@@ -221,7 +207,7 @@ class _MainPagesState extends State<MainPages> {
     // 显示通知
     String personUri =
         'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
-    String displayMessage = msg.displayMessage();
+    String displayMessage = G.cs.getMessageDisplay(msg);
     Person person = new Person(
         bot: false, important: false, name: msg.username(), uri: personUri);
     Message message = new Message(displayMessage, DateTime.now(), person);

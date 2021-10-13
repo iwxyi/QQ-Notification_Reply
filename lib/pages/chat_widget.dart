@@ -30,17 +30,28 @@ class _ChatWidgetState extends State<ChatWidget> {
     });
 
     // 获取历史消息
-    int index = G.ac.allMessages.length;
+    MsgBean msg = widget.chatObj;
+    if (msg.isPrivate()) {
+      _messages = G.ac.allPrivateMessages[msg.targetId];
+    } else if (msg.isGroup()) {
+      _messages = G.ac.allGroupMessages[msg.groupId];
+    }
+
+    if (_messages == null) {
+      _messages = [];
+    }
+
+    /* int index = G.ac.allMessages.length;
     int count = 0, maxCount = 20; // 最多加载几条消息
     for (int i = index - 1; i >= 0; i--) {
-      if (G.ac.allMessages[i].isObj(widget.chatObj)) {
+      if (G.ac.allMessages[i].isObj(msg)) {
         _messages.insert(0, G.ac.allMessages[i]);
         count++;
         if (count > maxCount) {
           break;
         }
       }
-    }
+    } */
 
     super.initState();
   }
@@ -154,7 +165,7 @@ class EntryItem extends StatelessWidget {
                   new Container(
                     margin: const EdgeInsets.only(top: 5.0),
                     child: new Text(
-                      message.displayMessage(),
+                      G.cs.getMessageDisplay(message),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: Colors.black, fontSize: 16),
@@ -203,7 +214,7 @@ class EntryItem extends StatelessWidget {
                   new Container(
                     margin: const EdgeInsets.only(top: 5.0),
                     child: new Text(
-                      message.displayMessage(), // 消息
+                      G.cs.getMessageDisplay(message), // 消息
                       style: TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   )

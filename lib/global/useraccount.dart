@@ -15,11 +15,14 @@ class UserAccount {
 
   // 消息记录
   List<MsgBean> allMessages = [];
+  Map<int, List<MsgBean>> allPrivateMessages = {};
+  Map<int, List<MsgBean>> allGroupMessages = {};
+
   Map<int, int> privateMessageTimes = {}; // 私聊消息时间
   Map<int, int> groupMessageTimes = {}; // 群聊消息时间
+
   Map<int, List<Message>> unreadPrivateMessages = {}; // 未读私聊消息
   Map<int, List<Message>> unreadGroupMessages = {}; // 未读群聊消息
-  
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线

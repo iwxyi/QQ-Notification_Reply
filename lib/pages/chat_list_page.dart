@@ -34,6 +34,7 @@ class _ChatListPageState extends State<ChatListPage>
   }
 
   @override
+  // ignore: must_call_super
   Widget build(BuildContext context) {
     DateTime currentDay = DateTime.now();
     int currentTimestamp = currentDay.millisecondsSinceEpoch;
@@ -55,7 +56,7 @@ class _ChatListPageState extends State<ChatListPage>
           String headerUrl;
           if (msg.isGroup()) {
             title = msg.groupName;
-            subTitle = msg.nickname + ": " + msg.displayMessage();
+            subTitle = msg.nickname + ": " + G.cs.getMessageDisplay(msg);
             headerUrl = "http://p.qlogo.cn/gh/" +
                 msg.groupId.toString() +
                 "/" +
@@ -63,7 +64,7 @@ class _ChatListPageState extends State<ChatListPage>
                 "/100";
           } else {
             title = msg.username();
-            subTitle = msg.displayMessage();
+            subTitle = G.cs.getMessageDisplay(msg);
             headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=" +
                 msg.senderId.toString() +
                 "&s=100&t=";
@@ -96,7 +97,7 @@ class _ChatListPageState extends State<ChatListPage>
               ),
             ),
             title: Text(title),
-            subtitle: Text(subTitle),
+            subtitle: Text(subTitle, maxLines: 3),
             trailing: Text(timeStr),
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (context) {
@@ -112,19 +113,19 @@ class _ChatListPageState extends State<ChatListPage>
 
   /// 收到消息
   void messageReceived(MsgBean msg) {
+    for (int i = 0; i < timedMsgs.length; i++) {
+      if (timedMsgs[i].isObj(msg)) {
+        timedMsgs.removeAt(i);
+        break;
+      }
+    }
+    timedMsgs.insert(0, msg);
+    
     // 判断是否已经释放
     if (!mounted) {
       // 不判断的话，会报错：setState() called after dispose():
       return;
     }
-    setState(() {
-      for (int i = 0; i < timedMsgs.length; i++) {
-        if (timedMsgs[i].isObj(msg)) {
-          timedMsgs.removeAt(i);
-          break;
-        }
-      }
-      timedMsgs.insert(0, msg);
-    });
+    setState(() {});
   }
 }

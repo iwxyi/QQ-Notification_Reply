@@ -186,7 +186,7 @@ class CqhttpService {
 
     print('收到私聊消息：' + msg.username() + " : " + message);
 
-    showNotification(msg);
+    notifyOutter(msg);
   }
 
   void parseGroupMessage(final obj) {
@@ -223,12 +223,13 @@ class CqhttpService {
         messageId: messageId,
         message: message,
         rawMessage: rawMessage,
+        targetId: groupId,
         remark: ac.friendNames.containsKey(senderId)
             ? ac.friendNames[senderId]
             : null,
         role: role,
         timestamp: DateTime.now().millisecondsSinceEpoch);
-    showNotification(msg);
+    notifyOutter(msg);
   }
 
   void parseGroupUpload(final obj) {}
@@ -259,16 +260,57 @@ class CqhttpService {
   /// 有多个接收槽：
   /// - main_pages 通知
   /// - chats_page 消息列表
-  /// - account_widget 消息数量
-  void showNotification(MsgBean msg) {
+  /// - account_widget 消息数量（包括所有）
+  void notifyOutter(MsgBean msg) {
+    // 保存所有 msg 记录
+    ac.allMessages.add(msg);
+    if (msg.isPrivate()) {
+      if (!ac.allPrivateMessages.containsKey(msg.targetId)) {
+        ac.allPrivateMessages[msg.targetId] = [];
+      }
+      ac.allPrivateMessages[msg.targetId].add(msg);
+    } else if (msg.isGroup()) {
+      if (!ac.allGroupMessages.containsKey(msg.groupId)) {
+        ac.allGroupMessages[msg.groupId] = [];
+      }
+      ac.allGroupMessages[msg.groupId].add(msg);
+    }
+
+    // 刷新收到消息的时间（用于简单选择时的排序）
+    int time = DateTime.now().millisecondsSinceEpoch;
+    if (msg.isPrivate()) {
+      ac.privateMessageTimes[msg.friendId] = time;
+    } else if (msg.isGroup()) {
+      ac.groupMessageTimes[msg.groupId] = time;
+      // 判断群组是否通知
+      if (!st.enabledGroups.contains(msg.groupId)) {
+        return;
+      }
+    }
+
+    // 通知界面
     ac.eventBus.fire(EventFn(Event.messageRaw, msg));
   }
 
-  static void downloadUserHeader(int id) async {
+  String getMessageDisplay(MsgBean msg) {
+    String text = msg.message;
 
-  }
+    text = text.replaceAll(RegExp(r"\[CQ:face,id=(\d+)\]"), '[表情]');
+    text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
+    text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
+    text = text.replaceAll(RegExp(r"\[CQ:reply,.+?\]"), '[回复]');
+    text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
+    text = text.replaceAllMapped(
+        RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) => '@${match[1]}');
+    text = text.replaceAllMapped(
+        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*\]'),
+        (match) => '${match[1]}');
+    text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[JSON]');
+    text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');
+    text = text.replaceAllMapped(
+        RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '@${match[1]}');
+    text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');
 
-  static void downloadGroupHeader(int id) async {
-
+    return text;
   }
 }
