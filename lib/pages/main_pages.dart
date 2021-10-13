@@ -16,46 +16,44 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/gallerybar.dart';
 
-const Color _mariner = const Color(0xFF3B5F8F);
-const Color _mediumPurple = const Color(0xFF8266D4);
-const Color _tomato = const Color(0xFFF95B57);
-const Color _mySin = const Color(0xFFF3A646);
-
-List<CardSection> allSections = <CardSection>[
-  CardSection(
-    title: '账号信息',
-    leftColor: _mediumPurple,
-    rightColor: _mariner,
-    contentWidget: AccountWidget(),
-  ),
-  CardSection(
-      title: '通知设置',
-      leftColor: _mariner,
-      rightColor: _mySin,
-      contentWidget: NotificationWidget()),
-  CardSection(
-      title: '数据记录',
-      leftColor: _mySin,
-      rightColor: _tomato,
-      contentWidget: Center(child: Text('Page Three'))),
-  CardSection(
-      title: '辅助功能',
-      leftColor: _tomato,
-      rightColor: Colors.blue,
-      contentWidget: Center(child: Text('Page Four'))),
-  CardSection(
-      title: '关于程序',
-      leftColor: Colors.blue,
-      rightColor: _mediumPurple,
-      contentWidget: Center(child: Text('Page Five'))),
-];
+const Color _appBarColor1 = const Color(0xFF3B5F8F);
+const Color _appBarColor2 = const Color(0xFF8266D4);
+const Color _appBarColor3 = const Color(0xFFF95B57);
+const Color _appBarColor4 = const Color(0xFFF3A646);
 
 class MainPages extends StatefulWidget {
   @override
   _MainPagesState createState() => _MainPagesState();
 }
 
+enum AppBarMenuItems { Settings }
+
 class _MainPagesState extends State<MainPages> {
+  int _selectedIndex = 0; // 导航栏当前项
+
+  List<CardSection> allPages = <CardSection>[
+    CardSection(
+        title: '会话',
+        leftColor: _appBarColor2,
+        rightColor: _appBarColor1,
+        contentWidget: new Center(child: Text('会话'))),
+    CardSection(
+        title: '联系人',
+        leftColor: _appBarColor2,
+        rightColor: _appBarColor1,
+        contentWidget: new Center(child: Text('联系人'))),
+    CardSection(
+        title: '设置',
+        leftColor: _appBarColor2,
+        rightColor: _appBarColor1,
+        contentWidget: new AccountWidget()),
+    CardSection(
+        title: '通知',
+        leftColor: _appBarColor1,
+        rightColor: _appBarColor4,
+        contentWidget: new NotificationWidget()),
+  ];
+
   var eventBusFn;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -70,6 +68,8 @@ class _MainPagesState extends State<MainPages> {
       }
     });
 
+    // 判断是否需要通知
+    // Windows不支持通知
     if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
       // 获取通知权限
       requireNotificationPermission();
@@ -97,17 +97,67 @@ class _MainPagesState extends State<MainPages> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('QQ通知'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.add_alert),
+            tooltip: 'Show Snackbar',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('This is a snackbar')));
+            },
+          ),
+          PopupMenuButton<AppBarMenuItems>(
+            onSelected: (AppBarMenuItems result) { setState(() {  }); },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<AppBarMenuItems>>[
+              const PopupMenuItem<AppBarMenuItems>(
+                value: AppBarMenuItems.Settings,
+                child: Text('Working a lot harder'),
+              ),
+            ],
+          )
+        ],
+      ),
+      body: allPages[_selectedIndex].contentWidget,
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: '会话',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.contacts),
+            label: '联系人',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: '设置',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
+    );
+    /* // 自定义滑块视图
     return AppRetainWidget(
       child: AnimateTabNavigation(
         sectionList: allSections,
       ),
-    );
+    ); */
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   /// 所有msg都会到这里来
-  void messageReceived(MsgBean msg) async {
+  void messageReceived(MsgBean msg) {
     G.ac.allMessages.add(msg); // 保存所有 msg 记录（此处的是所有消息）
-    int id = UserAccount.getNotificationId(msg); // 该聊天对象的通知ID（每次启动都不一样）
 
     // 刷新收到消息的时间（用于排序）
     int time = DateTime.now().millisecondsSinceEpoch;
@@ -121,10 +171,20 @@ class _MainPagesState extends State<MainPages> {
       }
     }
 
+    // 显示通知（如果平台支持）
+    _showNotification(msg);
+  }
+
+  /// 显示通知栏通知
+  /// 仅支持 Android、IOS、MacOS
+  void _showNotification(MsgBean msg) async {
     // 当前平台不支持该通知
     if (flutterLocalNotificationsPlugin == null) {
       return;
     }
+
+    // 该聊天对象的通知ID（每次启动都不一样）
+    int id = UserAccount.getNotificationId(msg);
 
     // 判断自己的通知
     if (msg.senderId == G.ac.qqId) {

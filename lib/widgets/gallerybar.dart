@@ -657,12 +657,13 @@ class _AnimateTabNavigationState extends State<AnimateTabNavigation> {
 
 class CardSection {
   CardSection(
-      {this.title, this.leftColor, this.rightColor, this.contentWidget});
+      {this.title, this.leftColor, this.rightColor, this.contentWidget, this.icon});
 
   final String title;
   final Color leftColor;
   final Color rightColor;
   final Widget contentWidget;
+  Icons icon;
 
   @override
   bool operator ==(Object other) {
