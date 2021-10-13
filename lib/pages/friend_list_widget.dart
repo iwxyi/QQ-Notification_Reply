@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
 
-class GroupListWidget extends StatefulWidget {
+class FriendListWidget extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => new _GroupListWidgetState();
+  State<StatefulWidget> createState() => new _FriendListWidgetState();
 }
 
-class GroupInfo {
+class FriendInfo {
   int id;
   String name;
 
-  GroupInfo(this.id, this.name);
+  FriendInfo(this.id, this.name);
 }
 
-class _GroupListWidgetState extends State<GroupListWidget>
+class _FriendListWidgetState extends State<FriendListWidget>
     with AutomaticKeepAliveClientMixin {
-  List<GroupInfo> groups = [];
+  List<FriendInfo> friends = [];
   String filterKey = '';
-  List<GroupInfo> showItemList = [];
+  List<FriendInfo> showItemList = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -25,15 +25,15 @@ class _GroupListWidgetState extends State<GroupListWidget>
   @override
   void initState() {
     // 加载列表
-    _loadGroupList();
+    _loadFriendList();
     super.initState();
   }
 
-  void _loadGroupList() {
-    groups.clear();
-    Map<int, String> groupNames = G.ac.groupNames;
-    groupNames.forEach((id, name) => {groups.add(new GroupInfo(id, name))});
-    groups.sort((GroupInfo a, GroupInfo b) => a.name.compareTo(b.name));
+  void _loadFriendList() {
+    friends.clear();
+    Map<int, String> friendNames = G.ac.friendNames;
+    friendNames.forEach((id, name) => {friends.add(new FriendInfo(id, name))});
+    friends.sort((FriendInfo a, FriendInfo b) => a.name.compareTo(b.name));
   }
 
   @override
@@ -41,9 +41,9 @@ class _GroupListWidgetState extends State<GroupListWidget>
     return new Center(
         child: ListView.builder(
       shrinkWrap: true,
-      itemCount: groups.length,
+      itemCount: friends.length,
       itemBuilder: (context, index) {
-        GroupInfo info = groups[index];
+        FriendInfo info = friends[index];
         return ListTile(
           title: Text('${info.name}'),
           onTap: () {

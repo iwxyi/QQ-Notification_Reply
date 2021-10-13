@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
-import 'package:qqnotificationreply/pages/group_list_widget.dart';
+import 'package:qqnotificationreply/pages/group_select_widget.dart';
 
 class NotificationWidget extends StatefulWidget {
   @override
@@ -49,7 +49,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
                   onTap: () {
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
-                      return GroupListWidget();
+                      return GroupSelectWidget();
                     })).then((value) {
                       // 可能登录了，刷新一下界面
                       setState(() {});

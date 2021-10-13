@@ -1,7 +1,5 @@
 import 'dart:io';
-import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -11,10 +9,12 @@ import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/account_widget.dart';
 import 'package:qqnotificationreply/pages/notification_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+// ignore: unused_import
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/gallerybar.dart';
+import 'contacts_page.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
 const Color _appBarColor2 = const Color(0xFF8266D4);
@@ -41,7 +41,7 @@ class _MainPagesState extends State<MainPages> {
         title: '联系人',
         leftColor: _appBarColor2,
         rightColor: _appBarColor1,
-        contentWidget: new Center(child: Text('联系人'))),
+        contentWidget: new ContactsPage()),
     CardSection(
         title: '设置',
         leftColor: _appBarColor2,
@@ -110,8 +110,11 @@ class _MainPagesState extends State<MainPages> {
             },
           ),
           PopupMenuButton<AppBarMenuItems>(
-            onSelected: (AppBarMenuItems result) { setState(() {  }); },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<AppBarMenuItems>>[
+            onSelected: (AppBarMenuItems result) {
+              setState(() {});
+            },
+            itemBuilder: (BuildContext context) =>
+                <PopupMenuEntry<AppBarMenuItems>>[
               const PopupMenuItem<AppBarMenuItems>(
                 value: AppBarMenuItems.Settings,
                 child: Text('Working a lot harder'),
@@ -270,7 +273,7 @@ class _MainPagesState extends State<MainPages> {
     text = text.replaceAllMapped(
         RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*\]'),
         (match) => '${match[1]}');
-    text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[卡片]');
+    text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[JSON]');
     text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');
     text = text.replaceAllMapped(
         RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '@${match[1]}');
