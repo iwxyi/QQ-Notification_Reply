@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/services/msgbean.dart';
+
+import 'chat_widget.dart';
 
 class GroupListWidget extends StatefulWidget {
   @override
@@ -48,7 +51,13 @@ class _GroupListWidgetState extends State<GroupListWidget>
         return ListTile(
           title: Text('${info.name}'),
           onTap: () {
-            setState(() {});
+            setState(() {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                return ChatWidget(MsgBean(groupId: info.id, groupName: info.name));
+              })).then((value) {
+                setState(() {});
+              });
+            });
           },
         );
       },

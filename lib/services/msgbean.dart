@@ -58,7 +58,7 @@ class MsgBean {
   bool isFile() => fileId != null && fileId.isNotEmpty;
 
   bool isObj(MsgBean msg) {
-    if (groupId != 0) {
+    if (groupId != null && groupId != 0) {
       return this.groupId == msg.groupId;
     } else {
       return this.targetId == msg.targetId;

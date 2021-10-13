@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/services/msgbean.dart';
+
+import 'chat_widget.dart';
 
 class FriendListWidget extends StatefulWidget {
   @override
@@ -47,7 +50,14 @@ class _FriendListWidgetState extends State<FriendListWidget>
         return ListTile(
           title: Text('${info.name}'),
           onTap: () {
-            setState(() {});
+            setState(() {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                return ChatWidget(
+                    MsgBean(targetId: info.id, nickname: info.name));
+              })).then((value) {
+                setState(() {});
+              });
+            });
           },
         );
       },
