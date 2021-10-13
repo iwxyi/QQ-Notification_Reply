@@ -23,7 +23,7 @@ class G {
     rt = new AppRuntime(
         dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
         cachePath: (await getTemporaryDirectory()).path + '/',
-        storagePath: (await getExternalStorageDirectory()).path + '/');
+        /* storagePath: (await getExternalStorageDirectory()).path + '/' */);
     st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
     ac = new UserAccount();
     cs = new CqhttpService(rt: rt, st: st, ac: ac);

@@ -70,26 +70,29 @@ class _MainPagesState extends State<MainPages> {
       }
     });
 
-    requireNotificationPermission();
+    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+      // 获取通知权限
+      requireNotificationPermission();
 
-    // 初始化通知
-    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/appicon');
-    final IOSInitializationSettings initializationSettingsIOS =
-        IOSInitializationSettings(
-            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-    final MacOSInitializationSettings initializationSettingsMacOS =
-        MacOSInitializationSettings();
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: initializationSettingsAndroid,
-            iOS: initializationSettingsIOS,
-            macOS: initializationSettingsMacOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
-    UserAccount.flutterLocalNotificationsPlugin =
-        flutterLocalNotificationsPlugin;
+      // 初始化通知
+      flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/appicon');
+      final IOSInitializationSettings initializationSettingsIOS =
+          IOSInitializationSettings(
+              onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+      final MacOSInitializationSettings initializationSettingsMacOS =
+          MacOSInitializationSettings();
+      final InitializationSettings initializationSettings =
+          InitializationSettings(
+              android: initializationSettingsAndroid,
+              iOS: initializationSettingsIOS,
+              macOS: initializationSettingsMacOS);
+      flutterLocalNotificationsPlugin.initialize(initializationSettings,
+          onSelectNotification: onSelectNotification);
+      UserAccount.flutterLocalNotificationsPlugin =
+          flutterLocalNotificationsPlugin;
+    }
   }
 
   @override
@@ -118,6 +121,11 @@ class _MainPagesState extends State<MainPages> {
       }
     }
 
+    // 当前平台不支持该通知
+    if (flutterLocalNotificationsPlugin == null) {
+      return;
+    }
+
     // 判断自己的通知
     if (msg.senderId == G.ac.qqId) {
       // 自己发的，一定不需要再通知了
@@ -135,7 +143,8 @@ class _MainPagesState extends State<MainPages> {
     Message message = new Message(displayMessage, DateTime.now(), person);
     AndroidNotificationDetails androidPlatformChannelSpecifics;
 
-    if (msg.isPrivate()) { // 私聊消息
+    if (msg.isPrivate()) {
+      // 私聊消息
       /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
       if (!G.ac.unreadPrivateMessages.containsKey(msg.friendId)) {
         G.ac.unreadPrivateMessages[msg.friendId] = [];
@@ -153,7 +162,8 @@ class _MainPagesState extends State<MainPages> {
           groupKey: 'chat',
           priority: Priority.high,
           importance: Importance.high);
-    } else if (msg.isGroup()) { // 群聊消息
+    } else if (msg.isGroup()) {
+      // 群聊消息
       if (!G.ac.unreadGroupMessages.containsKey(msg.groupId)) {
         G.ac.unreadGroupMessages[msg.groupId] = [];
       }
