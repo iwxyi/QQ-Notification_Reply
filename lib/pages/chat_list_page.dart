@@ -5,14 +5,14 @@ import 'package:qqnotificationreply/services/msgbean.dart';
 
 List<MsgBean> timedMsgs = []; // 需要显示的列表
 
-class ChatsPage extends StatefulWidget {
+class ChatListPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return new _ChatsPageState();
+    return new _ChatListPageState();
   }
 }
 
-class _ChatsPageState extends State<ChatsPage>
+class _ChatListPageState extends State<ChatListPage>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
@@ -33,8 +33,18 @@ class _ChatsPageState extends State<ChatsPage>
 
   @override
   Widget build(BuildContext context) {
+    DateTime currentDay = DateTime.now();
+    int currentTimestamp = currentDay.millisecondsSinceEpoch;
+
+    // 填充空白
+    if (timedMsgs.length == 0) {
+      return new Center(
+        child: new Text('没有会话'),
+      );
+    }
+
     return ListView.builder(
-        shrinkWrap: true,
+        shrinkWrap: false,
         itemCount: timedMsgs.length,
         itemBuilder: (context, index) {
           MsgBean msg = timedMsgs[index];
@@ -49,7 +59,6 @@ class _ChatsPageState extends State<ChatsPage>
                 "/" +
                 msg.groupId.toString() +
                 "/100";
-            ;
           } else {
             title = msg.nickname;
             subTitle = msg.displayMessage();
@@ -57,11 +66,37 @@ class _ChatsPageState extends State<ChatsPage>
                 msg.senderId.toString() +
                 "&s=100&t=";
           }
-          print("header: " + headerUrl);
+
+          // 时间
+          String timeStr;
+          DateTime dt = DateTime.fromMillisecondsSinceEpoch(msg.timestamp);
+          int delta = currentTimestamp - msg.timestamp;
+          print('delta: ' + delta.toString());
+          if (delta > 3600 * 24 * 1000) {
+            // 超过一天
+            timeStr = (delta / 3600 / 24 / 1000).toString();
+          } else if (delta < 15000) {
+            timeStr = '刚刚';
+          } else if (dt.day == currentDay.day) {
+            timeStr = dt.hour.toString() + ":" + dt.minute.toString();
+          } else {
+            timeStr = "昨天 " + dt.hour.toString() + ":" + dt.minute.toString();
+          }
+
           return ListTile(
-            leading: Image.network(headerUrl),
+            leading: new ClipOval(
+              // 圆形头像
+              child: new FadeInImage.assetNetwork(
+                placeholder: "assets/icons/default_header.png", //预览图
+                fit: BoxFit.contain,
+                image: headerUrl,
+                width: 40.0,
+                height: 40.0,
+              ),
+            ),
             title: Text(title),
             subtitle: Text(subTitle),
+            trailing: Text(timeStr),
             onTap: () {},
           );
         });

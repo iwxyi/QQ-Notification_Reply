@@ -16,7 +16,7 @@ import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/gallerybar.dart';
-import 'chats_page.dart';
+import 'chat_list_page.dart';
 import 'contacts_page.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
@@ -45,7 +45,7 @@ class _MainPagesState extends State<MainPages> {
         title: '会话',
         leftColor: _appBarColor2,
         rightColor: _appBarColor1,
-        contentWidget: new ChatsPage()),
+        contentWidget: new ChatListPage()),
     CardSection(
         title: '联系人',
         leftColor: _appBarColor2,

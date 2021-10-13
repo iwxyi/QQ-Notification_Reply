@@ -181,7 +181,8 @@ class CqhttpService {
         remark: ac.friendNames.containsKey(friendId)
             ? ac.friendNames[friendId]
             : null,
-        friendId: friendId);
+        friendId: friendId,
+        timestamp: DateTime.now().millisecondsSinceEpoch);
 
     print('收到私聊消息：' + msg.username() + " : " + message);
 
@@ -225,7 +226,8 @@ class CqhttpService {
         remark: ac.friendNames.containsKey(senderId)
             ? ac.friendNames[senderId]
             : null,
-        role: role);
+        role: role,
+        timestamp: DateTime.now().millisecondsSinceEpoch);
     showNotification(msg);
   }
 
