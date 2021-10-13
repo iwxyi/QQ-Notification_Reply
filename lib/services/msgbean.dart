@@ -51,7 +51,7 @@ class MsgBean {
 
   bool isPrivate() => groupId == null || groupId == 0;
 
-  bool isGroup() => groupId != 0;
+  bool isGroup() => groupId != null && groupId != 0;
 
   bool isFile() => fileId != null && fileId.isNotEmpty;
 

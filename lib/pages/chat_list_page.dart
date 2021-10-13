@@ -60,7 +60,7 @@ class _ChatListPageState extends State<ChatListPage>
                 msg.groupId.toString() +
                 "/100";
           } else {
-            title = msg.nickname;
+            title = msg.username();
             subTitle = msg.displayMessage();
             headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=" +
                 msg.senderId.toString() +
@@ -71,7 +71,6 @@ class _ChatListPageState extends State<ChatListPage>
           String timeStr;
           DateTime dt = DateTime.fromMillisecondsSinceEpoch(msg.timestamp);
           int delta = currentTimestamp - msg.timestamp;
-          print('delta: ' + delta.toString());
           if (delta > 3600 * 24 * 1000) {
             // 超过一天
             timeStr = (delta / 3600 / 24 / 1000).toString();
