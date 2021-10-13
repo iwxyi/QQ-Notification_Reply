@@ -19,6 +19,7 @@ class UserAccount {
   Map<int, int> groupMessageTimes = {}; // 群聊消息时间
   Map<int, List<Message>> unreadPrivateMessages = {}; // 未读私聊消息
   Map<int, List<Message>> unreadGroupMessages = {}; // 未读群聊消息
+  
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线

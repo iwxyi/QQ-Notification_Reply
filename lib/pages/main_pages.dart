@@ -8,12 +8,15 @@ import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/account_widget.dart';
 import 'package:qqnotificationreply/pages/notification_widget.dart';
+import 'package:qqnotificationreply/services/cqhttpservice.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/utils/file_util.dart';
 // ignore: unused_import
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/gallerybar.dart';
+import 'chats_page.dart';
 import 'contacts_page.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
@@ -22,6 +25,12 @@ const Color _appBarColor3 = const Color(0xFFF95B57);
 const Color _appBarColor4 = const Color(0xFFF3A646);
 
 class MainPages extends StatefulWidget {
+  MainPages() {
+    FileUtil.createDir(G.rt.cachePath);
+    FileUtil.createDir(G.rt.cachePath + "user_header");
+    FileUtil.createDir(G.rt.cachePath + "group_header");
+  }
+  
   @override
   _MainPagesState createState() => _MainPagesState();
 }
@@ -36,7 +45,7 @@ class _MainPagesState extends State<MainPages> {
         title: '会话',
         leftColor: _appBarColor2,
         rightColor: _appBarColor1,
-        contentWidget: new Center(child: Text('会话'))),
+        contentWidget: new ChatsPage()),
     CardSection(
         title: '联系人',
         leftColor: _appBarColor2,
@@ -63,7 +72,7 @@ class _MainPagesState extends State<MainPages> {
 
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
-      if (event.event == Event.message) {
+      if (event.event == Event.messageRaw) {
         messageReceived(event.data);
       }
     });
@@ -158,7 +167,8 @@ class _MainPagesState extends State<MainPages> {
     });
   }
 
-  /// 所有msg都会到这里来
+  /// 所有msg raw都会到这里来
+  /// 进行数据的处理操作，例如准备头像的显示
   void messageReceived(MsgBean msg) {
     G.ac.allMessages.add(msg); // 保存所有 msg 记录（此处的是所有消息）
 
@@ -173,6 +183,17 @@ class _MainPagesState extends State<MainPages> {
         return;
       }
     }
+
+    // 准备显示的资源
+    if (G.st.enableHeader) {
+      if (!FileUtil.isFileExists(G.rt.userHeader(msg.senderId))) {
+        CqhttpService.downloadUserHeader(msg.senderId);
+      }
+      if (msg.isGroup()) {
+        CqhttpService.downloadGroupHeader(msg.groupId);
+      }
+    }
+    G.ac.eventBus.fire(EventFn(Event.messageReady, msg));
 
     // 显示通知（如果平台支持）
     _showNotification(msg);
@@ -200,7 +221,7 @@ class _MainPagesState extends State<MainPages> {
     // 显示通知
     String personUri =
         'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
-    String displayMessage = _getMessageDisplay(msg);
+    String displayMessage = msg.displayMessage();
     Person person = new Person(
         bot: false, important: false, name: msg.username(), uri: personUri);
     Message message = new Message(displayMessage, DateTime.now(), person);
@@ -257,29 +278,6 @@ class _MainPagesState extends State<MainPages> {
     await flutterLocalNotificationsPlugin.show(
         id, msg.username(), displayMessage, platformChannelSpecifics,
         payload: msg.messageId.toString());
-  }
-
-  /// msg.message CQ文本，转换为显示的内容
-  String _getMessageDisplay(MsgBean msg) {
-    String text = msg.message;
-
-    text = text.replaceAll(RegExp(r"\[CQ:face,id=(\d+)\]"), '[表情]');
-    text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
-    text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
-    text = text.replaceAll(RegExp(r"\[CQ:reply,.+?\]"), '[回复]');
-    text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
-    text = text.replaceAllMapped(
-        RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) => '@${match[1]}');
-    text = text.replaceAllMapped(
-        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*\]'),
-        (match) => '${match[1]}');
-    text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[JSON]');
-    text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');
-    text = text.replaceAllMapped(
-        RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '@${match[1]}');
-    text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');
-
-    return text;
   }
 
   /// 通知点击回调

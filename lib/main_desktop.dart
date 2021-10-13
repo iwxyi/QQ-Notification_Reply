@@ -7,11 +7,11 @@ import 'package:qqnotificationreply/pages/main_pages.dart';
 import 'global/g.dart';
 
 void main() {
-  /*G.init().then((e) {
-    runApp(MyApp());
-  });*/
   _setTargetPlatformForDesktop();
-  runApp(MyApp());
+  G.init().then((e) {
+    runApp(MyApp());
+  });
+  // runApp(MyApp());
 }
 
 void _setTargetPlatformForDesktop() {

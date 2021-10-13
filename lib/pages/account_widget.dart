@@ -24,7 +24,7 @@ class _AccountWidgetState extends State<AccountWidget> {
       if (event.event == Event.loginInfo ||
           event.event == Event.friendList ||
           event.event == Event.groupList ||
-          event.event == Event.message) {
+          event.event == Event.messageRaw) {
         setState(() {});
 
         if (event.event == Event.loginInfo) {

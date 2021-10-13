@@ -37,6 +37,7 @@ class _GroupListWidgetState extends State<GroupListWidget>
   }
 
   @override
+  // ignore: must_call_super
   Widget build(BuildContext context) {
     return new Center(
         child: ListView.builder(

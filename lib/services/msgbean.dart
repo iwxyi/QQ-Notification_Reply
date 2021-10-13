@@ -55,6 +55,36 @@ class MsgBean {
 
   bool isFile() => fileId != null && fileId.isNotEmpty;
 
+  bool isObj(MsgBean msg) {
+    if (groupId != 0) {
+      return this.groupId == msg.groupId;
+    } else {
+      return this.targetId == msg.targetId;
+    }
+  }
+
+  String displayMessage() {
+    String text = message;
+
+    text = text.replaceAll(RegExp(r"\[CQ:face,id=(\d+)\]"), '[表情]');
+    text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
+    text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
+    text = text.replaceAll(RegExp(r"\[CQ:reply,.+?\]"), '[回复]');
+    text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
+    text = text.replaceAllMapped(
+        RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) => '@${match[1]}');
+    text = text.replaceAllMapped(
+        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*\]'),
+        (match) => '${match[1]}');
+    text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[JSON]');
+    text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');
+    text = text.replaceAllMapped(
+        RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '@${match[1]}');
+    text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');
+
+    return text;
+  }
+
   String simpleString() {
     String showed = message;
     //    showed = showed.replaceAll(RegExp(r"\[CQ:(\w+),.*\]"), '1');

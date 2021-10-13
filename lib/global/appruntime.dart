@@ -10,5 +10,11 @@ class AppRuntime {
     FileUtil.createDir(dataPath);
   }
 
+  String userHeader(int id) =>
+      cachePath + "user_header/" + id.toString() + ".png";
+
+  String groupHeader(int id) =>
+      cachePath + "group_header/" + id.toString() + ".png";
+
   String cache(String path) => cachePath + path;
 }

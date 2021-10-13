@@ -9,7 +9,8 @@ enum Event {
   logout, // 退出登录
   friendList,
   groupList,
-  message
+  messageRaw, // 获取到消息本身
+  messageReady, // 已经下载完需要的头像资源
 }
 
 class EventFn {

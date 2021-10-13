@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/global/appruntime.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
@@ -255,7 +253,20 @@ class CqhttpService {
 
   void sendGroupMessage(int groupId, String message) {}
 
+  /// 发送消息到界面
+  /// 有多个接收槽：
+  /// - main_pages 通知
+  /// - chats_page 消息列表
+  /// - account_widget 消息数量
   void showNotification(MsgBean msg) {
-    ac.eventBus.fire(EventFn(Event.message, msg));
+    ac.eventBus.fire(EventFn(Event.messageRaw, msg));
+  }
+
+  static void downloadUserHeader(int id) async {
+
+  }
+
+  static void downloadGroupHeader(int id) async {
+
   }
 }

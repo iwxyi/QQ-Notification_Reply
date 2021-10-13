@@ -14,6 +14,8 @@ class UserSettings extends MySettings {
   Map<int, int> friendImportance = {}; // 好友的重要性
   Map<int, int> groupImportance = {}; // 群组的重要性
 
+  bool enableHeader = true; // 显示头像（稍微增加性能）
+
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
     // readFromFile(); // super会调用读取，原来这是虚继承
   }
