@@ -3,6 +3,8 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
+import 'chat_widget.dart';
+
 List<MsgBean> timedMsgs = []; // 需要显示的列表
 
 class ChatListPage extends StatefulWidget {
@@ -96,7 +98,14 @@ class _ChatListPageState extends State<ChatListPage>
             title: Text(title),
             subtitle: Text(subTitle),
             trailing: Text(timeStr),
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                return ChatWidget(msg);
+              })).then((value) {
+                setState(() {});
+              });
+            },
+            onLongPress: () {},
           );
         });
   }

@@ -49,6 +49,8 @@ class MsgBean {
           ? remark
           : nickname;
 
+  String title() => isGroup() ? groupName : username();
+
   bool isPrivate() => groupId == null || groupId == 0;
 
   bool isGroup() => groupId != null && groupId != 0;
