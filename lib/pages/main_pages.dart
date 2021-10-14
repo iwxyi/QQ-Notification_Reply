@@ -17,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/gallerybar.dart';
 import 'chat_list_page.dart';
+import 'chat_widget.dart';
 import 'contacts_page.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
@@ -275,53 +276,61 @@ class _MainPagesState extends State<MainPages> {
     print('通知.payload: $payload');
     MsgBean msg = G.ac.getMsgById(int.parse(payload));
 
-    String url;
-    // android 和 ios 的 QQ 启动 url scheme 是不同的
-    if (msg.isPrivate()) {
-      G.ac.unreadPrivateMessages[msg.friendId].clear();
-      url = 'mqq://im/chat?chat_type=wpa&uin=' +
-          msg.friendId.toString() +
-          '&version=1&src_type=web';
-      // &web_src=qq.com
+    if (!G.st.notificationLaunchQQ) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        return ChatWidget(msg);
+      })).then((value) {
+        setState(() {});
+      });
     } else {
-      G.ac.unreadGroupMessages[msg.groupId].clear();
-      url = 'mqq://im/chat?chat_type=group&uin=' +
-          msg.groupId.toString() +
-          '&version=1&src_type=web';
-    }
+      String url;
+      // android 和 ios 的 QQ 启动 url scheme 是不同的
+      if (msg.isPrivate()) {
+        G.ac.unreadPrivateMessages[msg.friendId].clear();
+        url = 'mqq://im/chat?chat_type=wpa&uin=' +
+            msg.friendId.toString() +
+            '&version=1&src_type=web';
+        // &web_src=qq.com
+      } else {
+        G.ac.unreadGroupMessages[msg.groupId].clear();
+        url = 'mqq://im/chat?chat_type=group&uin=' +
+            msg.groupId.toString() +
+            '&version=1&src_type=web';
+      }
 
-    // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
-    // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
+      // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
+      // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
 
-    if (url == null || url.isEmpty) {
-      print('没有可打开URL');
-      return;
-    }
+      if (url == null || url.isEmpty) {
+        print('没有可打开URL');
+        return;
+      }
 
-    // 确认一下url是否可启动
-    const forceTry = true;
-    if (await canLaunch(url) || forceTry) {
-      print('打开URL: ' + url);
-      try {
-        await launch(url); // 启动QQ
-      } catch (e) {
-        print('打开URL失败：' + e.toString());
+      // 确认一下url是否可启动
+      const forceTry = true;
+      if (await canLaunch(url) || forceTry) {
+        print('打开URL: ' + url);
+        try {
+          await launch(url); // 启动QQ
+        } catch (e) {
+          print('打开URL失败：' + e.toString());
+          Fluttertoast.showToast(
+            msg: "打开URL失败：" + url,
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+          );
+        }
+      } else {
+        // 自己封装的一个 Toast
+        print('无法打开URL: ' + url);
         Fluttertoast.showToast(
-          msg: "打开URL失败：" + url,
+          msg: "无法打开URL：" + url,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
         );
       }
-    } else {
-      // 自己封装的一个 Toast
-      print('无法打开URL: ' + url);
-      Fluttertoast.showToast(
-        msg: "无法打开URL：" + url,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-      );
     }
   }
 
