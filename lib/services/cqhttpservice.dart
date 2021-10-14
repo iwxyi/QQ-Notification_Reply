@@ -265,10 +265,10 @@ class CqhttpService {
     // 保存所有 msg 记录
     ac.allMessages.add(msg);
     if (msg.isPrivate()) {
-      if (!ac.allPrivateMessages.containsKey(msg.targetId)) {
-        ac.allPrivateMessages[msg.targetId] = [];
+      if (!ac.allPrivateMessages.containsKey(msg.friendId)) {
+        ac.allPrivateMessages[msg.friendId] = [];
       }
-      ac.allPrivateMessages[msg.targetId].add(msg);
+      ac.allPrivateMessages[msg.friendId].add(msg);
     } else if (msg.isGroup()) {
       if (!ac.allGroupMessages.containsKey(msg.groupId)) {
         ac.allGroupMessages[msg.groupId] = [];

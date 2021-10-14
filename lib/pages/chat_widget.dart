@@ -15,8 +15,12 @@ class ChatWidget extends StatefulWidget {
   }
 }
 
-class _ChatWidgetState extends State<ChatWidget> {
+class _ChatWidgetState extends State<ChatWidget>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   TextEditingController _textController;
+  ScrollController _scrollController;
   var eventBusFn;
   List<MsgBean> _messages = [];
 
@@ -32,7 +36,7 @@ class _ChatWidgetState extends State<ChatWidget> {
     // 获取历史消息
     MsgBean msg = widget.chatObj;
     if (msg.isPrivate()) {
-      _messages = G.ac.allPrivateMessages[msg.targetId];
+      _messages = G.ac.allPrivateMessages[msg.friendId];
     } else if (msg.isGroup()) {
       _messages = G.ac.allGroupMessages[msg.groupId];
     }
@@ -53,17 +57,19 @@ class _ChatWidgetState extends State<ChatWidget> {
       }
     } */
 
+    // 初始化控件
+    _scrollController =
+        new ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
+    // 默认滚动到底部
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // 默认滚动到底部
-    ScrollController _controller = ScrollController();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _controller.jumpTo(_controller.position.maxScrollExtent);
-    });
-
     // 分割线
     Widget divider = Divider(
       color: Colors.transparent,
@@ -85,7 +91,7 @@ class _ChatWidgetState extends State<ChatWidget> {
               padding: new EdgeInsets.all(8.0),
               itemBuilder: (context, int index) => EntryItem(_messages[index]),
               itemCount: _messages.length,
-              controller: _controller,
+              controller: _scrollController,
             ),
           ),
           new Divider(height: 1.0),
@@ -139,9 +145,7 @@ class _ChatWidgetState extends State<ChatWidget> {
       return;
     }
     if (msg.isObj(widget.chatObj)) {
-      setState(() {
-        _messages.add(msg);
-      });
+      setState(() {});
     }
   }
 }
@@ -153,6 +157,10 @@ class EntryItem extends StatelessWidget {
   EntryItem(this.message);
 
   Widget _buildMessageLine() {
+    String headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=" +
+        message.senderId.toString() +
+        "&s=100&t=";
+
     ///由自己发送，在右边显示
     if (message.senderId == G.ac.qqId) {
       return new Row(
@@ -176,9 +184,7 @@ class EntryItem extends StatelessWidget {
           new Container(
             margin: const EdgeInsets.only(left: 12.0, right: 12.0),
             child: new CircleAvatar(
-              backgroundImage: AssetImage("http://q1.qlogo.cn/g?b=qq&nk=" +
-                  G.ac.qqId.toString() +
-                  "&s=100&t="),
+              backgroundImage: AssetImage(headerUrl),
               radius: 24.0,
             ),
           ),
@@ -192,9 +198,7 @@ class EntryItem extends StatelessWidget {
           new Container(
             margin: const EdgeInsets.only(left: 12.0, right: 12.0),
             child: new CircleAvatar(
-              backgroundImage: NetworkImage("http://q1.qlogo.cn/g?b=qq&nk=" +
-                  message.senderId.toString() +
-                  "&s=100&t="),
+              backgroundImage: NetworkImage(headerUrl),
               radius: 24.0,
             ),
           ),

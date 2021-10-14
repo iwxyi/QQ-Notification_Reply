@@ -61,7 +61,7 @@ class MsgBean {
     if (groupId != null && groupId != 0) {
       return this.groupId == msg.groupId;
     } else {
-      return this.targetId == msg.targetId;
+      return this.friendId == msg.friendId;
     }
   }
 

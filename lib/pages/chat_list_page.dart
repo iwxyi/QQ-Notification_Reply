@@ -66,7 +66,7 @@ class _ChatListPageState extends State<ChatListPage>
             title = msg.username();
             subTitle = G.cs.getMessageDisplay(msg);
             headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=" +
-                msg.senderId.toString() +
+                msg.friendId.toString() +
                 "&s=100&t=";
           }
 
