@@ -36,7 +36,7 @@ class MainPages extends StatefulWidget {
   _MainPagesState createState() => _MainPagesState();
 }
 
-enum AppBarMenuItems { Settings }
+enum AppBarMenuItems { AllReaded }
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0; // 导航栏当前项
@@ -75,10 +75,16 @@ class _MainPagesState extends State<MainPages> {
   void initState() {
     super.initState();
 
+    // 读取配置
+    _selectedIndex = G.st.getInt('recent/navigation', 0);
+
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.messageRaw) {
         _messageReceived(event.data);
+      } else if (event.event == Event.friendList ||
+          event.event == Event.groupList) {
+        setState(() {});
       }
     });
 
@@ -116,11 +122,11 @@ class _MainPagesState extends State<MainPages> {
         title: const Text('CatlikeQQ'),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.add_alert),
-            tooltip: 'Show Snackbar',
+            icon: const Icon(Icons.search),
+            tooltip: '搜索',
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('This is a snackbar')));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(content: Text('等待开发')));
             },
           ),
           PopupMenuButton<AppBarMenuItems>(
@@ -130,8 +136,8 @@ class _MainPagesState extends State<MainPages> {
             itemBuilder: (BuildContext context) =>
                 <PopupMenuEntry<AppBarMenuItems>>[
               const PopupMenuItem<AppBarMenuItems>(
-                value: AppBarMenuItems.Settings,
-                child: Text('Working a lot harder'),
+                value: AppBarMenuItems.AllReaded,
+                child: Text('全部标位已读'),
               ),
             ],
           )
@@ -169,6 +175,7 @@ class _MainPagesState extends State<MainPages> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      G.st.setConfig('recent/navigation', index);
     });
   }
 

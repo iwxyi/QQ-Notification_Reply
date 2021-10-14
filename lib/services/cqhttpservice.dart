@@ -291,7 +291,6 @@ class CqhttpService {
         ac.allPrivateMessages[msg.friendId].removeAt(0);
       }
     } else if (msg.isGroup()) {
-      print('-----------------------------' + msg.rawMessage);
       if (!ac.allGroupMessages.containsKey(msg.groupId)) {
         ac.allGroupMessages[msg.groupId] = [];
       }
@@ -317,6 +316,8 @@ class CqhttpService {
     ac.eventBus.fire(EventFn(Event.messageRaw, msg));
   }
 
+  /// 简易版数据展示
+  /// 替换所有CQ标签
   String getMessageDisplay(MsgBean msg) {
     String text = msg.message;
 

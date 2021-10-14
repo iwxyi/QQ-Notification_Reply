@@ -109,7 +109,8 @@ class _ChatWidgetState extends State<ChatWidget>
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: new Row(children: <Widget>[
           new Flexible(
-              child: new TextField( // 输入框
+              child: new TextField(
+            // 输入框
             controller: _textController,
             onSubmitted: _sendMessage,
             decoration: new InputDecoration.collapsed(hintText: '发送消息'),
@@ -143,7 +144,7 @@ class _ChatWidgetState extends State<ChatWidget>
   void _sendMessage(String text) {
     _textController.clear(); //清空文本框
     FocusScope.of(context).requestFocus(_editorFocus); // 继续保持焦点
-    
+
     print('发送消息：' + text);
     if (widget.chatObj.isPrivate()) {
       // 发送私聊消息
@@ -152,90 +153,85 @@ class _ChatWidgetState extends State<ChatWidget>
       // 发送群组消息
       G.cs.sendGroupMessage(widget.chatObj.groupId, text);
     }
-    
   }
 }
 
 /// 构造发送的信息
 /// 每一条消息显示的复杂对象
 class EntryItem extends StatelessWidget {
-  MsgBean message;
+  MsgBean msg;
 
-  EntryItem(this.message);
+  EntryItem(this.msg);
 
   Widget _buildMessageLine() {
-    String headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=" +
-        message.senderId.toString() +
-        "&s=100&t=";
+    // 判断左右
+    bool isSelf = msg.senderId == G.ac.qqId;
 
-    ///由自己发送，在右边显示
-    if (message.senderId == G.ac.qqId) {
-      return new Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          Flexible(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  new Container(
-                    margin: const EdgeInsets.only(top: 5.0),
-                    child: new Text(
-                      G.cs.getMessageDisplay(message),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                  )
-                ]),
-          ),
-          new Container(
-            margin: const EdgeInsets.only(left: 12.0, right: 12.0),
-            child: new CircleAvatar(
-              backgroundImage: NetworkImage(headerUrl),
-              radius: 24.0,
-              backgroundColor: Colors.transparent,
-            ),
-          ),
-        ],
-      );
-    } else {
-      ///对方发送，左边显示
-      return new Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          new Container(
-            margin: const EdgeInsets.only(left: 12.0, right: 12.0),
-            child: new CircleAvatar(
-              backgroundImage: NetworkImage(headerUrl), // 头像
-              radius: 24.0,
-              backgroundColor: Colors.transparent,
-            ),
-          ),
-          Flexible(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  new Container(
-                    margin: const EdgeInsets.only(top: 5.0),
-                    child: new Text(
-                      message.username() + ":", // 用户昵称
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.grey, fontSize: 16),
-                    ),
-                  ),
-                  new Container(
-                    margin: const EdgeInsets.only(top: 5.0),
-                    child: new Text(
-                      G.cs.getMessageDisplay(message), // 消息
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                  )
-                ]),
-          ),
-        ],
-      );
+    // 消息列，是否显示昵称
+    List<Widget> vWidges = [];
+    if (!isSelf) {
+      vWidges.add(_buildNicknameView());
     }
+    vWidges.add(_buildMessageView());
+
+    Widget vWidget = Flexible(
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, children: vWidges),
+    );
+
+    // 头像和消息的顺序
+    List<Widget> hWidgets;
+    if (isSelf) {
+      hWidgets = [vWidget, _buildHeaderView()];
+    } else {
+      hWidgets = [_buildHeaderView(), vWidget];
+    }
+
+    return new Row(
+        mainAxisAlignment:
+            isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: hWidgets);
+  }
+
+  /// 构建头像控件
+  Widget _buildHeaderView() {
+    // 头像URL
+    String headerUrl =
+        "http://q1.qlogo.cn/g?b=qq&nk=" + msg.senderId.toString() + "&s=100&t=";
+
+    return new Container(
+        margin: const EdgeInsets.only(left: 12.0, right: 12.0),
+        child: new CircleAvatar(
+          backgroundImage: NetworkImage(headerUrl),
+          radius: 24.0,
+          backgroundColor: Colors.transparent,
+        ));
+  }
+
+  /// 构建昵称控件
+  Widget _buildNicknameView() {
+    return new Container(
+      margin: const EdgeInsets.only(top: 5.0),
+      child: new Text(
+        msg.username() + ":", // 用户昵称
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: Colors.grey, fontSize: 16),
+      ),
+    );
+  }
+
+  /// 构建消息控件
+  Widget _buildMessageView() {
+    return new Container(
+      margin: const EdgeInsets.only(top: 5.0),
+      child: new Text(
+        G.cs.getMessageDisplay(msg),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: Colors.black, fontSize: 16),
+      ),
+    );
   }
 
   @override

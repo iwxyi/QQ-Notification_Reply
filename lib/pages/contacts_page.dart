@@ -11,11 +11,19 @@ class ContactsPage extends StatefulWidget {
 class _ContactsPageState extends State<ContactsPage>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
+  var eventBusFn;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    // 注册监听器，订阅 eventBus
+    /* eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
+      if (event.event == Event.friendList || event.event == Event.groupList) {
+        setState(() {});
+      }
+    }); */
   }
 
   @override
