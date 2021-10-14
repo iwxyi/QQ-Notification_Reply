@@ -136,7 +136,7 @@ class _AccountWidgetState extends State<AccountWidget> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              '通知',
+              '设置',
               style: TextStyle(color: Colors.grey.shade700),
             ),
           ),

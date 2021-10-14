@@ -9,6 +9,8 @@ class UserSettings extends MySettings {
 
   String host; // 主机地址
   String token; // 连接秘钥
+  bool enableSelfChats = true; // 启用本身的聊天功能
+  bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
 
   List<int> enabledGroups = []; // 开启通知的群组
   Map<int, int> friendImportance = {}; // 好友的重要性
@@ -18,7 +20,7 @@ class UserSettings extends MySettings {
   int keepMsgHistoryCount = 200; // 保留多少消息记录
 
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
-    // readFromFile(); // super会调用读取，原来这是虚继承
+    // readFromFile(); // super会调用，原来这是虚继承
   }
 
   int getFriendImportance(int id) {
@@ -64,8 +66,11 @@ class UserSettings extends MySettings {
   void readFromFile() {
     host = getStr('account/host', '');
     token = getStr('account/token', '');
+    enableSelfChats = getBool('function/selfChats', true);
+    notificationLaunchQQ = getBool('notification/launchQQ', false);
 
-    // 读取重要的数组
+
+    // 读取启用的数组
     String ens = getStr('notification/enabledGroup', '');
     if (ens.isNotEmpty) {
       List<String> sl = ens.split(';');

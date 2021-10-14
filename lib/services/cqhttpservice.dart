@@ -277,9 +277,9 @@ class CqhttpService {
   void notifyOutter(MsgBean msg) {
     // 保存所有 msg 记录
     ac.allMessages.add(msg);
-    if (ac.allMessages.length > st.keepMsgHistoryCount) {
+    /* if (ac.allMessages.length > st.keepMsgHistoryCount) {
       ac.allMessages.removeAt(0);
-    }
+    } */
 
     // 保留每个对象的消息记录
     if (msg.isPrivate()) {

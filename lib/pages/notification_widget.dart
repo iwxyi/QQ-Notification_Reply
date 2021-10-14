@@ -30,7 +30,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              '群组',
+              '聊天',
               style: TextStyle(color: Colors.grey.shade700),
             ),
           ),
@@ -39,6 +39,31 @@ class _NotificationWidgetState extends State<NotificationWidget> {
             elevation: 4.0,
             child: Column(
               children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.all_inclusive,
+                    color: Colors.blue,
+                  ),
+                  title: Text('禁用会话功能'),
+                  subtitle: Text('开启后仅剩下通知栏消息，可能轻微减少耗电(重启生效)'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableSelfChats = !G.st.enableSelfChats;
+                        G.st.setConfig(
+                            'function/selfChats', G.st.enableSelfChats);
+                      });
+                    },
+                    value: !G.st.enableSelfChats,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableSelfChats = !G.st.enableSelfChats;
+                      G.st.setConfig(
+                          'function/selfChats', G.st.enableSelfChats);
+                    });
+                  },
+                ),
                 ListTile(
                   leading: Icon(
                     Icons.group,
@@ -62,6 +87,46 @@ class _NotificationWidgetState extends State<NotificationWidget> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
+              '回调',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ),
+          Card(
+            color: Colors.white,
+            elevation: 4.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.all_inclusive,
+                    color: Colors.blue,
+                  ),
+                  title: Text('点击通知跳转QQ'),
+                  subtitle: Text('进入QQ会话还是本程序的会话'), 
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.notificationLaunchQQ = !G.st.notificationLaunchQQ;
+                        G.st.setConfig(
+                            'notification/launchQQ', G.st.notificationLaunchQQ);
+                      });
+                    },
+                    value: G.st.notificationLaunchQQ,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.notificationLaunchQQ = !G.st.notificationLaunchQQ;
+                      G.st.setConfig(
+                          'notification/launchQQ', G.st.notificationLaunchQQ);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
               '其他',
               style: TextStyle(color: Colors.grey.shade700),
             ),
@@ -76,7 +141,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
                     Icons.all_inclusive,
                     color: Colors.blue,
                   ),
-                  title: Text('还没想好……'),
+                  title: Text('测试通知'),
                   onTap: testOperator,
                 ),
               ],
@@ -88,7 +153,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
   }
 
   void testOperator() async {
-    /*List<String> lines = <String>[
+    List<String> lines = <String>[
       'Alex Faarborg  Check this out',
       'Jeff Chang    Launch Party'
     ];
@@ -96,6 +161,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
     InboxStyleInformation inboxStyleInformation = InboxStyleInformation(lines,
         contentTitle: '2 messages', summaryText: 'janedoe@example.com');
 
+    // ignore: unused_local_variable
     AndroidNotificationDetails androidPlatformChannelSpecifics0 =
         AndroidNotificationDetails(
             'channelId', 'channelName', 'channelDescription',
@@ -116,7 +182,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await UserAccount.flutterLocalNotificationsPlugin
-        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);*/
+        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);
   }
 
   /// 显示通知根方法

@@ -45,7 +45,11 @@ class _MainPagesState extends State<MainPages> {
         title: '会话',
         leftColor: _appBarColor2,
         rightColor: _appBarColor1,
-        contentWidget: new ChatListPage()),
+        contentWidget: G.st.enableSelfChats
+            ? new ChatListPage()
+            : new Center(
+                child: new Text('会话已禁用'),
+              )),
     CardSection(
         title: '联系人',
         leftColor: _appBarColor2,
