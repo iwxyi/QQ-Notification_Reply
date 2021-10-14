@@ -73,7 +73,7 @@ class _MainPagesState extends State<MainPages> {
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.messageRaw) {
-        messageReceived(event.data);
+        _messageReceived(event.data);
       }
     });
 
@@ -169,7 +169,7 @@ class _MainPagesState extends State<MainPages> {
 
   /// 所有msg raw都会到这里来
   /// 进行数据的处理操作，例如准备头像的显示
-  void messageReceived(MsgBean msg) {
+  void _messageReceived(MsgBean msg) {
     // 准备显示的资源
     if (G.st.enableHeader) {
       /* if (!FileUtil.isFileExists(G.rt.userHeader(msg.senderId))) {

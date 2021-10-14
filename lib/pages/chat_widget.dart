@@ -29,7 +29,7 @@ class _ChatWidgetState extends State<ChatWidget>
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.messageRaw) {
-        messageReceived(event.data);
+        _messageReceived(event.data);
       }
     });
 
@@ -99,30 +99,22 @@ class _ChatWidgetState extends State<ChatWidget>
             decoration: new BoxDecoration(
               color: Theme.of(context).cardColor,
             ),
-            child: _buildTextComposer(),
+            child: _buildTextEditor(),
           )
         ],
       ),
     );
   }
 
-  ///发送信息
-  void _handleSubmitted(String text) {
-    _textController.clear(); //清空文本框
-    setState(() {
-      // 收到消息要更新
-    });
-  }
-
   /// 构造输入框
-  Widget _buildTextComposer() {
+  Widget _buildTextEditor() {
     return new Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: new Row(children: <Widget>[
           new Flexible(
               child: new TextField(
             controller: _textController,
-            onSubmitted: _handleSubmitted,
+            onSubmitted: _sendMessage,
             decoration: new InputDecoration.collapsed(hintText: '发送消息'),
           )),
           new Container(
@@ -132,13 +124,13 @@ class _ChatWidgetState extends State<ChatWidget>
                   Icons.send,
                   color: Colors.blue,
                 ),
-                onPressed: () => _handleSubmitted(_textController.text)),
+                onPressed: () => _sendMessage(_textController.text)),
           )
         ]));
   }
 
   /// 收到消息
-  void messageReceived(MsgBean msg) {
+  void _messageReceived(MsgBean msg) {
     // 判断是否已经释放
     if (!mounted) {
       // 不判断的话，会报错：setState() called after dispose():
@@ -148,9 +140,23 @@ class _ChatWidgetState extends State<ChatWidget>
       setState(() {});
     }
   }
+
+  ///发送信息
+  void _sendMessage(String text) {
+    _textController.clear(); //清空文本框
+    print('发送消息：' + text);
+    if (widget.chatObj.isPrivate()) {
+      // 发送私聊消息
+      G.cs.sendPrivateMessage(widget.chatObj.friendId, text);
+    } else if (widget.chatObj.isGroup()) {
+      // 发送群组消息
+      G.cs.sendGroupMessage(widget.chatObj.groupId, text);
+    }
+  }
 }
 
-///构造发送的信息
+/// 构造发送的信息
+/// 每一条消息显示的复杂对象
 class EntryItem extends StatelessWidget {
   MsgBean message;
 
@@ -184,8 +190,9 @@ class EntryItem extends StatelessWidget {
           new Container(
             margin: const EdgeInsets.only(left: 12.0, right: 12.0),
             child: new CircleAvatar(
-              backgroundImage: AssetImage(headerUrl),
+              backgroundImage: NetworkImage(headerUrl),
               radius: 24.0,
+              backgroundColor: Colors.transparent,
             ),
           ),
         ],
@@ -198,8 +205,9 @@ class EntryItem extends StatelessWidget {
           new Container(
             margin: const EdgeInsets.only(left: 12.0, right: 12.0),
             child: new CircleAvatar(
-              backgroundImage: NetworkImage(headerUrl),
+              backgroundImage: NetworkImage(headerUrl), // 头像
               radius: 24.0,
+              backgroundColor: Colors.transparent,
             ),
           ),
           Flexible(

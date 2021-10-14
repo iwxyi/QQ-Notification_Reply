@@ -252,9 +252,13 @@ class CqhttpService {
     send({'action': 'get_group_list', 'echo': 'get_group_list'});
   }
 
-  void sendUserMessage(int userId, String message) {}
+  void sendPrivateMessage(int userId, String message) {
+    send({'user_id': userId, 'message': message});
+  }
 
-  void sendGroupMessage(int groupId, String message) {}
+  void sendGroupMessage(int groupId, String message) {
+    send({'group_id': groupId, 'message': message});
+  }
 
   /// 发送消息到界面
   /// 有多个接收槽：
@@ -264,16 +268,27 @@ class CqhttpService {
   void notifyOutter(MsgBean msg) {
     // 保存所有 msg 记录
     ac.allMessages.add(msg);
+    if (ac.allMessages.length > st.keepMsgHistoryCount) {
+      ac.allMessages.removeAt(0);
+    }
+
+    // 保留每个对象的消息记录
     if (msg.isPrivate()) {
       if (!ac.allPrivateMessages.containsKey(msg.friendId)) {
         ac.allPrivateMessages[msg.friendId] = [];
       }
       ac.allPrivateMessages[msg.friendId].add(msg);
+      if (ac.allPrivateMessages[msg.friendId].length > st.keepMsgHistoryCount) {
+        ac.allPrivateMessages[msg.friendId].removeAt(0);
+      }
     } else if (msg.isGroup()) {
       if (!ac.allGroupMessages.containsKey(msg.groupId)) {
         ac.allGroupMessages[msg.groupId] = [];
       }
       ac.allGroupMessages[msg.groupId].add(msg);
+      if (ac.allGroupMessages[msg.groupId].length > st.keepMsgHistoryCount) {
+        ac.allGroupMessages[msg.groupId].removeAt(0);
+      }
     }
 
     // 刷新收到消息的时间（用于简单选择时的排序）
