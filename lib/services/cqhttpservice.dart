@@ -40,7 +40,7 @@ class CqhttpService {
     // 监听消息
     channel.stream.listen((message) {
       if (debugMode) {
-        print('ws收到消息:' + message.toString());
+        print('ws收到数据:' + message.toString());
         wsReceives.insert(0, message.toString());
       }
 
@@ -55,7 +55,7 @@ class CqhttpService {
 
   void send(Map<String, dynamic> obj) {
     String text = json.encode(obj);
-    print('发送数据：' + text);
+    print('ws发送数据：' + text);
     channel.sink.add(text);
   }
 
@@ -75,7 +75,8 @@ class CqhttpService {
         // 第一次连接上
         parseLifecycle(obj);
       }
-    } else if (postType == 'message') {
+    } else if (postType == 'message' || postType == 'message_sent') {
+      // 自己发送的群消息是 message_sent 类型
       String messageType = obj['message_type'];
       if (messageType == 'private') {
         // 私聊消息
@@ -253,11 +254,19 @@ class CqhttpService {
   }
 
   void sendPrivateMessage(int userId, String message) {
-    send({'user_id': userId, 'message': message});
+    send({
+      'action': 'send_private_msg',
+      'params': {'user_id': userId, 'message': message},
+      'echo': 'send_private_msg'
+    });
   }
 
   void sendGroupMessage(int groupId, String message) {
-    send({'group_id': groupId, 'message': message});
+    send({
+      'action': 'send_group_msg',
+      'params': {'group_id': groupId, 'message': message},
+      'echo': 'send_group_msg'
+    });
   }
 
   /// 发送消息到界面
@@ -282,6 +291,7 @@ class CqhttpService {
         ac.allPrivateMessages[msg.friendId].removeAt(0);
       }
     } else if (msg.isGroup()) {
+      print('-----------------------------' + msg.rawMessage);
       if (!ac.allGroupMessages.containsKey(msg.groupId)) {
         ac.allGroupMessages[msg.groupId] = [];
       }

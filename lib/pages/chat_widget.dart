@@ -19,9 +19,12 @@ class _ChatWidgetState extends State<ChatWidget>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  TextEditingController _textController;
-  ScrollController _scrollController;
+
   var eventBusFn;
+  TextEditingController _textController;
+  FocusNode _editorFocus;
+  ScrollController _scrollController;
+
   List<MsgBean> _messages = [];
 
   @override
@@ -45,27 +48,21 @@ class _ChatWidgetState extends State<ChatWidget>
       _messages = [];
     }
 
-    /* int index = G.ac.allMessages.length;
-    int count = 0, maxCount = 20; // 最多加载几条消息
-    for (int i = index - 1; i >= 0; i--) {
-      if (G.ac.allMessages[i].isObj(msg)) {
-        _messages.insert(0, G.ac.allMessages[i]);
-        count++;
-        if (count > maxCount) {
-          break;
-        }
-      }
-    } */
-
     // 初始化控件
+    _textController = new TextEditingController();
+    _editorFocus = FocusNode();
     _scrollController =
         new ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
+
+    super.initState();
+
+    // 默认获取焦点
+    // FocusScope.of(context).requestFocus(_editorFocus);
+
     // 默认滚动到底部
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });
-
-    super.initState();
   }
 
   @override
@@ -112,10 +109,11 @@ class _ChatWidgetState extends State<ChatWidget>
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: new Row(children: <Widget>[
           new Flexible(
-              child: new TextField(
+              child: new TextField( // 输入框
             controller: _textController,
             onSubmitted: _sendMessage,
             decoration: new InputDecoration.collapsed(hintText: '发送消息'),
+            focusNode: _editorFocus,
           )),
           new Container(
             margin: new EdgeInsets.symmetric(horizontal: 4.0),
@@ -144,6 +142,8 @@ class _ChatWidgetState extends State<ChatWidget>
   ///发送信息
   void _sendMessage(String text) {
     _textController.clear(); //清空文本框
+    FocusScope.of(context).requestFocus(_editorFocus); // 继续保持焦点
+    
     print('发送消息：' + text);
     if (widget.chatObj.isPrivate()) {
       // 发送私聊消息
@@ -152,6 +152,7 @@ class _ChatWidgetState extends State<ChatWidget>
       // 发送群组消息
       G.cs.sendGroupMessage(widget.chatObj.groupId, text);
     }
+    
   }
 }
 
