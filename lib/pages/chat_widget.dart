@@ -1,3 +1,4 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
@@ -190,6 +191,7 @@ class EntryItem extends StatelessWidget {
     return new Row(
         mainAxisAlignment:
             isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: hWidgets);
   }
 
@@ -199,13 +201,15 @@ class EntryItem extends StatelessWidget {
     String headerUrl =
         "http://q1.qlogo.cn/g?b=qq&nk=" + msg.senderId.toString() + "&s=100&t=";
 
-    return new Container(
+    Widget header = new Container(
         margin: const EdgeInsets.only(left: 12.0, right: 12.0),
         child: new CircleAvatar(
           backgroundImage: NetworkImage(headerUrl),
           radius: 24.0,
           backgroundColor: Colors.transparent,
         ));
+
+    return header;
   }
 
   /// 构建昵称控件
@@ -224,14 +228,30 @@ class EntryItem extends StatelessWidget {
   /// 构建消息控件
   Widget _buildMessageView() {
     return new Container(
-      margin: const EdgeInsets.only(top: 5.0),
-      child: new Text(
+        margin: const EdgeInsets.only(top: 5.0),
+        child: _buildMessageTypeView());
+  }
+
+  Widget _buildMessageTypeView() {
+    String text = msg.message;
+    Match match;
+    RegExp imageRE = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+)?\]$');
+    if ((match = imageRE.firstMatch(text)) != null) {
+      String url = match.group(1);
+      return ExtendedImage.network(url,
+          fit: BoxFit.fill,
+          cache: true,
+          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+          scale: 2);
+    } else {
+      // 未知，当做纯文本了
+      return new Text(
         G.cs.getMessageDisplay(msg),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: Colors.black, fontSize: 16),
-      ),
-    );
+      );
+    }
   }
 
   @override
