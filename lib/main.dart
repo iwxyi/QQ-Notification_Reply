@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/pages/main_pages.dart';
 
 import 'global/g.dart';
+import 'widgets/app_retain_widget.dart';
 
 void main() {
   // Unhandled Exception: Null check operator used on a null value
@@ -22,6 +23,6 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: MainPages());
+        home: AppRetainWidget(child: MainPages()));
   }
 }
