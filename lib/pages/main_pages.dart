@@ -11,6 +11,7 @@ import 'package:qqnotificationreply/pages/notification_widget.dart';
 import 'package:qqnotificationreply/services/cqhttpservice.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/utils/file_util.dart';
+
 // ignore: unused_import
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -29,10 +30,10 @@ class MainPages extends StatefulWidget {
   MainPages() {
     // 自动登录
     if (G.st.host != null && G.st.host.isNotEmpty) {
-      // G.cs.connect(G.st.host, G.st.token);
+      G.cs.connect(G.st.host, G.st.token);
     }
   }
-  
+
   @override
   _MainPagesState createState() => _MainPagesState();
 }
@@ -41,7 +42,7 @@ enum AppBarMenuItems { AllReaded }
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0; // 导航栏当前项
-  
+
   List<CardSection> allPages = <CardSection>[
     CardSection(
         title: '会话',
@@ -50,8 +51,8 @@ class _MainPagesState extends State<MainPages> {
         contentWidget: G.st.enableSelfChats
             ? new ChatListPage()
             : new Center(
-          child: new Text('会话已禁用'),
-        )),
+                child: new Text('会话已禁用'),
+              )),
     CardSection(
         title: '联系人',
         leftColor: _appBarColor2,
@@ -68,17 +69,17 @@ class _MainPagesState extends State<MainPages> {
         rightColor: _appBarColor4,
         contentWidget: new NotificationWidget()),
   ];
-  
+
   var eventBusFn;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // 读取配置
     _selectedIndex = G.st.getInt('recent/navigation', 0);
-    
+
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.messageRaw) {
@@ -88,34 +89,34 @@ class _MainPagesState extends State<MainPages> {
         setState(() {});
       }
     });
-    
+
     // 判断是否需要通知
     // Windows不支持通知
     if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
       // 获取通知权限
       requireNotificationPermission();
-      
+
       // 初始化通知
       flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
       const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/appicon');
+          AndroidInitializationSettings('@mipmap/appicon');
       final IOSInitializationSettings initializationSettingsIOS =
-      IOSInitializationSettings(
-          onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+          IOSInitializationSettings(
+              onDidReceiveLocalNotification: onDidReceiveLocalNotification);
       final MacOSInitializationSettings initializationSettingsMacOS =
-      MacOSInitializationSettings();
+          MacOSInitializationSettings();
       final InitializationSettings initializationSettings =
-      InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: initializationSettingsIOS,
-          macOS: initializationSettingsMacOS);
+          InitializationSettings(
+              android: initializationSettingsAndroid,
+              iOS: initializationSettingsIOS,
+              macOS: initializationSettingsMacOS);
       flutterLocalNotificationsPlugin.initialize(initializationSettings,
           onSelectNotification: onSelectNotification);
       UserAccount.flutterLocalNotificationsPlugin =
           flutterLocalNotificationsPlugin;
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,7 +136,7 @@ class _MainPagesState extends State<MainPages> {
               setState(() {});
             },
             itemBuilder: (BuildContext context) =>
-            <PopupMenuEntry<AppBarMenuItems>>[
+                <PopupMenuEntry<AppBarMenuItems>>[
               const PopupMenuItem<AppBarMenuItems>(
                 value: AppBarMenuItems.AllReaded,
                 child: Text('全部标位已读'),
@@ -172,14 +173,14 @@ class _MainPagesState extends State<MainPages> {
       ),
     ); */
   }
-  
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
       G.st.setConfig('recent/navigation', index);
     });
   }
-  
+
   /// 所有msg raw都会到这里来
   /// 进行数据的处理操作，例如准备头像的显示
   void _messageReceived(MsgBean msg) {
@@ -193,11 +194,11 @@ class _MainPagesState extends State<MainPages> {
       } */
     }
     G.ac.eventBus.fire(EventFn(Event.messageReady, msg));
-    
+
     // 显示通知（如果平台支持）
     _showNotification(msg);
   }
-  
+
   /// 显示通知栏通知
   /// 仅支持 Android、IOS、MacOS
   void _showNotification(MsgBean msg) async {
@@ -205,10 +206,10 @@ class _MainPagesState extends State<MainPages> {
     if (flutterLocalNotificationsPlugin == null) {
       return;
     }
-    
+
     // 该聊天对象的通知ID（每次启动都不一样）
     int id = UserAccount.getNotificationId(msg);
-    
+
     // 判断自己的通知
     if (msg.senderId == G.ac.qqId) {
       // 自己发的，一定不需要再通知了
@@ -216,7 +217,7 @@ class _MainPagesState extends State<MainPages> {
       flutterLocalNotificationsPlugin.cancel(id);
       return;
     }
-    
+
     // 显示通知
     String personUri =
         'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
@@ -225,7 +226,7 @@ class _MainPagesState extends State<MainPages> {
         bot: false, important: false, name: msg.username(), uri: personUri);
     Message message = new Message(displayMessage, DateTime.now(), person);
     AndroidNotificationDetails androidPlatformChannelSpecifics;
-    
+
     if (msg.isPrivate()) {
       // 私聊消息
       /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
@@ -233,12 +234,12 @@ class _MainPagesState extends State<MainPages> {
         G.ac.unreadPrivateMessages[msg.friendId] = [];
       }
       G.ac.unreadPrivateMessages[msg.friendId].add(message);
-      
+
       MessagingStyleInformation messagingStyleInformation =
-      new MessagingStyleInformation(person,
-          conversationTitle: msg.username(),
-          messages: G.ac.unreadPrivateMessages[msg.friendId]);
-      
+          new MessagingStyleInformation(person,
+              conversationTitle: msg.username(),
+              messages: G.ac.unreadPrivateMessages[msg.friendId]);
+
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'private_message', '私聊消息', 'QQ好友消息/临时会话',
           styleInformation: messagingStyleInformation,
@@ -251,15 +252,15 @@ class _MainPagesState extends State<MainPages> {
         G.ac.unreadGroupMessages[msg.groupId] = [];
       }
       G.ac.unreadGroupMessages[msg.groupId].add(message);
-      
+
       Person group = new Person(
           bot: true, important: true, name: msg.groupName, uri: personUri);
-      
+
       MessagingStyleInformation messagingStyleInformation =
-      new MessagingStyleInformation(group,
-          conversationTitle: msg.groupName,
-          messages: G.ac.unreadGroupMessages[msg.groupId]);
-      
+          new MessagingStyleInformation(group,
+              conversationTitle: msg.groupName,
+              messages: G.ac.unreadGroupMessages[msg.groupId]);
+
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'group_message', '群组消息', 'QQ群组消息',
           styleInformation: messagingStyleInformation,
@@ -270,19 +271,25 @@ class _MainPagesState extends State<MainPages> {
     if (androidPlatformChannelSpecifics == null) {
       return;
     }
-    
+
     NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
-    
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
     await flutterLocalNotificationsPlugin.show(
         id, msg.username(), displayMessage, platformChannelSpecifics,
         payload: msg.messageId.toString());
   }
-  
+
   /// 通知点击回调
   Future<dynamic> onSelectNotification(String payload) async {
     print('通知.payload: $payload');
     MsgBean msg = G.ac.getMsgById(int.parse(payload));
+
+    if (msg.isPrivate()) {
+      G.ac.unreadPrivateMessages.remove(msg.friendId);
+    } else if (msg.isGroup()) {
+      G.ac.unreadGroupMessages.remove(msg.groupId);
+    }
     
     if (!G.st.notificationLaunchQQ) {
       Navigator.of(context).push(MaterialPageRoute(builder: (context) {
@@ -305,15 +312,15 @@ class _MainPagesState extends State<MainPages> {
             msg.groupId.toString() +
             '&version=1&src_type=web';
       }
-      
+
       // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
       // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
-      
+
       if (url == null || url.isEmpty) {
         print('没有可打开URL');
         return;
       }
-      
+
       // 确认一下url是否可启动
       const forceTry = true;
       if (await canLaunch(url) || forceTry) {
@@ -341,33 +348,33 @@ class _MainPagesState extends State<MainPages> {
       }
     }
   }
-  
+
   /// 这个是 iOS 的通知回调
   // ignore: missing_return
   Future onDidReceiveLocalNotification(
       int id, String title, String body, String payload) {}
-  
+
   /// 对于 iOS 和 MacOS，需要获取通知权限
   void requireNotificationPermission() async {
     bool result = true;
     if (Platform.isIOS) {
       result = await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>()
+              IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+            alert: true,
+            badge: true,
+            sound: true,
+          );
     } else if (Platform.isMacOS) {
       result = await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-          MacOSFlutterLocalNotificationsPlugin>()
+              MacOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+            alert: true,
+            badge: true,
+            sound: true,
+          );
     }
     if (!result) {
       Fluttertoast.showToast(
