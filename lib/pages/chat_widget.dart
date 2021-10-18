@@ -6,7 +6,8 @@ import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
 class ChatWidget extends StatefulWidget {
-  final MsgBean chatObj;
+  MsgBean chatObj;
+  var setObject;
 
   ChatWidget(this.chatObj);
 
@@ -30,24 +31,17 @@ class _ChatWidgetState extends State<ChatWidget>
 
   @override
   void initState() {
+    widget.setObject = (MsgBean msg) {
+      widget.chatObj = msg;
+      _loadMessages();
+    };
+    
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.messageRaw) {
         _messageReceived(event.data);
       }
     });
-
-    // 获取历史消息
-    MsgBean msg = widget.chatObj;
-    if (msg.isPrivate()) {
-      _messages = G.ac.allPrivateMessages[msg.friendId];
-    } else if (msg.isGroup()) {
-      _messages = G.ac.allGroupMessages[msg.groupId];
-    }
-
-    if (_messages == null) {
-      _messages = [];
-    }
 
     // 初始化控件
     _textController = new TextEditingController();
@@ -59,6 +53,22 @@ class _ChatWidgetState extends State<ChatWidget>
 
     // 默认获取焦点
     // FocusScope.of(context).requestFocus(_editorFocus);
+
+    _loadMessages();
+  }
+  
+  void _loadMessages() {
+    // 获取历史消息
+    MsgBean msg = widget.chatObj;
+    if (msg.isPrivate()) {
+      _messages = G.ac.allPrivateMessages[msg.friendId];
+    } else if (msg.isGroup()) {
+      _messages = G.ac.allGroupMessages[msg.groupId];
+    }
+  
+    if (_messages == null) {
+      _messages = [];
+    }
 
     // 默认滚动到底部
     SchedulerBinding.instance.addPostFrameCallback((_) {
