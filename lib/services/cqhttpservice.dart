@@ -211,6 +211,9 @@ class CqhttpService {
     
     if (subType == 'anonymous') {
       // 匿名消息，不想作处理
+      var anonymous = obj['anonymous'];
+      senderId = anonymous['id'];
+      nickname = anonymous['name'];
     }
     
     String groupName = ac.groupNames.containsKey(groupId)

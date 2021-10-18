@@ -155,7 +155,7 @@ class _MainPagesState extends State<MainPages> {
                 <PopupMenuEntry<AppBarMenuItems>>[
               const PopupMenuItem<AppBarMenuItems>(
                 value: AppBarMenuItems.AllReaded,
-                child: Text('全部标位已读'),
+                child: Text('全部标为已读'),
               ),
             ],
           )
