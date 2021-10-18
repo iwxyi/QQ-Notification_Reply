@@ -9,16 +9,20 @@ class UserAccount {
   int connectState = 0; // 连接状态：0未连接，1已连接，-1已断开
 
   // 账号数据
-  Map<int, String> friendNames = {};
-  Map<int, String> groupNames = {};
+  Map<int, String> friendNames = {}; // 好友昵称（优先备注）
+  Map<int, String> groupNames = {}; // 群组名称
   Map<int, Map<int, String>> groupMemberNames = {};
 
   // 消息记录
   List<MsgBean> allMessages = [];
-  Map<int, int> privateMessageTimes = {};
-  Map<int, int> groupMessageTimes = {};
-  Map<int, List<Message>> unreadPrivateMessages = {};
-  Map<int, List<Message>> unreadGroupMessages = {};
+  Map<int, List<MsgBean>> allPrivateMessages = {};
+  Map<int, List<MsgBean>> allGroupMessages = {};
+
+  Map<int, int> privateMessageTimes = {}; // 私聊消息时间
+  Map<int, int> groupMessageTimes = {}; // 群聊消息时间
+
+  Map<int, List<Message>> unreadPrivateMessages = {}; // 未读私聊消息
+  Map<int, List<Message>> unreadGroupMessages = {}; // 未读群聊消息
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
@@ -34,7 +38,7 @@ class UserAccount {
     int id = msg.isGroup()
         ? msg.groupId
         : msg.isPrivate()
-            ? msg.friendId + 1e2
+            ? msg.friendId + 1e12
             : 0;
     if (!notificationIdMap.containsKey(id)) {
       notificationIdMap[id] = notificationIdMap.length + 1;

@@ -21,17 +21,15 @@ class G {
     if (rt != null) return 'OK';
 
     rt = new AppRuntime(
+      /*dataPath: 'data/',
+        cachePath: 'cache/'*/
         dataPath: (await getApplicationDocumentsDirectory()).path + '/data/',
         cachePath: (await getTemporaryDirectory()).path + '/',
-        storagePath: (await getExternalStorageDirectory()).path + '/');
+        /* storagePath: (await getExternalStorageDirectory()).path + '/' */);
     st = new UserSettings(iniPath: rt.dataPath + 'settings.ini');
     ac = new UserAccount();
     cs = new CqhttpService(rt: rt, st: st, ac: ac);
 
-    // 自动登录
-    if (st.host != null && st.host.isNotEmpty) {
-      cs.connect(st.host, st.token);
-    }
     return 'init successed';
   }
 }

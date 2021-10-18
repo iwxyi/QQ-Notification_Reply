@@ -52,7 +52,7 @@ class LoginWidget extends StatelessWidget {
                 child: TextField(
                   controller: _hostController,
                   decoration: InputDecoration(
-                    hintText: 'http://domain:port',
+                    hintText: 'ws://domain:port',
                     labelText: 'host',
                   ),
                   onChanged: (String text) {

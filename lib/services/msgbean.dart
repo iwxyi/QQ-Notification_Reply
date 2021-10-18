@@ -49,11 +49,21 @@ class MsgBean {
           ? remark
           : nickname;
 
+  String title() => isGroup() ? groupName : username();
+
   bool isPrivate() => groupId == null || groupId == 0;
 
-  bool isGroup() => groupId != 0;
+  bool isGroup() => groupId != null && groupId != 0;
 
   bool isFile() => fileId != null && fileId.isNotEmpty;
+
+  bool isObj(MsgBean msg) {
+    if (groupId != null && groupId != 0) {
+      return this.groupId == msg.groupId;
+    } else {
+      return this.friendId == msg.friendId;
+    }
+  }
 
   String simpleString() {
     String showed = message;

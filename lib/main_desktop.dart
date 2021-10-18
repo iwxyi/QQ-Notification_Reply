@@ -1,16 +1,29 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/pages/main_pages.dart';
 
 import 'global/g.dart';
 
 void main() {
-  // Unhandled Exception: Null check operator used on a null value
-  WidgetsFlutterBinding.ensureInitialized(); // 解决加载json错误
-
+  _setTargetPlatformForDesktop();
   G.init().then((e) {
     runApp(MyApp());
   });
   // runApp(MyApp());
+}
+
+void _setTargetPlatformForDesktop() {
+  TargetPlatform targetPlatform;
+  if (Platform.isMacOS) {
+    targetPlatform = TargetPlatform.iOS;
+  } else if (Platform.isLinux || Platform.isWindows) {
+    targetPlatform = TargetPlatform.android;
+  }
+  if (targetPlatform != null) {
+    debugDefaultTargetPlatformOverride = targetPlatform;
+  }
 }
 
 class MyApp extends StatelessWidget {

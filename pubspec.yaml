@@ -33,6 +33,7 @@ dependencies:
   flutter_local_notifications: ^6.0.0
   fluttertoast: ^8.0.7
   cupertino_icons: ^1.0.0
+  extended_image: ^4.0.0
 
 dev_dependencies:
   flutter_test:
@@ -42,3 +43,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/cat_chat.png
+    - assets/icons/default_header.png

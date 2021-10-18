@@ -5,6 +5,7 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/pages/all_messages_page.dart';
 import 'package:qqnotificationreply/pages/login_widget.dart';
+import 'package:qqnotificationreply/pages/notification_widget.dart';
 
 class AccountWidget extends StatefulWidget {
   @override
@@ -23,7 +24,7 @@ class _AccountWidgetState extends State<AccountWidget> {
       if (event.event == Event.loginInfo ||
           event.event == Event.friendList ||
           event.event == Event.groupList ||
-          event.event == Event.message) {
+          event.event == Event.messageRaw) {
         setState(() {});
 
         if (event.event == Event.loginInfo) {
@@ -55,7 +56,7 @@ class _AccountWidgetState extends State<AccountWidget> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              '登录',
+              '账号',
               style: TextStyle(color: Colors.grey.shade700),
             ),
           ),
@@ -114,8 +115,8 @@ class _AccountWidgetState extends State<AccountWidget> {
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.person,
-                    color: Colors.red,
+                    Icons.history,
+                    color: Colors.blue,
                   ),
                   title: Text('消息记录：' + G.ac.allMessages.length.toString()),
                   trailing: Icon(Icons.arrow_right),
@@ -123,6 +124,41 @@ class _AccountWidgetState extends State<AccountWidget> {
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
                       return AllMessageListWidget();
+                    })).then((value) {
+                      // 可能登录了，刷新一下界面
+                      setState(() {});
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              '设置',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ),
+          Card(
+            color: Colors.white,
+            elevation: 4.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.notifications,
+                    color: Colors.blue,
+                  ),
+                  title: Text('通知设置'),
+                  trailing: Icon(Icons.arrow_right),
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return Scaffold(
+                        appBar: AppBar(title: Text('通知设置'),),
+                        body: NotificationWidget(),
+                      );
                     })).then((value) {
                       // 可能登录了，刷新一下界面
                       setState(() {});
