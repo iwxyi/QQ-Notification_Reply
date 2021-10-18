@@ -338,7 +338,7 @@ class CqhttpService {
     text = text.replaceAllMapped(
         RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) => '@${match[1]}');
     text = text.replaceAllMapped(
-        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*\]'),
+        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*?\]'),
             (match) => '${match[1]}');
     text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[JSON]');
     text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');

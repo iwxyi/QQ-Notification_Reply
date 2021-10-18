@@ -179,15 +179,15 @@ class EntryItem extends StatelessWidget {
     bool isSelf = msg.senderId == G.ac.qqId;
 
     // 消息列，是否显示昵称
-    List<Widget> vWidges = [];
+    List<Widget> vWidgets = [];
     if (!isSelf) {
-      vWidges.add(_buildNicknameView());
+      vWidgets.add(_buildNicknameView());
     }
-    vWidges.add(_buildMessageView());
+    vWidgets.add(_buildMessageView());
 
     Widget vWidget = Flexible(
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, children: vWidges),
+          crossAxisAlignment: CrossAxisAlignment.start, children: vWidgets),
     );
 
     // 头像和消息的顺序
@@ -245,7 +245,7 @@ class EntryItem extends StatelessWidget {
   Widget _buildMessageTypeView() {
     String text = msg.message;
     Match match;
-    RegExp imageRE = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+)?\]$');
+    RegExp imageRE = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+?)?\]$');
     if ((match = imageRE.firstMatch(text)) != null) {
       String url = match.group(1);
       return ExtendedImage.network(url,
@@ -257,8 +257,6 @@ class EntryItem extends StatelessWidget {
       // 未知，当做纯文本了
       return new Text(
         G.cs.getMessageDisplay(msg),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
         style: TextStyle(color: Colors.black, fontSize: 16),
       );
     }
