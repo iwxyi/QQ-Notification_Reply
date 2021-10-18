@@ -52,11 +52,8 @@ class _GroupListWidgetState extends State<GroupListWidget>
           title: Text('${info.name}'),
           onTap: () {
             setState(() {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                return ChatWidget(MsgBean(groupId: info.id, groupName: info.name));
-              })).then((value) {
-                setState(() {});
-              });
+              G.rt.showChatPage(
+                  MsgBean(groupId: info.id, groupName: info.name));
             });
           },
         );

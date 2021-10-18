@@ -89,7 +89,8 @@ class _ChatListPageState extends State<ChatListPage>
             leading: new ClipOval(
               // 圆形头像
               child: new FadeInImage.assetNetwork(
-                placeholder: "assets/icons/default_header.png", //预览图
+                placeholder: "assets/icons/default_header.png",
+                //预览图
                 fit: BoxFit.contain,
                 image: headerUrl,
                 width: 40.0,
@@ -100,11 +101,7 @@ class _ChatListPageState extends State<ChatListPage>
             subtitle: Text(subTitle, maxLines: 3),
             trailing: Text(timeStr),
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                return ChatWidget(msg);
-              })).then((value) {
-                setState(() {});
-              });
+              G.rt.showChatPage(msg);
             },
             onLongPress: () {},
           );
@@ -120,7 +117,7 @@ class _ChatListPageState extends State<ChatListPage>
       }
     }
     timedMsgs.insert(0, msg);
-    
+
     // 判断是否已经释放
     if (!mounted) {
       // 不判断的话，会报错：setState() called after dispose():

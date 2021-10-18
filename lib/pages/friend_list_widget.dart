@@ -51,12 +51,7 @@ class _FriendListWidgetState extends State<FriendListWidget>
           title: Text('${info.name}'),
           onTap: () {
             setState(() {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                return ChatWidget(
-                    MsgBean(targetId: info.id, nickname: info.name));
-              })).then((value) {
-                setState(() {});
-              });
+              G.rt.showChatPage(MsgBean(targetId: info.id, nickname: info.name));
             });
           },
         );

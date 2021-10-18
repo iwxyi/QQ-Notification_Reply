@@ -42,7 +42,6 @@ enum AppBarMenuItems { AllReaded }
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0; // 导航栏当前项
-  ChatWidget currentChatPage;
 
   List<CardSection> allPages = <CardSection>[
     CardSection(
@@ -116,6 +115,22 @@ class _MainPagesState extends State<MainPages> {
       UserAccount.flutterLocalNotificationsPlugin =
           flutterLocalNotificationsPlugin;
     }
+
+    G.rt.showChatPage = (MsgBean msg) {
+      // 当前页面直接替换
+      if (G.rt.currentChatPage != null) {
+        G.rt.currentChatPage.setObject(msg);
+        return;
+      }
+      // 重新创建页面
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        G.rt.currentChatPage = new ChatWidget(msg);
+        return G.rt.currentChatPage;
+      })).then((value) {
+        G.rt.currentChatPage = null;
+        setState(() {});
+      });
+    };
   }
 
   @override
@@ -281,22 +296,6 @@ class _MainPagesState extends State<MainPages> {
         payload: msg.messageId.toString());
   }
 
-  void showChatPage(MsgBean msg) {
-    // 当前页面直接替换
-    if (currentChatPage != null) {
-      currentChatPage.setObject(msg);
-      return;
-    }
-    // 重新创建页面
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-      currentChatPage = new ChatWidget(msg);
-      return currentChatPage;
-    })).then((value) {
-      currentChatPage = null;
-      setState(() {});
-    });
-  }
-
   /// 通知点击回调
   Future<dynamic> onSelectNotification(String payload) async {
     print('通知.payload: $payload');
@@ -309,7 +308,7 @@ class _MainPagesState extends State<MainPages> {
     }
 
     if (!G.st.notificationLaunchQQ) {
-      showChatPage(msg);
+      G.rt.showChatPage(msg);
     } else {
       String url;
       // android 和 ios 的 QQ 启动 url scheme 是不同的
