@@ -30,6 +30,7 @@ class _ChatWidgetState extends State<ChatWidget>
   bool _keepScrollBottom = true; // 修改内容时是否滚动到末尾
   bool _blankHistory = false; // 是否已经将加载完历史记录
   bool _showGoToBottomButton = false; // 是否显示返回底部按钮
+  num _hasNewMsg = 0; // 是否有新消息
 
   List<MsgBean> _messages = [];
 
@@ -87,6 +88,8 @@ class _ChatWidgetState extends State<ChatWidget>
     // 默认滚动到底部
     _keepScrollBottom = true;
     _blankHistory = false;
+    _showGoToBottomButton = false;
+    _hasNewMsg = 0;
     _scrollToBottom(false);
   }
 
@@ -99,6 +102,7 @@ class _ChatWidgetState extends State<ChatWidget>
       } else {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
+      _hasNewMsg = 0;
     });
   }
 
@@ -140,7 +144,7 @@ class _ChatWidgetState extends State<ChatWidget>
           )
         ],
       ),
-      floatingActionButton: _showGoToBottomButton
+      floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
           ? FloatingActionButton(
               child: Icon(Icons.arrow_downward),
               onPressed: () {
@@ -148,6 +152,8 @@ class _ChatWidgetState extends State<ChatWidget>
               },
             )
           : null,
+      floatingActionButtonLocation: CustomFloatingActionButtonLocation(
+          FloatingActionButtonLocation.miniEndFloat, 0, -56),
     );
   }
 
@@ -179,17 +185,21 @@ class _ChatWidgetState extends State<ChatWidget>
 
   /// 收到消息
   void _messageReceived(MsgBean msg) {
+    if (!msg.isObj(widget.chatObj)) {
+      return;
+    }
+    if (!_keepScrollBottom) {
+      _hasNewMsg++;
+    }
     // 判断是否已经释放
     if (!mounted) {
       // 不判断的话，会报错：setState() called after dispose():
       return;
     }
     // 刷新界面
-    if (msg.isObj(widget.chatObj)) {
-      setState(() {});
-      if (_keepScrollBottom) {
-        _scrollToBottom(true);
-      }
+    setState(() {});
+    if (_keepScrollBottom) {
+      _scrollToBottom(true);
     }
   }
 
@@ -315,5 +325,18 @@ class EntryItem extends StatelessWidget {
     return new Container(
       child: _buildMessageLine(),
     );
+  }
+}
+
+class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
+  FloatingActionButtonLocation location;
+  double offsetX; // X方向的偏移量
+  double offsetY; // Y方向的偏移量
+  CustomFloatingActionButtonLocation(this.location, this.offsetX, this.offsetY);
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    Offset offset = location.getOffset(scaffoldGeometry);
+    return Offset(offset.dx + offsetX, offset.dy + offsetY);
   }
 }

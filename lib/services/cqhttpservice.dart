@@ -10,7 +10,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// WebSocket使用说明：https://zhuanlan.zhihu.com/p/133849780
 class CqhttpService {
-  bool debugMode = true;
+  bool debugMode = false;
   AppRuntime rt;
   UserSettings st;
   UserAccount ac;
@@ -31,12 +31,6 @@ class CqhttpService {
     // 清理之前的数据
     ac.allMessages.clear();
     wsReceives.clear();
-
-    // 关闭定时连接
-    if (_reconnectTimer != null) {
-      _reconnectTimer.cancel();
-      _reconnectTimer = null;
-    }
 
     // 预处理输入
     if (!host.contains('://')) {
@@ -82,9 +76,15 @@ class CqhttpService {
       print('ws错误: ' + ex.message);
     }, onDone: () {
       // 实际上是 onClose，连接结束，即关闭
-      print('断线，尝试重连...');
+      print('ws断线，尝试重连...');
       reconnect(host, token);
     });
+
+    // 关闭定时连接
+    if (_reconnectTimer != null) {
+      _reconnectTimer.cancel();
+      _reconnectTimer = null;
+    }
 
     return true;
   }
@@ -96,8 +96,8 @@ class CqhttpService {
   }
 
   void reconnect(String host, String token) {
-    if (this.host != host || this.token != token) {
-      // 账号密码修改了，那么之前的尝试重连就不需要了
+    // 还是连接状态？
+    if (channel != null && channel.innerWebSocket != null) {
       return;
     }
 
@@ -105,8 +105,23 @@ class CqhttpService {
     if (_reconnectTimer != null) {
       _reconnectTimer.cancel();
     }
+
+    if (this.host != host || this.token != token) {
+      // 账号密码修改了，那么之前的尝试重连就不需要了
+      return;
+    }
+
     _reconnectTimer =
         new Timer.periodic(Duration(seconds: _reconnectTime), (timer) {
+      // 已经连接上了
+      if (channel != null && channel.innerWebSocket != null) {
+        if (_reconnectTimer != null) {
+          _reconnectTimer.cancel();
+          _reconnectTimer = null;
+        }
+        return;
+      }
+      // 尝试连接
       _openSocket(host, token);
     });
   }
