@@ -102,7 +102,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                     Icons.contact_phone,
                     color: Colors.blue,
                   ),
-                  title: Text('好友数量：' + G.ac.friendNames.length.toString()),
+                  title: Text('好友数量：' + G.ac.friendList.length.toString()),
                   onTap: () => G.cs.getFriendList(),
                 ),
                 ListTile(
@@ -110,7 +110,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                     Icons.group,
                     color: Colors.blue,
                   ),
-                  title: Text('群组数量：' + G.ac.groupNames.length.toString()),
+                  title: Text('群组数量：' + G.ac.groupList.length.toString()),
                   onTap: () => G.cs.getGroupList(),
                 ),
                 ListTile(

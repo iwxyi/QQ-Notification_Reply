@@ -10,7 +10,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// WebSocket使用说明：https://zhuanlan.zhihu.com/p/133849780
 class CqhttpService {
-  bool debugMode = false;
+  bool debugMode = true;
   AppRuntime rt;
   UserSettings st;
   UserAccount ac;
@@ -81,7 +81,7 @@ class CqhttpService {
       WebSocketChannelException ex = e;
       print('ws错误: ' + ex.message);
     }, onDone: () {
-      // 连接结束，即关闭
+      // 实际上是 onClose，连接结束，即关闭
       print('断线，尝试重连...');
       reconnect(host, token);
     });
@@ -171,6 +171,7 @@ class CqhttpService {
   void _parseEchoMessage(final obj) {
     String echo = obj['echo'];
     if (echo == 'get_login_info') {
+      // 登录信息
       var data = obj['data'];
       ac.qqId = data['user_id'];
       ac.nickname = data['nickname'];
@@ -178,30 +179,49 @@ class CqhttpService {
       ac.eventBus.fire(
           EventFn(Event.loginInfo, {'qqId': ac.qqId, 'nickname': ac.nickname}));
     } else if (echo == 'get_friend_list') {
-      ac.friendNames.clear();
+      // 好友列表
+      ac.friendList.clear();
       List data = obj['data']; // 好友数组
       print('好友数量: ' + data.length.toString());
       data.forEach((friend) {
         int userId = friend['user_id'];
         String nickname = friend['nickname'];
-        if (friend.containsKey('remark')) nickname = friend['remark'];
-        ac.friendNames[userId] = nickname;
+        String remark;
+        if (friend.containsKey('remark')) remark = friend['remark'];
+        ac.friendList[userId] = new FriendInfo(userId, nickname, remark);
       });
       ac.eventBus.fire(EventFn(Event.friendList, {}));
     } else if (echo == 'get_group_list') {
-      ac.groupNames.clear();
+      // 群组列表
+      ac.groupList.clear();
       List data = obj['data']; // 好友数组
       print('群组数量: ' + data.length.toString());
       data.forEach((friend) {
         int groupId = friend['group_id'];
         String groupName = friend['group_name'];
-        ac.groupNames[groupId] = groupName;
+        ac.groupList[groupId] = new GroupInfo(groupId, groupName);
       });
       ac.eventBus.fire(EventFn(Event.groupList, {}));
     } else if (echo == 'send_private_msg' || echo == 'send_group_msg') {
       // 发送消息的回复，不做处理
     } else if (echo.startsWith('get_group_member_list')) {
       // TODO: 获取群组，echo字段格式为：get_group_member_list:123456
+      RegExp re = RegExp(r'^get_group_member_list:(\d+)$');
+      Match match;
+      if ((match = re.firstMatch(echo)) != null) {
+        int groupId = int.parse(match.group(1));
+        ac.groupMemberNames[groupId] = {};
+        List data = obj['data']; // 群成员数组
+        data.forEach((member) {
+          int userId = member['user_id'];
+          String nickname = member['nickname'];
+          String card = member['card'];
+          ac.groupMemberNames[groupId][userId] =
+              new FriendInfo(userId, nickname, card);
+        });
+      } else {
+        print('无法识别的群成员echo: ' + echo);
+      }
     } else {
       print('未处理类型的echo: ' + echo);
     }
@@ -228,8 +248,8 @@ class CqhttpService {
         rawMessage: rawMessage,
         messageId: messageId,
         nickname: nickname,
-        remark: ac.friendNames.containsKey(friendId)
-            ? ac.friendNames[friendId]
+        remark: ac.friendList.containsKey(friendId)
+            ? ac.friendList[friendId].username()
             : null,
         friendId: friendId,
         timestamp: DateTime.now().millisecondsSinceEpoch);
@@ -259,12 +279,16 @@ class CqhttpService {
       nickname = anonymous['name'];
     }
 
-    String groupName = ac.groupNames.containsKey(groupId)
-        ? ac.groupNames[groupId]
+    String groupName = ac.groupList.containsKey(groupId)
+        ? ac.groupList[groupId].name
         : groupId.toString();
 
-    print(
-        '收到群消息：' + ac.groupNames[groupId] + " - " + nickname + " : " + message);
+    print('收到群消息：' +
+        ac.groupList[groupId].name +
+        " - " +
+        nickname +
+        " : " +
+        message);
 
     MsgBean msg = MsgBean(
         subType: subType,
@@ -277,8 +301,8 @@ class CqhttpService {
         message: message,
         rawMessage: rawMessage,
         targetId: groupId,
-        remark: ac.friendNames.containsKey(senderId)
-            ? ac.friendNames[senderId]
+        remark: ac.friendList.containsKey(senderId)
+            ? ac.friendList[senderId].username()
             : null,
         role: role,
         timestamp: DateTime.now().millisecondsSinceEpoch);
@@ -295,7 +319,13 @@ class CqhttpService {
 
   void refreshGroups() {}
 
-  void refreshGroupMembers(int groupId) {}
+  void refreshGroupMembers(int groupId) {
+    send({
+      'action': 'get_group_member_list',
+      'params': {'group_id': groupId},
+      'echo': 'get_group_member_list:' + groupId.toString()
+    });
+  }
 
   void getFriendList() {
     send({'action': 'get_friend_list', 'echo': 'get_friend_list'});

@@ -1,37 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/global/useraccount.dart';
 
 class GroupSelectWidget extends StatefulWidget {
   @override
   _GroupSelectWidgetState createState() => _GroupSelectWidgetState();
 }
 
-class GroupInfo {
+class IGroupInfo {
   int id;
   String name;
   int importance; // -1不重要，0默认，1普通通知，2重点通知
   int time;
 
-  GroupInfo(this.id, this.name, this.importance, this.time);
+  IGroupInfo(this.id, this.name, this.importance, this.time);
 }
 
 class _GroupSelectWidgetState extends State<GroupSelectWidget> {
   TextEditingController editingController = TextEditingController();
-  List<GroupInfo> groups = [];
+  List<IGroupInfo> groups = [];
   String filterKey = '';
-  List<GroupInfo> showItemList = [];
+  List<IGroupInfo> showItemList = [];
 
   @override
   void initState() {
     // 初始化群组内容
-    Map<int, String> groupNames = G.ac.groupNames;
-    groupNames.forEach((id, name) {
+    Map<int, GroupInfo> groupList = G.ac.groupList;
+    groupList.forEach((id, info) {
       int time = G.ac.groupMessageTimes.containsKey(id)
           ? G.ac.groupMessageTimes[id]
           : 0;
-      groups.add(new GroupInfo(id, name, 0, time));
+      groups.add(new IGroupInfo(id, info.name, 0, time));
     });
-    groups.sort((GroupInfo a, GroupInfo b) {
+    groups.sort((IGroupInfo a, IGroupInfo b) {
       return b.time.compareTo(a.time);
     });
 
@@ -78,7 +79,7 @@ class _GroupSelectWidgetState extends State<GroupSelectWidget> {
                 shrinkWrap: true,
                 itemCount: showItemList.length,
                 itemBuilder: (context, index) {
-                  GroupInfo info = showItemList[index];
+                  IGroupInfo info = showItemList[index];
                   return ListTile(
                     title: Text('${info.name}'),
                     onTap: () {
@@ -103,7 +104,7 @@ class _GroupSelectWidgetState extends State<GroupSelectWidget> {
               children: [
                 RaisedButton(
                   onPressed: () {
-                    G.st.enabledGroups = G.ac.groupNames.keys.toList();
+                    G.st.enabledGroups = G.ac.groupList.keys.toList();
                     G.st.switchEnabledGroup(0);
                     setState(() {});
                   },
@@ -111,7 +112,7 @@ class _GroupSelectWidgetState extends State<GroupSelectWidget> {
                 ),
                 RaisedButton(
                   onPressed: () {
-                    G.ac.groupNames.forEach((id, name) {
+                    G.ac.groupList.forEach((id, info) {
                       if (G.st.enabledGroups.contains(id)) {
                         G.st.enabledGroups.remove(id);
                       } else {

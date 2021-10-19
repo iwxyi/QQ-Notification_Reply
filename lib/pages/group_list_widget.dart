@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
-
-import 'chat_widget.dart';
 
 class GroupListWidget extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => new _GroupListWidgetState();
-}
-
-class GroupInfo {
-  int id;
-  String name;
-
-  GroupInfo(this.id, this.name);
 }
 
 class _GroupListWidgetState extends State<GroupListWidget>
@@ -34,8 +26,8 @@ class _GroupListWidgetState extends State<GroupListWidget>
 
   void _loadGroupList() {
     groups.clear();
-    Map<int, String> groupNames = G.ac.groupNames;
-    groupNames.forEach((id, name) => {groups.add(new GroupInfo(id, name))});
+    Map<int, GroupInfo> groupList = G.ac.groupList;
+    groupList.forEach((id, info) => {groups.add(info)});
     groups.sort((GroupInfo a, GroupInfo b) => a.name.compareTo(b.name));
   }
 
@@ -53,7 +45,7 @@ class _GroupListWidgetState extends State<GroupListWidget>
           onTap: () {
             setState(() {
               G.rt.showChatPage(
-                  MsgBean(groupId: info.id, groupName: info.name));
+                  MsgBean(groupId: info.groupId, groupName: info.name));
             });
           },
         );

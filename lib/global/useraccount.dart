@@ -2,6 +2,28 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
+class FriendInfo {
+  int userId;
+  String nickname;
+  String remark;
+
+  FriendInfo(this.userId, this.nickname, this.remark);
+
+  String username() {
+    return remark != null && remark != "" ? remark : nickname;
+  }
+}
+
+class GroupInfo {
+  int groupId;
+  String name;
+  Map<int, FriendInfo> members;
+
+  GroupInfo(this.groupId, this.name) {
+    this.members = {};
+  }
+}
+
 class UserAccount {
   // 账号信息
   String nickname = ''; // QQ昵称
@@ -9,9 +31,10 @@ class UserAccount {
   int connectState = 0; // 连接状态：0未连接，1已连接，-1已断开
 
   // 账号数据
-  Map<int, String> friendNames = {}; // 好友昵称（优先备注）
-  Map<int, String> groupNames = {}; // 群组名称
-  Map<int, Map<int, String>> groupMemberNames = {};
+  Map<int, FriendInfo> friendList = {}; // 好友列表
+  Map<int, GroupInfo> groupList = {}; // 群组列表
+
+  Map<int, Map<int, FriendInfo>> groupMemberNames = {}; // xxx:群成员
 
   // 消息记录
   List<MsgBean> allMessages = [];
@@ -31,7 +54,6 @@ class UserAccount {
   // 消息通知
   static var flutterLocalNotificationsPlugin;
   static Map<int, int> notificationIdMap = {};
-
 
   // QQ号增加只12位，与QQ群分开
   static int getNotificationId(MsgBean msg) {
