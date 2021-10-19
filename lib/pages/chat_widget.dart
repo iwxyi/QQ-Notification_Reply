@@ -29,6 +29,7 @@ class _ChatWidgetState extends State<ChatWidget>
   ScrollController _scrollController;
   bool _keepScrollBottom = true; // 修改内容时是否滚动到末尾
   bool _blankHistory = false; // 是否已经将加载完历史记录
+  bool _showGoToBottomButton = false; // 是否显示返回底部按钮
 
   List<MsgBean> _messages = [];
 
@@ -54,6 +55,12 @@ class _ChatWidgetState extends State<ChatWidget>
     _scrollController.addListener(() {
       _keepScrollBottom = (_scrollController.offset >=
           _scrollController.position.maxScrollExtent - 50);
+      bool _prevShow = _showGoToBottomButton;
+      _showGoToBottomButton = (_scrollController.offset <
+          _scrollController.position.maxScrollExtent - 500);
+      if (_prevShow != _showGoToBottomButton) {
+        setState(() {});
+      }
     });
 
     super.initState();
@@ -133,6 +140,14 @@ class _ChatWidgetState extends State<ChatWidget>
           )
         ],
       ),
+      floatingActionButton: _showGoToBottomButton
+          ? FloatingActionButton(
+              child: Icon(Icons.arrow_downward),
+              onPressed: () {
+                _scrollToBottom(true);
+              },
+            )
+          : null,
     );
   }
 
@@ -180,6 +195,9 @@ class _ChatWidgetState extends State<ChatWidget>
 
   ///发送信息
   void _sendMessage(String text) {
+    if (text.isEmpty) {
+      return;
+    }
     _textController.clear(); //清空文本框
     FocusScope.of(context).requestFocus(_editorFocus); // 继续保持焦点
 
@@ -201,6 +219,7 @@ class EntryItem extends StatelessWidget {
 
   EntryItem(this.msg);
 
+  /// 一整行
   Widget _buildMessageLine() {
     // 判断左右
     bool isSelf = msg.senderId == G.ac.qqId;
@@ -210,7 +229,7 @@ class EntryItem extends StatelessWidget {
     if (!isSelf) {
       vWidgets.add(_buildNicknameView());
     }
-    vWidgets.add(_buildMessageView());
+    vWidgets.add(_buildMessageContainer());
 
     Widget vWidget = Flexible(
       child: Column(
@@ -262,18 +281,20 @@ class EntryItem extends StatelessWidget {
     );
   }
 
-  /// 构建消息控件
-  Widget _buildMessageView() {
+  /// 构建消息容器
+  Widget _buildMessageContainer() {
     return new Container(
         margin: const EdgeInsets.only(top: 5.0),
         child: _buildMessageTypeView());
   }
 
+  /// 构建消息控件
   Widget _buildMessageTypeView() {
     String text = msg.message;
     Match match;
     RegExp imageRE = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+?)?\]$');
     if ((match = imageRE.firstMatch(text)) != null) {
+      // 如果是图片
       String url = match.group(1);
       return ExtendedImage.network(url,
           fit: BoxFit.fill,

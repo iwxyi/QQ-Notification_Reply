@@ -102,8 +102,11 @@ class CqhttpService {
     }
 
     _reconnectTime++;
+    if (_reconnectTimer != null) {
+      _reconnectTimer.cancel();
+    }
     _reconnectTimer =
-        new Timer.periodic(Duration(milliseconds: _reconnectTime), (timer) {
+        new Timer.periodic(Duration(seconds: _reconnectTime), (timer) {
       _openSocket(host, token);
     });
   }
