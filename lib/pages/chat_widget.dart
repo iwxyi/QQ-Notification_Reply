@@ -97,7 +97,7 @@ class _ChatWidgetState extends State<ChatWidget>
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (ani) {
         _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-            duration: Duration(milliseconds: 300),
+            duration: Duration(milliseconds: 400),
             curve: Curves.fastLinearToSlowEaseIn);
       } else {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
@@ -306,11 +306,55 @@ class EntryItem extends StatelessWidget {
     if ((match = imageRE.firstMatch(text)) != null) {
       // 如果是图片
       String url = match.group(1);
-      return ExtendedImage.network(url,
-          fit: BoxFit.fill,
-          cache: true,
-          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-          scale: 2);
+      return ExtendedImage.network(
+        url,
+        fit: BoxFit.fill,
+        cache: true,
+        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+        scale: 2,
+        loadStateChanged: (ExtendedImageState state) {
+          switch (state.extendedImageLoadState) {
+            case LoadState.loading:
+              return Image.asset(
+                "assets/images/loading.gif",
+                fit: BoxFit.fill,
+              );
+
+            ///if you don't want override completed widget
+            ///please return null or state.completedWidget
+            //return null;
+            //return state.completedWidget;
+            case LoadState.completed:
+              return null;
+            case LoadState.failed:
+              return GestureDetector(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    Image.asset(
+                      "assets/images/failed.jpg",
+                      fit: BoxFit.fill,
+                    ),
+                    Positioned(
+                      bottom: 0.0,
+                      left: 0.0,
+                      right: 0.0,
+                      child: Text(
+                        "加载失败，点击重试",
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  ],
+                ),
+                onTap: () {
+                  state.reLoadImage();
+                },
+              );
+              break;
+          }
+          return null;
+        },
+      );
     } else {
       // 未知，当做纯文本了
       return new Text(
@@ -328,6 +372,7 @@ class EntryItem extends StatelessWidget {
   }
 }
 
+/// 自定义 FloatingActionButton 的偏移位置
 class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
   FloatingActionButtonLocation location;
   double offsetX; // X方向的偏移量
