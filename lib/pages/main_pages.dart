@@ -397,4 +397,13 @@ class _MainPagesState extends State<MainPages> {
       );
     }
   }
+
+  @override
+  void dispose() {
+    // 释放资源
+    if (G.cs.channel != null && G.cs.channel.innerWebSocket != null) {
+      G.cs.channel.innerWebSocket.close();
+    }
+    super.dispose();
+  }
 }
