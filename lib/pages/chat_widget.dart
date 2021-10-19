@@ -5,6 +5,7 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
+// ignore: must_be_immutable
 class ChatWidget extends StatefulWidget {
   MsgBean chatObj;
   var setObject;
@@ -26,6 +27,8 @@ class _ChatWidgetState extends State<ChatWidget>
   TextEditingController _textController;
   FocusNode _editorFocus;
   ScrollController _scrollController;
+  bool _keepScrollBottom = true; // 修改内容时是否滚动到末尾
+  bool _blankHistory = false; // 是否已经将加载完历史记录
 
   List<MsgBean> _messages = [];
 
@@ -35,7 +38,7 @@ class _ChatWidgetState extends State<ChatWidget>
       widget.chatObj = msg;
       _loadMessages();
     };
-    
+
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.messageRaw) {
@@ -48,6 +51,10 @@ class _ChatWidgetState extends State<ChatWidget>
     _editorFocus = FocusNode();
     _scrollController =
         new ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
+    _scrollController.addListener(() {
+      _keepScrollBottom = (_scrollController.offset >=
+          _scrollController.position.maxScrollExtent - 50);
+    });
 
     super.initState();
 
@@ -56,7 +63,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
     _loadMessages();
   }
-  
+
   void _loadMessages() {
     // 获取历史消息
     MsgBean msg = widget.chatObj;
@@ -65,19 +72,32 @@ class _ChatWidgetState extends State<ChatWidget>
     } else if (msg.isGroup()) {
       _messages = G.ac.allGroupMessages[msg.groupId];
     }
-  
+
     if (_messages == null) {
       _messages = [];
     }
 
     // 默认滚动到底部
+    _keepScrollBottom = true;
+    _blankHistory = false;
+    _scrollToBottom(false);
+  }
+
+  void _scrollToBottom(bool ani) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      if (ani) {
+        _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.fastLinearToSlowEaseIn);
+      } else {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     // 分割线
     Widget divider = Divider(
       color: Colors.transparent,
@@ -91,6 +111,7 @@ class _ChatWidgetState extends State<ChatWidget>
       ),
       body: new Column(
         children: <Widget>[
+          // 消息列表
           new Flexible(
             child: new ListView.separated(
               separatorBuilder: (BuildContext context, int index) {
@@ -102,6 +123,7 @@ class _ChatWidgetState extends State<ChatWidget>
               controller: _scrollController,
             ),
           ),
+          // 输入框
           new Divider(height: 1.0),
           new Container(
             decoration: new BoxDecoration(
@@ -119,14 +141,15 @@ class _ChatWidgetState extends State<ChatWidget>
     return new Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: new Row(children: <Widget>[
+          // 输入框
           new Flexible(
               child: new TextField(
-            // 输入框
             controller: _textController,
             onSubmitted: _sendMessage,
             decoration: new InputDecoration.collapsed(hintText: '发送消息'),
             focusNode: _editorFocus,
           )),
+          // 发送按钮
           new Container(
             margin: new EdgeInsets.symmetric(horizontal: 4.0),
             child: new IconButton(
@@ -146,8 +169,12 @@ class _ChatWidgetState extends State<ChatWidget>
       // 不判断的话，会报错：setState() called after dispose():
       return;
     }
+    // 刷新界面
     if (msg.isObj(widget.chatObj)) {
       setState(() {});
+      if (_keepScrollBottom) {
+        _scrollToBottom(true);
+      }
     }
   }
 
@@ -170,7 +197,7 @@ class _ChatWidgetState extends State<ChatWidget>
 /// 构造发送的信息
 /// 每一条消息显示的复杂对象
 class EntryItem extends StatelessWidget {
-  MsgBean msg;
+  final MsgBean msg;
 
   EntryItem(this.msg);
 
