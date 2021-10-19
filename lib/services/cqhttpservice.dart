@@ -205,18 +205,22 @@ class CqhttpService {
     } else if (echo == 'send_private_msg' || echo == 'send_group_msg') {
       // 发送消息的回复，不做处理
     } else if (echo.startsWith('get_group_member_list')) {
-      // TODO: 获取群组，echo字段格式为：get_group_member_list:123456
+      // 获取群组，echo字段格式为：get_group_member_list:123456
       RegExp re = RegExp(r'^get_group_member_list:(\d+)$');
       Match match;
       if ((match = re.firstMatch(echo)) != null) {
         int groupId = int.parse(match.group(1));
-        ac.groupMemberNames[groupId] = {};
+        if (!ac.groupList.containsKey(groupId)) {
+          print('群组列表未包含：' + groupId.toString() + '，无法设置群成员');
+          return;
+        }
+        ac.groupList[groupId].members = {};
         List data = obj['data']; // 群成员数组
         data.forEach((member) {
           int userId = member['user_id'];
           String nickname = member['nickname'];
           String card = member['card'];
-          ac.groupMemberNames[groupId][userId] =
+          ac.groupList[groupId].members[userId] =
               new FriendInfo(userId, nickname, card);
         });
       } else {
@@ -406,10 +410,29 @@ class CqhttpService {
     text = text.replaceAll(RegExp(r"\[CQ:face,id=(\d+)\]"), '[表情]');
     text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
     text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
+    text = text.replaceAll(
+        RegExp(r"\[CQ:reply,.+?\](\[CQ:at,qq=\d+?\])?"), '[回复]');
     text = text.replaceAll(RegExp(r"\[CQ:reply,.+?\]"), '[回复]');
     text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
-    text = text.replaceAllMapped(
-        RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) => '@${match[1]}');
+    text = text.replaceAllMapped(RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) {
+      var id = int.parse(match[1]);
+      if (msg.isGroup()) {
+        // 艾特群成员
+        if (ac.groupList.containsKey(msg.groupId)) {
+          if (ac.groupList[msg.groupId].members.containsKey(id)) {
+            return '@' + ac.groupList[msg.groupId].members[id].username();
+          } else {
+            refreshGroupMembers(msg.groupId);
+          }
+        }
+      } else if (msg.isPrivate()) {
+        // 艾特私聊
+        if (ac.friendList.containsKey(id)) {
+          return '@' + ac.friendList[id].username();
+        }
+      }
+      return '@' + match[1];
+    });
     text = text.replaceAllMapped(
         RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*?\]'),
         (match) => '${match[1]}');

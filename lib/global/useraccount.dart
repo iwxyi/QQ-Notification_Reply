@@ -34,8 +34,6 @@ class UserAccount {
   Map<int, FriendInfo> friendList = {}; // 好友列表
   Map<int, GroupInfo> groupList = {}; // 群组列表
 
-  Map<int, Map<int, FriendInfo>> groupMemberNames = {}; // xxx:群成员
-
   // 消息记录
   List<MsgBean> allMessages = [];
   Map<int, List<MsgBean>> allPrivateMessages = {};
