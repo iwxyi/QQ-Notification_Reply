@@ -12,7 +12,11 @@ class AccountWidget extends StatefulWidget {
   State<StatefulWidget> createState() => _AccountWidgetState();
 }
 
-class _AccountWidgetState extends State<AccountWidget> {
+class _AccountWidgetState extends State<AccountWidget>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   var eventBusFn;
 
   @override
@@ -156,7 +160,9 @@ class _AccountWidgetState extends State<AccountWidget> {
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
                       return Scaffold(
-                        appBar: AppBar(title: Text('通知设置'),),
+                        appBar: AppBar(
+                          title: Text('通知设置'),
+                        ),
                         body: NotificationWidget(),
                       );
                     })).then((value) {

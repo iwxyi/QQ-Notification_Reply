@@ -48,7 +48,9 @@ class _SearchPageState extends State<SearchPage> {
 
     // 初始化显示
     for (int i = 0; i < items.length; i++) {
-      showItemList.add(items[i]);
+      if (items[i].time > 0) {
+        showItemList.add(items[i]);
+      }
     }
     super.initState();
   }
