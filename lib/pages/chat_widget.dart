@@ -5,6 +5,8 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
+import 'slide_images_page.dart';
+
 // ignore: must_be_immutable
 class ChatWidget extends StatefulWidget {
   MsgBean chatObj;
@@ -129,7 +131,12 @@ class _ChatWidgetState extends State<ChatWidget>
                 return divider;
               },
               padding: new EdgeInsets.all(8.0),
-              itemBuilder: (context, int index) => EntryItem(_messages[index]),
+              itemBuilder: (context, int index) =>
+                  MessageView(_messages[index], () {
+                if (_keepScrollBottom) {
+                  _scrollToBottom(true);
+                }
+              }),
               itemCount: _messages.length,
               controller: _scrollController,
             ),
@@ -224,10 +231,32 @@ class _ChatWidgetState extends State<ChatWidget>
 
 /// 构造发送的信息
 /// 每一条消息显示的复杂对象
-class EntryItem extends StatelessWidget {
+class MessageView extends StatefulWidget {
   final MsgBean msg;
+  final loadFinishedCallback;
 
-  EntryItem(this.msg);
+  MessageView(this.msg, this.loadFinishedCallback);
+
+  @override
+  _MessageViewState createState() => _MessageViewState(msg);
+}
+
+class _MessageViewState extends State<MessageView>
+    with SingleTickerProviderStateMixin {
+  final MsgBean msg;
+  AnimationController _controller;
+
+  _MessageViewState(this.msg);
+
+  @override
+  void initState() {
+    _controller = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 300),
+        lowerBound: 0.0,
+        upperBound: 1.0);
+    super.initState();
+  }
 
   /// 一整行
   Widget _buildMessageLine() {
@@ -306,55 +335,95 @@ class EntryItem extends StatelessWidget {
     if ((match = imageRE.firstMatch(text)) != null) {
       // 如果是图片
       String url = match.group(1);
-      return ExtendedImage.network(
-        url,
-        fit: BoxFit.fill,
-        cache: true,
-        borderRadius: BorderRadius.all(Radius.circular(5.0)),
-        scale: 2,
-        loadStateChanged: (ExtendedImageState state) {
-          switch (state.extendedImageLoadState) {
-            case LoadState.loading:
-              return Image.asset(
-                "assets/images/loading.gif",
-                fit: BoxFit.fill,
-              );
-
-            ///if you don't want override completed widget
-            ///please return null or state.completedWidget
-            //return null;
-            //return state.completedWidget;
-            case LoadState.completed:
-              return null;
-            case LoadState.failed:
-              return GestureDetector(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[
-                    Image.asset(
-                      "assets/images/failed.jpg",
-                      fit: BoxFit.fill,
-                    ),
-                    Positioned(
-                      bottom: 0.0,
-                      left: 0.0,
-                      right: 0.0,
-                      child: Text(
-                        "加载失败，点击重试",
-                        textAlign: TextAlign.center,
-                      ),
+      return GestureDetector(
+          child: Hero(
+              tag: url,
+              child: url == 'This is an video'
+                  ? Container(
+                      alignment: Alignment.center,
+                      child: const Text('This is an video'),
                     )
-                  ],
-                ),
-                onTap: () {
-                  state.reLoadImage();
-                },
-              );
-              break;
-          }
-          return null;
-        },
-      );
+                  : ExtendedImage.network(
+                      url,
+                      fit: BoxFit.contain,
+                      cache: true,
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      scale: 1,
+                      mode: ExtendedImageMode.gesture,
+                      initGestureConfigHandler: (state) {
+                        return GestureConfig(
+                          minScale: 0.9,
+                          animationMinScale: 0.7,
+                          maxScale: 3.0,
+                          animationMaxScale: 3.5,
+                          speed: 1.0,
+                          inertialSpeed: 100.0,
+                          initialScale: 1.0,
+                          inPageView: false,
+                          initialAlignment: InitialAlignment.center,
+                        );
+                      },
+                      loadStateChanged: (ExtendedImageState state) {
+                        state.extendedImageInfo;
+                        switch (state.extendedImageLoadState) {
+                          case LoadState.loading:
+                            _controller.reset();
+                            return Image.asset(
+                              "assets/images/loading.gif",
+                              fit: BoxFit.fill,
+                            );
+
+                          ///if you don't want override completed widget
+                          ///please return null or state.completedWidget
+                          //return null;
+                          //return state.completedWidget;
+                          case LoadState.completed:
+                            _controller.forward();
+                            if (widget.loadFinishedCallback != null) {
+                              widget.loadFinishedCallback();
+                            }
+                            return FadeTransition(
+                              opacity: _controller,
+                              child: ExtendedRawImage(
+                                image: state.extendedImageInfo?.image,
+                                fit: BoxFit.contain,
+                              ),
+                            ); // 显示图片
+                          case LoadState.failed:
+                            _controller.reset();
+                            return GestureDetector(
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: <Widget>[
+                                  Image.asset(
+                                    "assets/images/failed.jpg",
+                                    fit: BoxFit.fill,
+                                  ),
+                                  Positioned(
+                                    bottom: 0.0,
+                                    left: 0.0,
+                                    right: 0.0,
+                                    child: Text(
+                                      "加载失败，点击重试",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  )
+                                ],
+                              ),
+                              onTap: () {
+                                state.reLoadImage();
+                              },
+                            );
+                            break;
+                        }
+                        return null;
+                      },
+                    )),
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return new SlidePage(url: url);
+            }));
+          });
     } else {
       // 未知，当做纯文本了
       return new Text(

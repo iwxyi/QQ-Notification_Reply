@@ -20,6 +20,7 @@ import '../widgets/gallerybar.dart';
 import 'chat_list_page.dart';
 import 'chat_widget.dart';
 import 'contacts_page.dart';
+import 'slide_images_page.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
 const Color _appBarColor2 = const Color(0xFF8266D4);
@@ -116,6 +117,7 @@ class _MainPagesState extends State<MainPages> {
           flutterLocalNotificationsPlugin;
     }
 
+    G.rt.mainContext = context;
     G.rt.showChatPage = (MsgBean msg) {
       // 当前页面直接替换
       if (G.rt.currentChatPage != null) {
@@ -123,10 +125,12 @@ class _MainPagesState extends State<MainPages> {
         return;
       }
       // 重新创建页面
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        G.rt.currentChatPage = new ChatWidget(msg);
-        return G.rt.currentChatPage;
-      })).then((value) {
+      Navigator.of(G.rt.mainContext).push(MaterialPageRoute(
+        builder: (context) {
+          G.rt.currentChatPage = new ChatWidget(msg);
+          return G.rt.currentChatPage;
+        },
+      )).then((value) {
         G.rt.currentChatPage = null;
         setState(() {});
       });
@@ -135,9 +139,10 @@ class _MainPagesState extends State<MainPages> {
 
   @override
   Widget build(BuildContext context) {
+    G.rt.mainContext = context;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CatlikeQQ'),
+        title: const Text('QQ'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.search),
@@ -149,7 +154,14 @@ class _MainPagesState extends State<MainPages> {
           ),
           PopupMenuButton<AppBarMenuItems>(
             onSelected: (AppBarMenuItems result) {
-              setState(() {});
+              setState(() {
+                if (result == AppBarMenuItems.AllReaded) {
+                  /* Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
+                    return new SlidePageDemo();
+                  })); */
+                }
+              });
             },
             itemBuilder: (BuildContext context) =>
                 <PopupMenuEntry<AppBarMenuItems>>[

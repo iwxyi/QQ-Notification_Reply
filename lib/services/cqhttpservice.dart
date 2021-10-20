@@ -21,7 +21,7 @@ class CqhttpService {
   IOWebSocketChannel channel;
   List<String> wsReceives = [];
 
-  num _reconnectTime = 0; // 重连次数，并且影响每次重连的时间间隔
+  num _reconnectCount = 0; // 重连次数，并且影响每次重连的时间间隔
   Timer _reconnectTimer;
 
   CqhttpService({this.rt, this.st, this.ac});
@@ -81,6 +81,7 @@ class CqhttpService {
     });
 
     // 关闭定时连接
+    _reconnectCount = 0;
     if (_reconnectTimer != null) {
       _reconnectTimer.cancel();
       _reconnectTimer = null;
@@ -101,7 +102,7 @@ class CqhttpService {
       return;
     }
 
-    _reconnectTime++;
+    _reconnectCount++;
     if (_reconnectTimer != null) {
       _reconnectTimer.cancel();
     }
@@ -112,7 +113,7 @@ class CqhttpService {
     }
 
     _reconnectTimer =
-        new Timer.periodic(Duration(seconds: _reconnectTime), (timer) {
+        new Timer.periodic(Duration(seconds: _reconnectCount), (timer) {
       // 已经连接上了
       if (channel != null && channel.innerWebSocket != null) {
         if (_reconnectTimer != null) {

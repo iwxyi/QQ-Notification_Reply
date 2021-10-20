@@ -1,10 +1,19 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/pages/main_pages.dart';
 
 import 'global/g.dart';
+
+const Set<PointerDeviceKind> _kTouchLikeDeviceTypes = <PointerDeviceKind>{
+  PointerDeviceKind.touch,
+  PointerDeviceKind.mouse,
+  PointerDeviceKind.stylus,
+  PointerDeviceKind.invertedStylus,
+  PointerDeviceKind.unknown
+};
 
 void main() {
   _setTargetPlatformForDesktop();
@@ -30,11 +39,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'QQ通知',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        home: MainPages());
+      title: 'QQ通知',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: MainPages(),
+      scrollBehavior: const MaterialScrollBehavior()
+          .copyWith(scrollbars: true, dragDevices: _kTouchLikeDeviceTypes),
+    );
   }
 }
