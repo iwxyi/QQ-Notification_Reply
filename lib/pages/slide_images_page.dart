@@ -4,12 +4,12 @@ import 'package:image_picker_saver/image_picker_saver.dart';
 import 'package:qqnotificationreply/widgets/hero.dart';
 import 'package:share/share.dart';
 
-class SlidePageDemo extends StatefulWidget {
+class SlideImagePage extends StatefulWidget {
   @override
-  _SlidePageDemoState createState() => _SlidePageDemoState();
+  _SlideImagePageState createState() => _SlideImagePageState();
 }
 
-class _SlidePageDemoState extends State<SlidePageDemo> {
+class _SlideImagePageState extends State<SlideImagePage> {
   List<String> images = <String>[
     'https://photo.tuchong.com/14649482/f/601672690.jpg',
     'https://photo.tuchong.com/17325605/f/641585173.jpg',
@@ -80,8 +80,7 @@ class _SlidePageState extends State<SlidePage> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).primaryColor.withOpacity(0.25),
-      // color: Colors.transparent, // 设置透明好像都不管用？
+      color: Colors.transparent, // 设置透明好像都不管用？
       child: ExtendedImageSlidePage(
         key: slidePagekey,
         child: GestureDetector(

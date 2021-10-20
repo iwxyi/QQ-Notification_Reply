@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -420,9 +422,12 @@ class _MessageViewState extends State<MessageView>
                       },
                     )),
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            /* Navigator.of(context).push(MaterialPageRoute(builder: (context) {
               return new SlidePage(url: url);
-            }));
+            })); */
+            Navigator.of(context).push(PageRouteBuilder(
+                opaque: false,
+                pageBuilder: (_, __, ___) => new SlidePage(url: url)));
           });
     } else {
       // 未知，当做纯文本了
