@@ -1,6 +1,8 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker_saver/image_picker_saver.dart';
 import 'package:qqnotificationreply/widgets/hero.dart';
+import 'package:share/share.dart';
 
 class SlidePageDemo extends StatefulWidget {
   @override
@@ -78,57 +80,103 @@ class _SlidePageState extends State<SlidePage> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color: Theme.of(context).primaryColor.withOpacity(0.25),
+      // color: Colors.transparent, // 设置透明好像都不管用？
       child: ExtendedImageSlidePage(
         key: slidePagekey,
         child: GestureDetector(
-          child: widget.url == 'This is an video'
-              ? ExtendedImageSlidePageHandler(
-                  child: Material(
-                    child: Container(
-                      alignment: Alignment.center,
-                      color: Colors.yellow,
-                      child: const Text('This is an video'),
+            child: widget.url == 'This is an video'
+                ? ExtendedImageSlidePageHandler(
+                    child: Material(
+                      child: Container(
+                        alignment: Alignment.center,
+                        color: Colors.yellow,
+                        child: const Text('This is an video'),
+                      ),
                     ),
+
+                    ///make hero better when slide out
+                    heroBuilderForSlidingPage: (Widget result) {
+                      return Hero(
+                        tag: widget.url,
+                        child: result,
+                        flightShuttleBuilder: (BuildContext flightContext,
+                            Animation<double> animation,
+                            HeroFlightDirection flightDirection,
+                            BuildContext fromHeroContext,
+                            BuildContext toHeroContext) {
+                          final Hero hero =
+                              (flightDirection == HeroFlightDirection.pop
+                                  ? fromHeroContext.widget
+                                  : toHeroContext.widget) as Hero;
+
+                          return hero.child;
+                        },
+                      );
+                    },
+                  )
+                : HeroWidget(
+                    child: ExtendedImage.network(widget.url,
+                        enableSlideOutPage: true,
+                        loadStateChanged: (ExtendedImageState state) {
+                      if (state.extendedImageLoadState ==
+                          LoadState.completed) {}
+                      return null;
+                    }),
+                    tag: widget.url,
+                    slideType: SlideType.onlyImage,
+                    slidePagekey: slidePagekey,
                   ),
-
-                  ///make hero better when slide out
-                  heroBuilderForSlidingPage: (Widget result) {
-                    return Hero(
-                      tag: widget.url,
-                      child: result,
-                      flightShuttleBuilder: (BuildContext flightContext,
-                          Animation<double> animation,
-                          HeroFlightDirection flightDirection,
-                          BuildContext fromHeroContext,
-                          BuildContext toHeroContext) {
-                        final Hero hero =
-                            (flightDirection == HeroFlightDirection.pop
-                                ? fromHeroContext.widget
-                                : toHeroContext.widget) as Hero;
-
-                        return hero.child;
-                      },
+            onTap: () {
+              slidePagekey.currentState.popPage();
+              Navigator.pop(context);
+            },
+            onLongPress: () {
+              showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return new Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        new ListTile(
+                          leading: new Icon(Icons.save),
+                          title: new Text("保存到本地"),
+                          onTap: () async {
+                            saveNetworkImageToPhoto(widget.url)
+                                .then((String filePath) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('保存到：' + filePath)));
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                        new ListTile(
+                          leading: new Icon(Icons.share),
+                          title: new Text("分享"),
+                          onTap: () async {
+                            saveNetworkImageToPhoto(widget.url)
+                                .then((String filePath) {
+                              Share.shareFiles([filePath], text: '保存的文件');
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
                     );
-                  },
-                )
-              : HeroWidget(
-                  child: ExtendedImage.network(
-                    widget.url,
-                    enableSlideOutPage: true,
-                  ),
-                  tag: widget.url,
-                  slideType: SlideType.onlyImage,
-                  slidePagekey: slidePagekey,
-                ),
-          onTap: () {
-            slidePagekey.currentState.popPage();
-            Navigator.pop(context);
-          },
-        ),
+                  });
+            }),
         slideAxis: SlideAxis.both,
         slideType: SlideType.onlyImage,
       ),
     );
+  }
+
+  ///save network image to photo
+  Future<String> saveNetworkImageToPhoto(String url,
+      {bool useCache: true}) async {
+    var data = await getNetworkImageData(url, useCache: useCache);
+    var filePath = await ImagePickerSaver.saveFile(fileData: data);
+    // return filePath != null && filePath != "";
+    return filePath;
   }
 }
