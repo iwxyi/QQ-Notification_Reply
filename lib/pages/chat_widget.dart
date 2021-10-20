@@ -349,7 +349,8 @@ class _MessageViewState extends State<MessageView>
                       url,
                       fit: BoxFit.contain,
                       cache: true,
-                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
                       scale: 1,
                       mode: ExtendedImageMode.gesture,
                       initGestureConfigHandler: (state) {
