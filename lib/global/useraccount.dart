@@ -53,6 +53,9 @@ class UserAccount {
   static var flutterLocalNotificationsPlugin;
   static Map<int, int> notificationIdMap = {};
 
+  // 多线程Flag
+  Map<int, bool> gettingGroupMembers = {};
+
   // QQ号增加只12位，与QQ群分开
   static int getNotificationId(MsgBean msg) {
     int id = msg.isGroup()

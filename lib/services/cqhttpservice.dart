@@ -229,6 +229,7 @@ class CqhttpService {
       Match match;
       if ((match = re.firstMatch(echo)) != null) {
         int groupId = int.parse(match.group(1));
+        ac.gettingGroupMembers.remove(groupId);
         if (!ac.groupList.containsKey(groupId)) {
           print('群组列表未包含：' + groupId.toString() + '，无法设置群成员');
           return;
@@ -343,6 +344,11 @@ class CqhttpService {
   void refreshGroups() {}
 
   void refreshGroupMembers(int groupId) {
+    if (ac.gettingGroupMembers.containsKey(groupId)) {
+      // 有其他线程获取了
+      return;
+    }
+    ac.gettingGroupMembers[groupId] = true;
     send({
       'action': 'get_group_member_list',
       'params': {'group_id': groupId},

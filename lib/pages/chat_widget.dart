@@ -265,7 +265,7 @@ class _MessageViewState extends State<MessageView>
     // 判断左右
     bool isSelf = msg.senderId == G.ac.qqId;
 
-    // 消息列，是否显示昵称
+    // 消息列的上下控件，是否显示昵称
     List<Widget> vWidgets = [];
     if (!isSelf) {
       vWidgets.add(_buildNicknameView());
@@ -274,10 +274,12 @@ class _MessageViewState extends State<MessageView>
 
     Widget vWidget = Flexible(
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, children: vWidgets),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: vWidgets),
     );
 
-    // 头像和消息的顺序
+    // 头像和消息的左右顺序
     List<Widget> hWidgets;
     if (isSelf) {
       hWidgets = [vWidget, _buildHeaderView()];

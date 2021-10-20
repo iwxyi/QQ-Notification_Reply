@@ -20,6 +20,7 @@ import '../widgets/gallerybar.dart';
 import 'chat_list_page.dart';
 import 'chat_widget.dart';
 import 'contacts_page.dart';
+import 'search_page.dart';
 import 'slide_images_page.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
@@ -148,18 +149,19 @@ class _MainPagesState extends State<MainPages> {
             icon: const Icon(Icons.search),
             tooltip: '搜索',
             onPressed: () {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(const SnackBar(content: Text('等待开发')));
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return new SearchPage();
+                },
+              ));
             },
           ),
           PopupMenuButton<AppBarMenuItems>(
             onSelected: (AppBarMenuItems result) {
               setState(() {
                 if (result == AppBarMenuItems.AllReaded) {
-                  /* Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) {
-                    return new SlidePageDemo();
-                  })); */
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(const SnackBar(content: Text('全部已读')));
                 }
               });
             },
