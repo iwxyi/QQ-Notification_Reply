@@ -21,6 +21,7 @@ class _SlideImagePageState extends State<SlideImagePage> {
     'https://photo.tuchong.com/5040418/f/43305517.jpg',
     'https://photo.tuchong.com/3019649/f/302699092.jpg'
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,7 +71,9 @@ class _SlideImagePageState extends State<SlideImagePage> {
 
 class SlidePage extends StatefulWidget {
   const SlidePage({this.url});
+
   final String url;
+
   @override
   _SlidePageState createState() => _SlidePageState();
 }
@@ -80,26 +83,6 @@ typedef DoubleClickAnimationListener = void Function();
 class _SlidePageState extends State<SlidePage> with TickerProviderStateMixin {
   GlobalKey<ExtendedImageSlidePageState> slidePagekey =
       GlobalKey<ExtendedImageSlidePageState>();
-
-  Animation<double> _doubleClickAnimation;
-  AnimationController _doubleClickAnimationController;
-  DoubleClickAnimationListener _doubleClickAnimationListener;
-  List<double> doubleTapScales = <double>[1.0, 2.0];
-
-  @override
-  void dispose() {
-    _doubleClickAnimationController.dispose();
-    clearGestureDetailsCache();
-    //cancelToken?.cancel();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _doubleClickAnimationController = AnimationController(
-        duration: const Duration(milliseconds: 150), vsync: this);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -171,38 +154,6 @@ class _SlidePageState extends State<SlidePage> with TickerProviderStateMixin {
                         if (state.extendedImageLoadState ==
                             LoadState.completed) {}
                         return null;
-                      },
-                      onDoubleTap: (ExtendedImageGestureState state) {
-                        final Offset pointerDownPosition =
-                            state.pointerDownPosition;
-                        final double begin = state.gestureDetails.totalScale;
-                        double end;
-
-                        //remove old
-                        _doubleClickAnimation
-                            .removeListener(_doubleClickAnimationListener);
-                        //stop pre
-                        _doubleClickAnimationController.stop();
-                        //reset to use
-                        _doubleClickAnimationController.reset();
-
-                        if (begin == doubleTapScales[0]) {
-                          end = doubleTapScales[1];
-                        } else {
-                          end = doubleTapScales[0];
-                        }
-
-                        _doubleClickAnimationListener = () {
-                          //print(_animation.value);
-                          state.handleDoubleTap(
-                              scale: _doubleClickAnimation.value,
-                              doubleTapPosition: pointerDownPosition);
-                        };
-                        _doubleClickAnimation = _doubleClickAnimationController
-                            .drive(Tween<double>(begin: begin, end: end));
-                        _doubleClickAnimation
-                            .addListener(_doubleClickAnimationListener);
-                        _doubleClickAnimationController.forward();
                       },
                     ),
                     tag: widget.url,

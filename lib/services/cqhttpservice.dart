@@ -54,6 +54,7 @@ class CqhttpService {
 
     // 旧的 channel 还在时依旧连接的话，会导致重复接收到消息
     if (isConnected()) {
+      print('关闭旧的ws连接');
       channel.innerWebSocket.close();
       channel = null;
     }
@@ -71,7 +72,7 @@ class CqhttpService {
     // 连接成功，监听消息
     channel.stream.listen((message) {
       if (debugMode) {
-        print('ws收到数据:' + message.toString());
+        print('ws收到数据:' + message.toString().substring(0, 1000));
         wsReceives.insert(0, message.toString());
       }
 
@@ -81,8 +82,8 @@ class CqhttpService {
       print('ws错误: ' + ex.message);
     }, onDone: () {
       // 实际上是 onClose，连接结束，即关闭
-      print('ws断线，尝试重连...');
-      reconnect(host, token);
+      //      print('ws断线，尝试重连...');
+      //      reconnect(host, token);
     });
 
     // 关闭定时连接
