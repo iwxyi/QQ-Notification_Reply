@@ -42,7 +42,12 @@ class _ChatWidgetState extends State<ChatWidget>
   void initState() {
     widget.setObject = (MsgBean msg) {
       widget.chatObj = msg;
-      _loadMessages();
+      setState(() {
+        _messages = [];
+      });
+      setState(() {
+        _loadMessages();
+      });
     };
 
     // 注册监听器，订阅 eventBus

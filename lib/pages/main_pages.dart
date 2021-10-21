@@ -101,7 +101,7 @@ class _MainPagesState extends State<MainPages> {
       // 初始化通知
       flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
       const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings("assets/icons/qq.png");
+          AndroidInitializationSettings("@mipmap/appicon");
       final IOSInitializationSettings initializationSettingsIOS =
           IOSInitializationSettings(
               onDidReceiveLocalNotification: onDidReceiveLocalNotification);
