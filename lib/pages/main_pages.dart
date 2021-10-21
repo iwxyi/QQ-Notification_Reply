@@ -101,7 +101,7 @@ class _MainPagesState extends State<MainPages> {
       // 初始化通知
       flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
       const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/appicon');
+          AndroidInitializationSettings("assets/icons/qq.png");
       final IOSInitializationSettings initializationSettingsIOS =
           IOSInitializationSettings(
               onDidReceiveLocalNotification: onDidReceiveLocalNotification);
@@ -253,7 +253,7 @@ class _MainPagesState extends State<MainPages> {
         'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
     String displayMessage = G.cs.getMessageDisplay(msg);
     Person person = new Person(
-        bot: false, important: false, name: msg.username(), uri: personUri);
+        bot: false, important: true, name: msg.username(), uri: personUri);
     Message message = new Message(displayMessage, DateTime.now(), person);
     AndroidNotificationDetails androidPlatformChannelSpecifics;
 
@@ -273,7 +273,7 @@ class _MainPagesState extends State<MainPages> {
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'private_message', '私聊消息', 'QQ好友消息/临时会话',
           styleInformation: messagingStyleInformation,
-          groupKey: 'chat',
+          groupKey: 'private',
           priority: Priority.high,
           importance: Importance.high);
     } else if (msg.isGroup()) {
@@ -284,7 +284,7 @@ class _MainPagesState extends State<MainPages> {
       G.ac.unreadGroupMessages[msg.groupId].add(message);
 
       Person group = new Person(
-          bot: true, important: true, name: msg.groupName, uri: personUri);
+          bot: false, important: true, name: msg.groupName, uri: personUri);
 
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(group,
@@ -294,7 +294,7 @@ class _MainPagesState extends State<MainPages> {
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'group_message', '群组消息', 'QQ群组消息',
           styleInformation: messagingStyleInformation,
-          groupKey: 'chat',
+          groupKey: 'group',
           priority: Priority.high,
           importance: Importance.high);
     }
