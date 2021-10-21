@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker_saver/image_picker_saver.dart';
@@ -73,12 +75,35 @@ class SlidePage extends StatefulWidget {
   _SlidePageState createState() => _SlidePageState();
 }
 
-class _SlidePageState extends State<SlidePage> {
+typedef DoubleClickAnimationListener = void Function();
+
+class _SlidePageState extends State<SlidePage> with TickerProviderStateMixin {
   GlobalKey<ExtendedImageSlidePageState> slidePagekey =
       GlobalKey<ExtendedImageSlidePageState>();
 
+  Animation<double> _doubleClickAnimation;
+  AnimationController _doubleClickAnimationController;
+  DoubleClickAnimationListener _doubleClickAnimationListener;
+  List<double> doubleTapScales = <double>[1.0, 2.0];
+
+  @override
+  void dispose() {
+    _doubleClickAnimationController.dispose();
+    clearGestureDetailsCache();
+    //cancelToken?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _doubleClickAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 150), vsync: this);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
     return Material(
       color: Colors.transparent, // 设置透明好像都不管用？
       child: ExtendedImageSlidePage(
@@ -115,13 +140,71 @@ class _SlidePageState extends State<SlidePage> {
                     },
                   )
                 : HeroWidget(
-                    child: ExtendedImage.network(widget.url,
-                        enableSlideOutPage: true,
-                        loadStateChanged: (ExtendedImageState state) {
-                      if (state.extendedImageLoadState ==
-                          LoadState.completed) {}
-                      return null;
-                    }),
+                    child: ExtendedImage.network(
+                      widget.url,
+                      enableSlideOutPage: true,
+                      initGestureConfigHandler: (ExtendedImageState state) {
+                        double initialScale = 1.0;
+
+                        if (state.extendedImageInfo != null) {
+                          initialScale = initScale(
+                              size: size,
+                              initialScale: initialScale,
+                              imageSize: Size(
+                                  state.extendedImageInfo.image.width
+                                      .toDouble(),
+                                  state.extendedImageInfo.image.height
+                                      .toDouble()));
+                        }
+                        return GestureConfig(
+                          inPageView: true,
+                          initialScale: initialScale,
+                          maxScale: max(initialScale, 5.0),
+                          animationMaxScale: max(initialScale, 5.0),
+                          initialAlignment: InitialAlignment.center,
+                          //you can cache gesture state even though page view page change.
+                          //remember call clearGestureDetailsCache() method at the right time.(for example,this page dispose)
+                          cacheGesture: false,
+                        );
+                      },
+                      loadStateChanged: (ExtendedImageState state) {
+                        if (state.extendedImageLoadState ==
+                            LoadState.completed) {}
+                        return null;
+                      },
+                      onDoubleTap: (ExtendedImageGestureState state) {
+                        final Offset pointerDownPosition =
+                            state.pointerDownPosition;
+                        final double begin = state.gestureDetails.totalScale;
+                        double end;
+
+                        //remove old
+                        _doubleClickAnimation
+                            .removeListener(_doubleClickAnimationListener);
+                        //stop pre
+                        _doubleClickAnimationController.stop();
+                        //reset to use
+                        _doubleClickAnimationController.reset();
+
+                        if (begin == doubleTapScales[0]) {
+                          end = doubleTapScales[1];
+                        } else {
+                          end = doubleTapScales[0];
+                        }
+
+                        _doubleClickAnimationListener = () {
+                          //print(_animation.value);
+                          state.handleDoubleTap(
+                              scale: _doubleClickAnimation.value,
+                              doubleTapPosition: pointerDownPosition);
+                        };
+                        _doubleClickAnimation = _doubleClickAnimationController
+                            .drive(Tween<double>(begin: begin, end: end));
+                        _doubleClickAnimation
+                            .addListener(_doubleClickAnimationListener);
+                        _doubleClickAnimationController.forward();
+                      },
+                    ),
                     tag: widget.url,
                     slideType: SlideType.onlyImage,
                     slidePagekey: slidePagekey,
@@ -177,5 +260,26 @@ class _SlidePageState extends State<SlidePage> {
     var filePath = await ImagePickerSaver.saveFile(fileData: data);
     // return filePath != null && filePath != "";
     return filePath;
+  }
+
+  double initScale(
+      {@required Size imageSize, @required Size size, double initialScale}) {
+    final double n1 = imageSize.height / imageSize.width;
+    final double n2 = size.height / size.width;
+    if (n1 > n2) {
+      final FittedSizes fittedSizes =
+          applyBoxFit(BoxFit.contain, imageSize, size);
+      //final Size sourceSize = fittedSizes.source;
+      final Size destinationSize = fittedSizes.destination;
+      return size.width / destinationSize.width;
+    } else if (n1 / n2 < 1 / 4) {
+      final FittedSizes fittedSizes =
+          applyBoxFit(BoxFit.contain, imageSize, size);
+      //final Size sourceSize = fittedSizes.source;
+      final Size destinationSize = fittedSizes.destination;
+      return size.height / destinationSize.height;
+    }
+
+    return initialScale;
   }
 }
