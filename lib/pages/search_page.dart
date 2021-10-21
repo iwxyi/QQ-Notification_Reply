@@ -100,7 +100,7 @@ class _SearchPageState extends State<SearchPage> {
                       if (info.isGroup) {
                         msg = MsgBean(groupId: info.id, groupName: info.name);
                       } else {
-                        msg = MsgBean(targetId: info.id, nickname: info.name);
+                        msg = MsgBean(targetId: info.id, friendId: info.id, nickname: info.name);
                       }
                       G.rt.showChatPage(msg);
                     },
