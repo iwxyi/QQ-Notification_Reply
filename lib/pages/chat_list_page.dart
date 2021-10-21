@@ -1,3 +1,4 @@
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
@@ -75,14 +76,17 @@ class _ChatListPageState extends State<ChatListPage>
           DateTime dt = DateTime.fromMillisecondsSinceEpoch(msg.timestamp);
           int delta = currentTimestamp - msg.timestamp;
           if (delta > 3600 * 24 * 1000) {
-            // 超过一天
-            timeStr = (delta / 3600 / 24 / 1000).toString();
+            // 超过24小时
+            timeStr = formatDate(dt, ['mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
           } else if (delta < 15000) {
+            // 15秒内
             timeStr = '刚刚';
           } else if (dt.day == currentDay.day) {
-            timeStr = dt.hour.toString() + ":" + dt.minute.toString();
+            // 今天
+            timeStr = formatDate(dt, ['HH', ':', 'mm']);
           } else {
-            timeStr = "昨天 " + dt.hour.toString() + ":" + dt.minute.toString();
+            // 昨天
+            timeStr = "昨天 " + formatDate(dt, ['HH', ':', 'nn']);
           }
 
           return ListTile(

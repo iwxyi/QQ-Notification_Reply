@@ -42,6 +42,10 @@ class CqhttpService {
     return _openSocket(host, token);
   }
 
+  bool isConnected() {
+    return channel != null && channel.innerWebSocket != null;
+  }
+
   bool _openSocket(String host, String token) {
     Map<String, dynamic> headers = new Map();
     if (token != null && token.isNotEmpty) {
@@ -49,8 +53,9 @@ class CqhttpService {
     }
 
     // 旧的 channel 还在时依旧连接的话，会导致重复接收到消息
-    if (channel != null && channel.innerWebSocket != null) {
+    if (isConnected()) {
       channel.innerWebSocket.close();
+      channel = null;
     }
 
     // 开始连接
@@ -98,7 +103,7 @@ class CqhttpService {
 
   void reconnect(String host, String token) {
     // 还是连接状态？
-    if (channel != null && channel.innerWebSocket != null) {
+    if (isConnected()) {
       return;
     }
 
@@ -115,7 +120,7 @@ class CqhttpService {
     _reconnectTimer =
         new Timer.periodic(Duration(seconds: _reconnectCount), (timer) {
       // 已经连接上了
-      if (channel != null && channel.innerWebSocket != null) {
+      if (isConnected()) {
         if (_reconnectTimer != null) {
           _reconnectTimer.cancel();
           _reconnectTimer = null;
@@ -178,7 +183,6 @@ class CqhttpService {
   void _parseLifecycle(final obj) {
     int userId = obj['self_id']; // 自己的QQ号
     ac.qqId = userId;
-    ac.connectState = 1;
 
     // 发送获取登录号信息
     send({'action': 'get_login_info', 'echo': 'get_login_info'});

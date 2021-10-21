@@ -28,7 +28,6 @@ class UserAccount {
   // 账号信息
   String nickname = ''; // QQ昵称
   int qqId = 0; // QQ ID
-  int connectState = 0; // 连接状态：0未连接，1已连接，-1已断开
 
   // 账号数据
   Map<int, FriendInfo> friendList = {}; // 好友列表

@@ -74,7 +74,7 @@ class _AccountWidgetState extends State<AccountWidget>
                     Icons.person,
                     color: Colors.red,
                   ),
-                  title: Text(G.ac.connectState > 0 ? G.ac.selfInfo() : '点击登录'),
+                  title: Text(G.cs.isConnected() ? G.ac.selfInfo() : '点击登录'),
                   trailing: Icon(Icons.arrow_right),
                   onTap: () {
                     Navigator.of(context)
