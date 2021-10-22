@@ -273,7 +273,7 @@ class _MainPagesState extends State<MainPages> {
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'private_message', '私聊消息', 'QQ好友消息/临时会话',
           styleInformation: messagingStyleInformation,
-          groupKey: 'private',
+          groupKey: 'chat',
           priority: Priority.high,
           importance: Importance.high);
     } else if (msg.isGroup()) {
@@ -291,12 +291,27 @@ class _MainPagesState extends State<MainPages> {
               conversationTitle: msg.groupName,
               messages: G.ac.unreadGroupMessages[msg.groupId]);
 
+      String channelId, channelName;
+      Priority priority;
+      Importance importance;
+      if (G.st.importantGroups.contains(msg.groupId)) {
+        channelId = "important_group_message";
+        channelName = "重要群组消息";
+        priority = Priority.high;
+        importance = Importance.high;
+      } else {
+        channelId = "group_message";
+        channelName = "普通群组消息";
+        priority = Priority.defaultPriority;
+        importance = Importance.defaultImportance;
+      }
+
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
-          'group_message', '群组消息', 'QQ群组消息',
+          channelId, channelName, 'QQ群组消息',
           styleInformation: messagingStyleInformation,
-          groupKey: 'group',
-          priority: Priority.high,
-          importance: Importance.high);
+          groupKey: 'chat',
+          priority: priority,
+          importance: importance);
     }
     if (androidPlatformChannelSpecifics == null) {
       return;
