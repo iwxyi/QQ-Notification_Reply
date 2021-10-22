@@ -214,16 +214,14 @@ class _MainPagesState extends State<MainPages> {
   /// 所有msg raw都会到这里来
   /// 进行数据的处理操作，例如准备头像的显示
   void _messageReceived(MsgBean msg) {
-    // 准备显示的资源
-    if (G.st.enableHeader) {
-      /* if (!FileUtil.isFileExists(G.rt.userHeader(msg.senderId))) {
-        CqhttpService.downloadUserHeader(msg.senderId);
-      }
-      if (msg.isGroup()) {
-        CqhttpService.downloadGroupHeader(msg.groupId);
-      } */
-    }
     G.ac.eventBus.fire(EventFn(Event.messageReady, msg));
+
+    // 判断是否需要显示通知
+    if (msg.isGroup()) {
+      if (!G.st.enabledGroups.contains(msg.groupId)) {
+        return;
+      }
+    }
 
     // 显示通知（如果平台支持）
     _showNotification(msg);

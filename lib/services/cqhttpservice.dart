@@ -81,9 +81,9 @@ class CqhttpService {
       WebSocketChannelException ex = e;
       print('ws错误: ' + ex.message);
     }, onDone: () {
-      // 实际上是 onClose，连接结束，即关闭
-      //      print('ws断线，尝试重连...');
-      //      reconnect(host, token);
+      // 实际上是 onClose？连接结束，即关闭
+      print('ws完成');
+      reconnect(host, token);
     });
 
     // 关闭定时连接
@@ -422,10 +422,6 @@ class CqhttpService {
       ac.privateMessageTimes[msg.friendId] = time;
     } else if (msg.isGroup()) {
       ac.groupMessageTimes[msg.groupId] = time;
-      // 判断群组是否通知
-      if (!st.enabledGroups.contains(msg.groupId)) {
-        return;
-      }
     }
 
     // 通知界面
