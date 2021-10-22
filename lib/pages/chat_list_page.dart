@@ -4,8 +4,6 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
-import 'chat/chat_widget.dart';
-
 List<MsgBean> timedMsgs = []; // 需要显示的列表
 
 class ChatListPage extends StatefulWidget {
@@ -110,31 +108,30 @@ class _ChatListPageState extends State<ChatListPage>
             }
 
             // 添加未读消息计数
+            Widget container;
             if (showNum) {
-              tailWidgets.add(
-                new Container(
-                  padding: EdgeInsets.all(2),
-                  decoration: new BoxDecoration(
-                    color: c,
-                    borderRadius: BorderRadius.circular(10),
+              container = new Container(
+                padding: EdgeInsets.all(2),
+                decoration: new BoxDecoration(
+                  color: c,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                constraints: BoxConstraints(
+                  minWidth: 20,
+                  minHeight: 20,
+                ),
+                child: new Text(
+                  unreadCount.toString(), //通知数量
+                  style: new TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
                   ),
-                  constraints: BoxConstraints(
-                    minWidth: 20,
-                    minHeight: 20,
-                  ),
-                  child: new Text(
-                    unreadCount.toString(), //通知数量
-                    style: new TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  textAlign: TextAlign.center,
                 ),
               );
             } else {
               // 只添加一个点
-              tailWidgets.add(new Container(
+              container = new Container(
                   padding: EdgeInsets.all(2),
                   margin: EdgeInsets.all(6),
                   decoration: new BoxDecoration(
@@ -145,45 +142,75 @@ class _ChatListPageState extends State<ChatListPage>
                     minWidth: 8,
                     minHeight: 8,
                   ),
-                  child: SizedBox()));
+                  child: SizedBox());
             }
+
+            Widget gd = GestureDetector(
+                child: container,
+                onTap: () {
+                  showReplyInChatList(msg);
+                  G.ac.chatListShowReply.remove(msg.keyId());
+                });
+
+            tailWidgets.add(gd);
           }
 
-          // 构造控件
+          // 消息内容
+          List<Widget> bodyWidgets = [];
+          bodyWidgets.add(ListTile(
+            leading: new ClipOval(
+              // 圆形头像
+              child: new FadeInImage.assetNetwork(
+                placeholder: "assets/icons/default_header.png",
+                //预览图
+                fit: BoxFit.contain,
+                image: headerUrl,
+                width: 40.0,
+                height: 40.0,
+              ),
+            ),
+            title: Text(title),
+            subtitle: Text(subTitle, maxLines: 3),
+            trailing: Column(
+                children: tailWidgets,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.end),
+            onTap: () {
+              // 清除未读消息
+              setState(() {
+                G.ac.clearUnread(msg);
+              });
+
+              // 打开会话
+              G.rt.showChatPage(msg);
+            },
+            onLongPress: () {},
+          ));
+
+          // 显示输入框
+          if (G.ac.chatListShowReply.containsKey(msg.keyId())) {
+            bodyWidgets.add(new Container(
+              child: new TextField(
+                onSubmitted: (String text) {
+                  if (msg.isPrivate()) {
+                    G.cs.sendPrivateMessage(msg.friendId, text);
+                  } else if (msg.isGroup()) {
+                    G.cs.sendGroupMessage(msg.groupId, text);
+                  }
+                },
+                decoration: new InputDecoration.collapsed(hintText: '快速回复'),
+              ),
+              margin: EdgeInsets.only(left: 32, right: 32, bottom: 10),
+            ));
+          }
+
+          // 单条消息的外部容器
           return new Container(
             padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
             child: new Card(
               color: Color(0xFFEEEEEE), // 背景颜色
               elevation: 0.0, // 投影
-              child: ListTile(
-                leading: new ClipOval(
-                  // 圆形头像
-                  child: new FadeInImage.assetNetwork(
-                    placeholder: "assets/icons/default_header.png",
-                    //预览图
-                    fit: BoxFit.contain,
-                    image: headerUrl,
-                    width: 40.0,
-                    height: 40.0,
-                  ),
-                ),
-                title: Text(title),
-                subtitle: Text(subTitle, maxLines: 3),
-                trailing: Column(
-                    children: tailWidgets,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.end),
-                onTap: () {
-                  // 清除未读消息
-                  setState(() {
-                    G.ac.clearUnread(msg);
-                  });
-
-                  // 打开会话
-                  G.rt.showChatPage(msg);
-                },
-                onLongPress: () {},
-              ),
+              child: Column(children: bodyWidgets),
               shape: RoundedRectangleBorder(
                 borderRadius:
                     BorderRadius.all(Radius.circular(10.0)), //设定 Card 的倒角大小
@@ -218,5 +245,18 @@ class _ChatListPageState extends State<ChatListPage>
       return;
     }
     setState(() {});
+  }
+
+  /// 在聊天列表界面就显示回复框
+  void showReplyInChatList(MsgBean msg) {
+    setState(() {
+      if (G.ac.chatListShowReply.containsKey(msg.keyId())) {
+        print('隐藏快速回复框');
+        G.ac.chatListShowReply.remove(msg.keyId());
+      } else {
+        print('显示快速回复框');
+        G.ac.chatListShowReply[msg.keyId()] = true;
+      }
+    });
   }
 }
