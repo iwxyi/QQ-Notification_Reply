@@ -100,42 +100,60 @@ class _ChatListPageState extends State<ChatListPage>
             }
           }
           if (unreadCount > 0) {
-            Color c = Colors.red; // 重要消息：红色
+            Color c = Colors.orange; // 重要消息：红色
+            bool showNum = true;
             if (msg.isGroup()) {
               if (G.st.importantGroups.contains(msg.groupId)) {
                 // 重要群组，也是红色
                 c = Colors.orange;
               } else if (G.st.enabledGroups.contains(msg.groupId)) {
                 // 通知群组，橙色
-                c = Colors.blue;
+                c = Colors.grey;
               } else {
                 // 不通知的群组，淡蓝色
                 c = Colors.grey;
+                showNum = false;
               }
             }
 
             // 添加未读消息计数
-            tailWidgets.add(
-              new Container(
-                padding: EdgeInsets.all(2),
-                decoration: new BoxDecoration(
-                  color: c,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                constraints: BoxConstraints(
-                  minWidth: 20,
-                  minHeight: 20,
-                ),
-                child: new Text(
-                  unreadCount.toString(), //通知数量
-                  style: new TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
+            if (showNum) {
+              tailWidgets.add(
+                new Container(
+                  padding: EdgeInsets.all(2),
+                  decoration: new BoxDecoration(
+                    color: c,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  textAlign: TextAlign.center,
+                  constraints: BoxConstraints(
+                    minWidth: 20,
+                    minHeight: 20,
+                  ),
+                  child: new Text(
+                    unreadCount.toString(), //通知数量
+                    style: new TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-            );
+              );
+            } else {
+              // 只添加一个点
+              tailWidgets.add(new Container(
+                  padding: EdgeInsets.all(2),
+                  margin: EdgeInsets.all(6),
+                  decoration: new BoxDecoration(
+                    color: c,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  constraints: BoxConstraints(
+                    minWidth: 8,
+                    minHeight: 8,
+                  ),
+                  child: SizedBox()));
+            }
           }
 
           // 构造控件
