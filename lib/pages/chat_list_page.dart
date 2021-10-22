@@ -43,7 +43,8 @@ class _ChatListPageState extends State<ChatListPage>
     // 填充空白
     if (timedMsgs.length == 0) {
       return new Center(
-        child: new Text('没有会话'),
+        child: new Text('没有会话',
+            style: TextStyle(fontSize: 20, color: Colors.grey)),
       );
     }
 
@@ -52,23 +53,19 @@ class _ChatListPageState extends State<ChatListPage>
         itemCount: timedMsgs.length,
         itemBuilder: (context, index) {
           MsgBean msg = timedMsgs[index];
+          // 设置用户数据
           String title;
           String subTitle;
           String headerUrl;
           if (msg.isGroup()) {
             title = msg.groupName;
             subTitle = msg.nickname + ": " + G.cs.getMessageDisplay(msg);
-            headerUrl = "http://p.qlogo.cn/gh/" +
-                msg.groupId.toString() +
-                "/" +
-                msg.groupId.toString() +
-                "/100";
+            headerUrl =
+                "http://p.qlogo.cn/gh/${msg.groupId}/${msg.groupId}/100";
           } else {
             title = msg.username();
             subTitle = G.cs.getMessageDisplay(msg);
-            headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=" +
-                msg.friendId.toString() +
-                "&s=100&t=";
+            headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=${msg.friendId}&s=100&t=";
           }
 
           // 时间
@@ -89,25 +86,45 @@ class _ChatListPageState extends State<ChatListPage>
             timeStr = "昨天 " + formatDate(dt, ['HH', ':', 'nn']);
           }
 
-          return ListTile(
-            leading: new ClipOval(
-              // 圆形头像
-              child: new FadeInImage.assetNetwork(
-                placeholder: "assets/icons/default_header.png",
-                //预览图
-                fit: BoxFit.contain,
-                image: headerUrl,
-                width: 40.0,
-                height: 40.0,
+          // 构造控件
+          return new Container(
+            padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
+            child: new Card(
+              color: Colors.grey.withAlpha(32), // 背景颜色
+              elevation: 0.0, // 投影
+              child: ListTile(
+                leading: new ClipOval(
+                  // 圆形头像
+                  child: new FadeInImage.assetNetwork(
+                    placeholder: "assets/icons/default_header.png",
+                    //预览图
+                    fit: BoxFit.contain,
+                    image: headerUrl,
+                    width: 40.0,
+                    height: 40.0,
+                  ),
+                ),
+                title: Text(title),
+                subtitle: Text(subTitle, maxLines: 3),
+                trailing: Text(timeStr),
+                onTap: () {
+                  G.rt.showChatPage(msg);
+                },
+                onLongPress: () {},
               ),
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.all(Radius.circular(10.0)), //设定 Card 的倒角大小
+                /* borderRadius: BorderRadius.only(
+                  //设定 Card 的每个角的倒角大小
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.zero,
+                  bottomLeft: Radius.zero,
+                  bottomRight: Radius.circular(20.0)),*/
+              ),
+              clipBehavior:
+                  Clip.antiAlias, //对Widget截取的行为，比如这里 Clip.antiAlias 指抗锯齿
             ),
-            title: Text(title),
-            subtitle: Text(subTitle, maxLines: 3),
-            trailing: Text(timeStr),
-            onTap: () {
-              G.rt.showChatPage(msg);
-            },
-            onLongPress: () {},
           );
         });
   }
