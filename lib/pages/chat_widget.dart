@@ -286,11 +286,14 @@ class _MessageViewState extends State<MessageView> {
       hWidgets = [_buildHeaderView(), vWidget, SizedBox(width: 72, height: 48)];
     }
 
-    return new Row(
-        mainAxisAlignment:
-            isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: hWidgets);
+    return new Container(
+      child: new Row(
+          mainAxisAlignment:
+              isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: hWidgets),
+      padding: EdgeInsets.only(top: isNext ? 0 : 8),
+    );
   }
 
   /// 构建头像控件
