@@ -81,21 +81,30 @@ class _GroupSelectWidgetState extends State<GroupSelectWidget> {
                 itemBuilder: (context, index) {
                   IGroupInfo info = showItemList[index];
                   return ListTile(
-                    title: Text('${info.name}'),
-                    onTap: () {
-                      setState(() {
-                        G.st.switchEnabledGroup(info.id);
-                      });
-                    },
-                    trailing: Checkbox(
-                      onChanged: (bool val) {
+                      title: Row(children: [
+                        Text('${info.name}'),
+                        Icon(G.st.importantGroups.contains(info.id)
+                            ? Icons.star
+                            : null)
+                      ]),
+                      onTap: () {
                         setState(() {
                           G.st.switchEnabledGroup(info.id);
                         });
                       },
-                      value: G.st.enabledGroups.contains(info.id),
-                    ),
-                  );
+                      trailing: Checkbox(
+                        onChanged: (bool val) {
+                          setState(() {
+                            G.st.switchEnabledGroup(info.id);
+                          });
+                        },
+                        value: G.st.enabledGroups.contains(info.id),
+                      ),
+                      onLongPress: () {
+                        setState(() {
+                          G.st.switchImportantGroup(info.id);
+                        });
+                      });
                 },
               ),
             ),
@@ -109,6 +118,10 @@ class _GroupSelectWidgetState extends State<GroupSelectWidget> {
                     setState(() {});
                   },
                   child: new Text('全选'),
+                  onLongPress: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('显示所有群组通知')));
+                  },
                 ),
                 RaisedButton(
                   onPressed: () {
@@ -123,6 +136,10 @@ class _GroupSelectWidgetState extends State<GroupSelectWidget> {
                     setState(() {});
                   },
                   child: new Text('反选'),
+                  onLongPress: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('反选所有群组通知')));
+                  },
                 )
               ],
             )

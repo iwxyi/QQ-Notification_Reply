@@ -13,6 +13,7 @@ class UserSettings extends MySettings {
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
 
   List<int> enabledGroups = []; // 开启通知的群组
+  List<int> importantGroups = []; // 设为重要的群组
   Map<int, int> friendImportance = {}; // 好友的重要性
   Map<int, int> groupImportance = {}; // 群组的重要性
 
@@ -58,7 +59,22 @@ class UserSettings extends MySettings {
 
     // 保存
     String text = enabledGroups.join(';');
-    setConfig('notification/enabledGroup', text);
+    setConfig('notification/enabledGroups', text);
+  }
+
+  void switchImportantGroup(int id) {
+    // 如果 id == 0，则只是单纯的保存全部
+    if (id != 0) {
+      if (!importantGroups.contains(id)) {
+        importantGroups.add(id);
+      } else {
+        importantGroups.remove(id);
+      }
+    }
+
+    // 保存
+    String text = importantGroups.join(';');
+    setConfig('notification/importantGroups', text);
   }
 
   /// 读取配置文件
@@ -69,14 +85,24 @@ class UserSettings extends MySettings {
     enableSelfChats = getBool('function/selfChats', true);
     notificationLaunchQQ = getBool('notification/launchQQ', false);
 
-
     // 读取启用的数组
-    String ens = getStr('notification/enabledGroup', '');
+    String ens = getStr('notification/enabledGroups', '');
     if (ens.isNotEmpty) {
       List<String> sl = ens.split(';');
       sl.forEach((idString) {
         try {
           enabledGroups.add(int.parse(idString));
+        } catch (e) {}
+      });
+    }
+
+    // 读取重要的数组
+    ens = getStr('notification/importantGroups', '');
+    if (ens.isNotEmpty) {
+      List<String> sl = ens.split(';');
+      sl.forEach((idString) {
+        try {
+          importantGroups.add(int.parse(idString));
         } catch (e) {}
       });
     }
