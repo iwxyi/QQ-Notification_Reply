@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -180,6 +181,10 @@ class _ChatWidgetState extends State<ChatWidget>
     return new Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: new Row(children: <Widget>[
+          new IconButton(
+              icon: new Icon(Icons.image),
+              onPressed: () => getImage(false),
+              color: Theme.of(context).primaryColor),
           // 输入框
           new Flexible(
               child: new TextField(
@@ -236,6 +241,30 @@ class _ChatWidgetState extends State<ChatWidget>
     } else if (widget.chatObj.isGroup()) {
       // 发送群组消息
       G.cs.sendGroupMessage(widget.chatObj.groupId, text);
+    }
+  }
+
+  /// 获取图片
+  /// @param index 0本地图库，1拍照
+  Future getImage(bool camera) async {
+    PickedFile selectedFile;
+    bool supportCamera = true; // 有些平台不支持相机，这个得想办法获取
+    if (!supportCamera) {
+      // selectedFile=await ImagePicker.platform.pickImage(source: ImageSource.gallery);
+      selectedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+    } else {
+      if (!camera)
+        selectedFile =
+            await ImagePicker().getImage(source: ImageSource.gallery);
+      else
+        selectedFile = await ImagePicker().getImage(source: ImageSource.camera);
+      // imageFile = File(selectedFile.path);
+    }
+
+    if (selectedFile != null) {
+      // TODO: 上传文件
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('等待开发')));
     }
   }
 }

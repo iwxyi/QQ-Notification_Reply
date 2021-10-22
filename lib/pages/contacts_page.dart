@@ -31,7 +31,8 @@ class _ContactsPageState extends State<ContactsPage>
 
   @override
   Widget build(BuildContext context) {
-    Color iconColor = Theme.of(context).iconTheme.color;
+    super.build(context);
+    Color iconColor = Theme.of(context).primaryColor;
     return Scaffold(
       appBar: TabBar(
         controller: _tabController,
