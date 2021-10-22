@@ -460,12 +460,12 @@ class CqhttpService {
       return '@' + match[1];
     });
     text = text.replaceAllMapped(
-        RegExp(r'\[CQ:json,data=.+"prompt":"(.+?)".*?\]'),
-        (match) => '${match[1]}');
+        RegExp(r'\[CQ:json,data=.+?"prompt":"(.+?)".*?\]'),
+        (match) => '[${match[1]}]');
     text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[JSON]');
     text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');
     text = text.replaceAllMapped(
-        RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '@${match[1]}');
+        RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '[${match[1]}]');
     text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');
 
     return text;
