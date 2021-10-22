@@ -6,8 +6,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
-import 'package:qqnotificationreply/pages/account_widget.dart';
-import 'package:qqnotificationreply/pages/notification_widget.dart';
+import 'package:qqnotificationreply/pages/settings/account_widget.dart';
+import 'package:qqnotificationreply/pages/settings/notification_widget.dart';
 import 'package:qqnotificationreply/services/cqhttpservice.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/utils/file_util.dart';
@@ -18,10 +18,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/gallerybar.dart';
 import 'chat_list_page.dart';
-import 'chat_widget.dart';
-import 'contacts_page.dart';
+import 'chat/chat_widget.dart';
+import 'contact/contacts_page.dart';
 import 'search_page.dart';
-import 'slide_images_page.dart';
+import '../widgets/slide_images_page.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
 const Color _appBarColor2 = const Color(0xFF8266D4);

@@ -4,7 +4,7 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
-import 'chat_widget.dart';
+import 'chat/chat_widget.dart';
 
 List<MsgBean> timedMsgs = []; // 需要显示的列表
 
@@ -59,7 +59,7 @@ class _ChatListPageState extends State<ChatListPage>
           String headerUrl;
           if (msg.isGroup()) {
             title = msg.groupName;
-            subTitle = msg.nickname + ": " + G.cs.getMessageDisplay(msg);
+            subTitle = msg.username() + ": " + G.cs.getMessageDisplay(msg);
             headerUrl =
                 "http://p.qlogo.cn/gh/${msg.groupId}/${msg.groupId}/100";
           } else {
@@ -90,7 +90,7 @@ class _ChatListPageState extends State<ChatListPage>
           return new Container(
             padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
             child: new Card(
-              color: Colors.grey.withAlpha(32), // 背景颜色
+              color: Color(0xFFEEEEEE), // 背景颜色
               elevation: 0.0, // 投影
               child: ListTile(
                 leading: new ClipOval(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
-import 'package:qqnotificationreply/pages/group_select_widget.dart';
+import 'package:qqnotificationreply/pages/settings/group_select_widget.dart';
 
 class NotificationWidget extends StatefulWidget {
   @override
@@ -102,7 +102,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
                     color: Colors.blue,
                   ),
                   title: Text('点击通知跳转QQ'),
-                  subtitle: Text('进入QQ会话还是本程序的会话'), 
+                  subtitle: Text('进入QQ会话还是本程序的会话'),
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {

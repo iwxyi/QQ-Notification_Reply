@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
-import 'package:qqnotificationreply/pages/all_messages_page.dart';
-import 'package:qqnotificationreply/pages/login_widget.dart';
-import 'package:qqnotificationreply/pages/notification_widget.dart';
+import 'package:qqnotificationreply/pages/settings/all_messages_page.dart';
+import 'package:qqnotificationreply/pages/settings/login_widget.dart';
+import 'package:qqnotificationreply/pages/settings/notification_widget.dart';
 
 class AccountWidget extends StatefulWidget {
   @override

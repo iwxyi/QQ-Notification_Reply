@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'friend_list_widget.dart';
-import 'group_list_widget.dart';
+import '../contact/friend_list_widget.dart';
+import '../contact/group_list_widget.dart';
 
 class ContactsPage extends StatefulWidget {
   @override
