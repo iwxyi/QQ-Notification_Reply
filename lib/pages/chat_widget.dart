@@ -248,22 +248,10 @@ class MessageView extends StatefulWidget {
   _MessageViewState createState() => _MessageViewState(msg);
 }
 
-class _MessageViewState extends State<MessageView>
-    with SingleTickerProviderStateMixin {
+class _MessageViewState extends State<MessageView> {
   final MsgBean msg;
-  AnimationController _controller;
 
   _MessageViewState(this.msg);
-
-  @override
-  void initState() {
-    _controller = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 300),
-        lowerBound: 0.0,
-        upperBound: 1.0);
-    super.initState();
-  }
 
   /// 一整行
   Widget _buildMessageLine() {
@@ -377,7 +365,6 @@ class _MessageViewState extends State<MessageView>
                         state.extendedImageInfo;
                         switch (state.extendedImageLoadState) {
                           case LoadState.loading:
-                            _controller.reset();
                             return Image.asset(
                               "assets/images/loading.gif",
                               fit: BoxFit.fill,
@@ -388,19 +375,14 @@ class _MessageViewState extends State<MessageView>
                           //return null;
                           //return state.completedWidget;
                           case LoadState.completed:
-                            _controller.forward();
                             if (widget.loadFinishedCallback != null) {
                               widget.loadFinishedCallback();
                             }
-                            return FadeTransition(
-                              opacity: _controller,
-                              child: ExtendedRawImage(
-                                image: state.extendedImageInfo?.image,
-                                fit: BoxFit.contain,
-                              ),
+                            return ExtendedRawImage(
+                              image: state.extendedImageInfo?.image,
+                              fit: BoxFit.contain,
                             ); // 显示图片
                           case LoadState.failed:
-                            _controller.reset();
                             return GestureDetector(
                               child: Stack(
                                 fit: StackFit.expand,

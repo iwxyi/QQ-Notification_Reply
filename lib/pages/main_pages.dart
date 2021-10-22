@@ -162,6 +162,7 @@ class _MainPagesState extends State<MainPages> {
                 if (result == AppBarMenuItems.AllReaded) {
                   ScaffoldMessenger.of(context)
                       .showSnackBar(const SnackBar(content: Text('全部已读')));
+                  _markAllReaded();
                 }
               });
             },
@@ -423,6 +424,11 @@ class _MainPagesState extends State<MainPages> {
         timeInSecForIosWeb: 1,
       );
     }
+  }
+
+  void _markAllReaded() {
+    G.ac.unreadGroupMessages.clear();
+    G.ac.unreadGroupMessages.clear();
   }
 
   @override
