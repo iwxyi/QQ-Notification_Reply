@@ -34,17 +34,19 @@ class UserAccount {
   Map<int, GroupInfo> groupList = {}; // 群组列表
 
   // 消息记录
-  List<MsgBean> allMessages = [];
-  Map<int, List<MsgBean>> allPrivateMessages = {};
-  Map<int, List<MsgBean>> allGroupMessages = {};
+  List<MsgBean> allMessageHistories = []; // 所有消息记录
+  Map<int, List<MsgBean>> allMessages = {}; // 所有消息记录
+  Map<int, int> messageTimes = {}; // 消息事件
+  Map<int, List<Message>> unreadMessages = {}; // 未读消息（通知）
+  Map<int, int> unreadMessageCount = {}; // 未读消息数量
 
-  Map<int, int> privateMessageTimes = {}; // 私聊消息时间
-  Map<int, int> groupMessageTimes = {}; // 群聊消息时间
+  // Map<int, int> privateMessageTimes = {}; // 私聊消息时间
+  // Map<int, int> groupMessageTimes = {}; // 群聊消息时间
 
-  Map<int, List<Message>> unreadPrivateMessages = {}; // 未读私聊消息
-  Map<int, List<Message>> unreadGroupMessages = {}; // 未读群聊消息
-  Map<int, int> unreadPrivateCount = {};
-  Map<int, int> unreadGroupCount = {};
+  // Map<int, List<Message>> unreadPrivateMessages = {}; // 未读私聊消息
+  // Map<int, List<Message>> unreadGroupMessages = {}; // 未读群聊消息
+  // Map<int, int> unreadPrivateCount = {};
+  // Map<int, int> unreadGroupCount = {};
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
@@ -74,29 +76,20 @@ class UserAccount {
   String selfInfo() => nickname + ' (' + qqId.toString() + ')';
 
   MsgBean getMsgById(int msgId) {
-    int index = allMessages.indexWhere((element) => element.messageId == msgId);
+    int index = allMessageHistories.indexWhere((element) => element.messageId == msgId);
     if (index == -1) {
       print('未找到的MessageId: ' + msgId.toString());
       return null;
     }
-    return allMessages[index];
+    return allMessageHistories[index];
   }
 
   void clearUnread(MsgBean msg) {
-    if (msg.isPrivate()) {
-      if (unreadPrivateCount.containsKey(msg.friendId)) {
-        unreadPrivateCount.remove(msg.friendId);
+    if (unreadMessageCount.containsKey(msg.keyId())) {
+        unreadMessageCount.remove(msg.keyId());
       }
-      if (unreadPrivateMessages.containsKey(msg.friendId)) {
-        unreadPrivateMessages.remove(msg.friendId);
+      if (unreadMessages.containsKey(msg.keyId())) {
+        unreadMessages.remove(msg.keyId());
       }
-    } else if (msg.isGroup()) {
-      if (unreadGroupCount.containsKey(msg.groupId)) {
-        unreadGroupCount.remove(msg.groupId);
-      }
-      if (unreadGroupMessages.containsKey(msg.groupId)) {
-        unreadGroupMessages.remove(msg.groupId);
-      }
-    }
   }
 }

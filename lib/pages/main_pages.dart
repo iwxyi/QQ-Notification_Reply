@@ -158,13 +158,13 @@ class _MainPagesState extends State<MainPages> {
           ),
           PopupMenuButton<AppBarMenuItems>(
             onSelected: (AppBarMenuItems result) {
-              setState(() {
-                if (result == AppBarMenuItems.AllReaded) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(content: Text('全部已读')));
+              if (result == AppBarMenuItems.AllReaded) {
+                setState(() {
                   _markAllReaded();
-                }
-              });
+                });
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(const SnackBar(content: Text('全部已读')));
+              }
             },
             itemBuilder: (BuildContext context) =>
                 <PopupMenuEntry<AppBarMenuItems>>[
@@ -256,18 +256,18 @@ class _MainPagesState extends State<MainPages> {
     Message message = new Message(displayMessage, DateTime.now(), person);
     AndroidNotificationDetails androidPlatformChannelSpecifics;
 
+    if (!G.ac.unreadMessages.containsKey(msg.keyId())) {
+      G.ac.unreadMessages[msg.keyId()] = [];
+    }
+    G.ac.unreadMessages[msg.keyId()].add(message);
     if (msg.isPrivate()) {
       // 私聊消息
       /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
-      if (!G.ac.unreadPrivateMessages.containsKey(msg.friendId)) {
-        G.ac.unreadPrivateMessages[msg.friendId] = [];
-      }
-      G.ac.unreadPrivateMessages[msg.friendId].add(message);
 
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(person,
               conversationTitle: msg.username(),
-              messages: G.ac.unreadPrivateMessages[msg.friendId]);
+              messages: G.ac.unreadMessages[msg.keyId()]);
 
       androidPlatformChannelSpecifics = AndroidNotificationDetails(
           'private_message', '私聊消息', 'QQ好友消息/临时会话',
@@ -277,18 +277,13 @@ class _MainPagesState extends State<MainPages> {
           importance: Importance.high);
     } else if (msg.isGroup()) {
       // 群聊消息
-      if (!G.ac.unreadGroupMessages.containsKey(msg.groupId)) {
-        G.ac.unreadGroupMessages[msg.groupId] = [];
-      }
-      G.ac.unreadGroupMessages[msg.groupId].add(message);
-
       Person group = new Person(
           bot: false, important: true, name: msg.groupName, uri: personUri);
 
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(group,
               conversationTitle: msg.groupName,
-              messages: G.ac.unreadGroupMessages[msg.groupId]);
+              messages: G.ac.unreadMessages[msg.keyId()]);
 
       String channelId, channelName;
       Priority priority;
@@ -338,17 +333,16 @@ class _MainPagesState extends State<MainPages> {
       String url;
       // android 和 ios 的 QQ 启动 url scheme 是不同的
       if (msg.isPrivate()) {
-        G.ac.unreadPrivateMessages[msg.friendId].clear();
         url = 'mqq://im/chat?chat_type=wpa&uin=' +
             msg.friendId.toString() +
             '&version=1&src_type=web';
         // &web_src=qq.com
       } else {
-        G.ac.unreadGroupMessages[msg.groupId].clear();
         url = 'mqq://im/chat?chat_type=group&uin=' +
             msg.groupId.toString() +
             '&version=1&src_type=web';
       }
+      G.ac.unreadMessages[msg.keyId()].clear();
 
       // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
       // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
@@ -424,8 +418,8 @@ class _MainPagesState extends State<MainPages> {
   }
 
   void _markAllReaded() {
-    G.ac.unreadGroupMessages.clear();
-    G.ac.unreadGroupMessages.clear();
+    G.ac.unreadMessages.clear();
+    G.ac.unreadMessageCount.clear();
   }
 
   @override

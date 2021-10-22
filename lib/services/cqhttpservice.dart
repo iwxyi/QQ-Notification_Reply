@@ -29,7 +29,7 @@ class CqhttpService {
   /// 连接Socket
   Future<bool> connect(String host, String token) async {
     // 清理之前的数据
-    ac.allMessages.clear();
+    ac.allMessageHistories.clear();
     wsReceives.clear();
 
     // 预处理输入
@@ -392,55 +392,32 @@ class CqhttpService {
   /// - account_widget 消息数量（包括所有）
   void _notifyOutter(MsgBean msg) {
     // 保存所有 msg 记录
-    ac.allMessages.add(msg);
+    ac.allMessageHistories.add(msg);
     /* if (ac.allMessages.length > st.keepMsgHistoryCount) {
       ac.allMessages.removeAt(0);
     } */
 
     // 保留每个对象的消息记录
-    if (msg.isPrivate()) {
-      if (!ac.allPrivateMessages.containsKey(msg.friendId)) {
-        ac.allPrivateMessages[msg.friendId] = [];
-      }
-      ac.allPrivateMessages[msg.friendId].add(msg);
-      if (ac.allPrivateMessages[msg.friendId].length > st.keepMsgHistoryCount) {
-        ac.allPrivateMessages[msg.friendId].removeAt(0);
-      }
-    } else if (msg.isGroup()) {
-      if (!ac.allGroupMessages.containsKey(msg.groupId)) {
-        ac.allGroupMessages[msg.groupId] = [];
-      }
-      ac.allGroupMessages[msg.groupId].add(msg);
-      if (ac.allGroupMessages[msg.groupId].length > st.keepMsgHistoryCount) {
-        ac.allGroupMessages[msg.groupId].removeAt(0);
-      }
+    if (!ac.allMessages.containsKey(msg.keyId())) {
+      ac.allMessages[msg.keyId()] = [];
+    }
+    ac.allMessages[msg.keyId()].add(msg);
+    if (ac.allMessages[msg.keyId()].length > st.keepMsgHistoryCount) {
+      ac.allMessages[msg.keyId()].removeAt(0);
     }
 
     // 刷新收到消息的时间（用于简单选择时的排序）
     // 以及未读消息的数量
     int time = DateTime.now().millisecondsSinceEpoch;
-    if (msg.isPrivate()) {
-      ac.privateMessageTimes[msg.friendId] = time;
-      if (msg.senderId == ac.qqId) {
-        ac.unreadPrivateCount.remove(msg.friendId);
-      } else {
-        ac.unreadPrivateCount[msg.friendId] =
-            (ac.unreadPrivateCount.containsKey(msg.friendId)
-                    ? ac.unreadPrivateCount[msg.friendId]
-                    : 0) +
-                1;
-      }
-    } else if (msg.isGroup()) {
-      ac.groupMessageTimes[msg.groupId] = time;
-      if (msg.senderId == ac.qqId) {
-        ac.unreadGroupCount.remove(msg.groupId);
-      } else {
-        ac.unreadGroupCount[msg.groupId] =
-            (ac.unreadGroupCount.containsKey(msg.groupId)
-                    ? ac.unreadGroupCount[msg.groupId]
-                    : 0) +
-                1;
-      }
+    ac.messageTimes[msg.keyId()] = time;
+    if (msg.senderId == ac.qqId) {
+      ac.unreadMessageCount.remove(msg.keyId());
+    } else {
+      ac.unreadMessageCount[msg.keyId()] =
+          (ac.unreadMessageCount.containsKey(msg.keyId())
+                  ? ac.unreadMessageCount[msg.keyId()]
+                  : 0) +
+              1;
     }
 
     // 通知界面

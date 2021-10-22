@@ -85,11 +85,7 @@ class _ChatWidgetState extends State<ChatWidget>
   void _initMessages() {
     MsgBean msg = widget.chatObj;
     // 获取历史消息
-    if (msg.isPrivate()) {
-      _messages = G.ac.allPrivateMessages[msg.friendId];
-    } else if (msg.isGroup()) {
-      _messages = G.ac.allGroupMessages[msg.groupId];
-    }
+    _messages = G.ac.allMessages[msg.keyId()];
 
     if (_messages == null) {
       _messages = [];

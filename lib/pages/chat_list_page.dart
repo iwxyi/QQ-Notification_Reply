@@ -89,15 +89,8 @@ class _ChatListPageState extends State<ChatListPage>
           // 侧边
           List<Widget> tailWidgets = [Text(timeStr)];
           int unreadCount = 0;
-
-          if (msg.isPrivate()) {
-            if (G.ac.unreadPrivateCount.containsKey(msg.friendId)) {
-              unreadCount = G.ac.unreadPrivateCount[msg.friendId];
-            }
-          } else if (msg.isGroup()) {
-            if (G.ac.unreadGroupCount.containsKey(msg.groupId)) {
-              unreadCount = G.ac.unreadGroupCount[msg.groupId];
-            }
+          if (G.ac.unreadMessageCount.containsKey(msg.keyId())) {
+            unreadCount = G.ac.unreadMessageCount[msg.keyId()];
           }
           if (unreadCount > 0) {
             Color c = Colors.orange; // 重要消息：红色

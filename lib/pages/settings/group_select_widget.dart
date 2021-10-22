@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
+import 'package:qqnotificationreply/services/msgbean.dart';
 
 class GroupSelectWidget extends StatefulWidget {
   @override
@@ -27,9 +28,8 @@ class _GroupSelectWidgetState extends State<GroupSelectWidget> {
     // 初始化群组内容
     Map<int, GroupInfo> groupList = G.ac.groupList;
     groupList.forEach((id, info) {
-      int time = G.ac.groupMessageTimes.containsKey(id)
-          ? G.ac.groupMessageTimes[id]
-          : 0;
+      id = MsgBean.groupKeyId(id);
+      int time = G.ac.messageTimes.containsKey(id) ? G.ac.messageTimes[id] : 0;
       groups.add(new IGroupInfo(id, info.name, 0, time));
     });
     groups.sort((IGroupInfo a, IGroupInfo b) {

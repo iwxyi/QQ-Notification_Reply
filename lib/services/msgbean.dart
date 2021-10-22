@@ -49,6 +49,11 @@ class MsgBean {
           ? remark
           : nickname;
 
+  int keyId() => groupId != null && groupId != 0 ? -groupId : friendId;
+
+  static int privateKeyId(int id) => id;
+  static int groupKeyId(int id) => -id;
+
   String title() => isGroup() ? groupName : username();
 
   bool isPrivate() => groupId == null || groupId == 0;

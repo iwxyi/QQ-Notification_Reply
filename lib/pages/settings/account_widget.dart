@@ -122,7 +122,7 @@ class _AccountWidgetState extends State<AccountWidget>
                     Icons.history,
                     color: Colors.blue,
                   ),
-                  title: Text('消息记录：' + G.ac.allMessages.length.toString()),
+                  title: Text('消息记录：' + G.ac.allMessageHistories.length.toString()),
                   trailing: Icon(Icons.arrow_right),
                   onTap: () {
                     Navigator.of(context)

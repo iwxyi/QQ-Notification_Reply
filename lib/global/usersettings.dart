@@ -11,6 +11,8 @@ class UserSettings extends MySettings {
   String token; // 连接秘钥
   bool enableSelfChats = true; // 启用本身的聊天功能
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
+  bool enableChatListHistories = true; // 聊天列表多条未读消息
+  bool enableChatListReply = true; // 聊天列表点击未读按钮快速回复
 
   List<int> enabledGroups = []; // 开启通知的群组
   List<int> importantGroups = []; // 设为重要的群组

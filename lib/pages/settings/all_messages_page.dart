@@ -13,7 +13,7 @@ class _AllMessageListWidgetState extends State<AllMessageListWidget> {
 
   @override
   void initState() {
-    G.ac.allMessages.reversed.forEach((element) {
+    G.ac.allMessageHistories.reversed.forEach((element) {
       initList.add(element.simpleString());
     });
     showItemList.addAll(initList);
