@@ -43,6 +43,8 @@ class UserAccount {
 
   Map<int, List<Message>> unreadPrivateMessages = {}; // 未读私聊消息
   Map<int, List<Message>> unreadGroupMessages = {}; // 未读群聊消息
+  Map<int, int> unreadPrivateCount = {};
+  Map<int, int> unreadGroupCount = {};
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
@@ -78,5 +80,23 @@ class UserAccount {
       return null;
     }
     return allMessages[index];
+  }
+
+  void clearUnread(MsgBean msg) {
+    if (msg.isPrivate()) {
+      if (unreadPrivateCount.containsKey(msg.friendId)) {
+        unreadPrivateCount.remove(msg.friendId);
+      }
+      if (unreadPrivateMessages.containsKey(msg.friendId)) {
+        unreadPrivateMessages.remove(msg.friendId);
+      }
+    } else if (msg.isGroup()) {
+      if (unreadGroupCount.containsKey(msg.groupId)) {
+        unreadGroupCount.remove(msg.groupId);
+      }
+      if (unreadGroupMessages.containsKey(msg.groupId)) {
+        unreadGroupMessages.remove(msg.groupId);
+      }
+    }
   }
 }

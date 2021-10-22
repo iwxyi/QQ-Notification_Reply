@@ -47,7 +47,7 @@ class _ChatWidgetState extends State<ChatWidget>
         _messages = [];
       });
       setState(() {
-        _loadMessages();
+        _initMessages();
       });
     };
 
@@ -79,12 +79,12 @@ class _ChatWidgetState extends State<ChatWidget>
     // 默认获取焦点
     // FocusScope.of(context).requestFocus(_editorFocus);
 
-    _loadMessages();
+    _initMessages();
   }
 
-  void _loadMessages() {
-    // 获取历史消息
+  void _initMessages() {
     MsgBean msg = widget.chatObj;
+    // 获取历史消息
     if (msg.isPrivate()) {
       _messages = G.ac.allPrivateMessages[msg.friendId];
     } else if (msg.isGroup()) {

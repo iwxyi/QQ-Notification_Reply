@@ -110,13 +110,22 @@ class _MessageViewState extends State<MessageView> {
     }
   }
 
+  /// 构建富文本消息框
   Widget _buildTextWidget(MsgBean msg) {
+    List<Widget> spans = [];
+    // 先解析文本
+    return _buildSimpleTextWidget(msg);
+  }
+
+  /// 构建一个最简单的纯文本消息框
+  Widget _buildSimpleTextWidget(MsgBean msg) {
     return new Text(
       G.cs.getMessageDisplay(msg),
       style: TextStyle(color: Colors.black, fontSize: 16),
     );
   }
 
+  /// 构建一个纯图片消息框
   Widget _buildImageWidget(String url) {
     return GestureDetector(
         child: Hero(

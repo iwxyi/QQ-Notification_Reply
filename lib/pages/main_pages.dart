@@ -329,12 +329,9 @@ class _MainPagesState extends State<MainPages> {
     print('通知.payload: $payload');
     MsgBean msg = G.ac.getMsgById(int.parse(payload));
 
-    if (msg.isPrivate()) {
-      G.ac.unreadPrivateMessages.remove(msg.friendId);
-    } else if (msg.isGroup()) {
-      G.ac.unreadGroupMessages.remove(msg.groupId);
-    }
+    G.ac.clearUnread(msg);
 
+    // 打开会话
     if (!G.st.notificationLaunchQQ) {
       G.rt.showChatPage(msg);
     } else {

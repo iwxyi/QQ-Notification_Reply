@@ -18,7 +18,7 @@ class UserSettings extends MySettings {
   Map<int, int> groupImportance = {}; // 群组的重要性
 
   bool enableHeader = true; // 显示头像（稍微增加性能）
-  int keepMsgHistoryCount = 200; // 保留多少消息记录
+  int keepMsgHistoryCount = 100; // 保留多少消息记录
 
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
     // readFromFile(); // super会调用，原来这是虚继承

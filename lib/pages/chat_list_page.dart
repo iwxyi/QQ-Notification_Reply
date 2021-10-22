@@ -86,6 +86,58 @@ class _ChatListPageState extends State<ChatListPage>
             timeStr = "昨天 " + formatDate(dt, ['HH', ':', 'nn']);
           }
 
+          // 侧边
+          List<Widget> tailWidgets = [Text(timeStr)];
+          int unreadCount = 0;
+
+          if (msg.isPrivate()) {
+            if (G.ac.unreadPrivateCount.containsKey(msg.friendId)) {
+              unreadCount = G.ac.unreadPrivateCount[msg.friendId];
+            }
+          } else if (msg.isGroup()) {
+            if (G.ac.unreadGroupCount.containsKey(msg.groupId)) {
+              unreadCount = G.ac.unreadGroupCount[msg.groupId];
+            }
+          }
+          if (unreadCount > 0) {
+            Color c = Colors.red; // 重要消息：红色
+            if (msg.isGroup()) {
+              if (G.st.importantGroups.contains(msg.groupId)) {
+                // 重要群组，也是红色
+                c = Colors.orange;
+              } else if (G.st.enabledGroups.contains(msg.groupId)) {
+                // 通知群组，橙色
+                c = Colors.blue;
+              } else {
+                // 不通知的群组，淡蓝色
+                c = Colors.grey;
+              }
+            }
+
+            // 添加未读消息计数
+            tailWidgets.add(
+              new Container(
+                padding: EdgeInsets.all(2),
+                decoration: new BoxDecoration(
+                  color: c,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                constraints: BoxConstraints(
+                  minWidth: 20,
+                  minHeight: 20,
+                ),
+                child: new Text(
+                  unreadCount.toString(), //通知数量
+                  style: new TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+
           // 构造控件
           return new Container(
             padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
@@ -106,8 +158,17 @@ class _ChatListPageState extends State<ChatListPage>
                 ),
                 title: Text(title),
                 subtitle: Text(subTitle, maxLines: 3),
-                trailing: Text(timeStr),
+                trailing: Column(
+                    children: tailWidgets,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.end),
                 onTap: () {
+                  // 清除未读消息
+                  setState(() {
+                    G.ac.clearUnread(msg);
+                  });
+
+                  // 打开会话
                   G.rt.showChatPage(msg);
                 },
                 onLongPress: () {},
@@ -131,6 +192,7 @@ class _ChatListPageState extends State<ChatListPage>
 
   /// 收到消息
   void messageReceived(MsgBean msg) {
+    // 时间队列置顶
     for (int i = 0; i < timedMsgs.length; i++) {
       if (timedMsgs[i].isObj(msg)) {
         timedMsgs.removeAt(i);

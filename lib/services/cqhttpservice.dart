@@ -417,11 +417,30 @@ class CqhttpService {
     }
 
     // 刷新收到消息的时间（用于简单选择时的排序）
+    // 以及未读消息的数量
     int time = DateTime.now().millisecondsSinceEpoch;
     if (msg.isPrivate()) {
       ac.privateMessageTimes[msg.friendId] = time;
+      if (msg.senderId == ac.qqId) {
+        ac.unreadPrivateCount.remove(msg.friendId);
+      } else {
+        ac.unreadPrivateCount[msg.friendId] =
+            (ac.unreadPrivateCount.containsKey(msg.friendId)
+                    ? ac.unreadPrivateCount[msg.friendId]
+                    : 0) +
+                1;
+      }
     } else if (msg.isGroup()) {
       ac.groupMessageTimes[msg.groupId] = time;
+      if (msg.senderId == ac.qqId) {
+        ac.unreadGroupCount.remove(msg.groupId);
+      } else {
+        ac.unreadGroupCount[msg.groupId] =
+            (ac.unreadGroupCount.containsKey(msg.groupId)
+                    ? ac.unreadGroupCount[msg.groupId]
+                    : 0) +
+                1;
+      }
     }
 
     // 通知界面
