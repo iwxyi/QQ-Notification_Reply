@@ -149,7 +149,6 @@ class _ChatListPageState extends State<ChatListPage>
                 child: container,
                 onTap: () {
                   showReplyInChatList(msg);
-                  G.ac.chatListShowReply.remove(msg.keyId());
                 });
 
             tailWidgets.add(gd);
@@ -251,10 +250,8 @@ class _ChatListPageState extends State<ChatListPage>
   void showReplyInChatList(MsgBean msg) {
     setState(() {
       if (G.ac.chatListShowReply.containsKey(msg.keyId())) {
-        print('隐藏快速回复框');
         G.ac.chatListShowReply.remove(msg.keyId());
       } else {
-        print('显示快速回复框');
         G.ac.chatListShowReply[msg.keyId()] = true;
       }
     });
