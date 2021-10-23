@@ -52,6 +52,7 @@ class _AccountWidgetState extends State<AccountWidget>
   }
 
   @override
+  // ignore: must_call_super
   Widget build(BuildContext context) {
     return Container(
       color: Colors.grey.shade200,

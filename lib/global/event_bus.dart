@@ -11,6 +11,7 @@ enum Event {
   groupList,
   messageRaw, // 获取到消息本身
   messageReady, // 已经下载完需要的头像资源
+  refreshState
 }
 
 class EventFn {

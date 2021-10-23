@@ -26,6 +26,11 @@ class _ChatListPageState extends State<ChatListPage>
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.messageRaw) {
         messageReceived(event.data);
+      } else if (event.event == Event.refreshState) {
+        if (mounted) {
+          // 这里报错了，但实际上也是能用
+          setState(() {});
+        }
       }
     });
 
@@ -207,8 +212,10 @@ class _ChatListPageState extends State<ChatListPage>
           return new Container(
             padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
             child: new Card(
-              color: Color(0xFFEEEEEE), // 背景颜色
-              elevation: 0.0, // 投影
+              color: Color(0xFFEEEEEE),
+              // 背景颜色
+              elevation: 0.0,
+              // 投影
               child: Column(children: bodyWidgets),
               shape: RoundedRectangleBorder(
                 borderRadius:

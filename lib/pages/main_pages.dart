@@ -164,6 +164,7 @@ class _MainPagesState extends State<MainPages> {
                 });
                 ScaffoldMessenger.of(context)
                     .showSnackBar(const SnackBar(content: Text('全部已读')));
+                G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
               }
             },
             itemBuilder: (BuildContext context) =>
