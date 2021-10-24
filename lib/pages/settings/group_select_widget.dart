@@ -28,7 +28,9 @@ class _GroupSelectWidgetState extends State<GroupSelectWidget> {
     // 初始化群组内容
     Map<int, GroupInfo> groupList = G.ac.groupList;
     groupList.forEach((id, info) {
-      int time = G.ac.messageTimes.containsKey(id) ? G.ac.messageTimes[id] : 0;
+      int keyId = MsgBean.groupKeyId(id);
+      int time =
+          G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
       groups.add(new IGroupInfo(id, info.name, 0, time));
     });
     groups.sort((IGroupInfo a, IGroupInfo b) {
