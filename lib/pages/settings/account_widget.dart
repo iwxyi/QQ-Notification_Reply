@@ -87,6 +87,22 @@ class _AccountWidgetState extends State<AccountWidget>
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.sync,
+                    color: Colors.red,
+                  ),
+                  title: Text(
+                    '心跳时间：' +
+                        (G.cs.lastHeartTime == 0
+                            ? '无'
+                            : ((DateTime.now().millisecondsSinceEpoch -
+                                            G.cs.lastHeartTime) ~/
+                                        1000)
+                                    .toString() +
+                                '秒前'),
+                  ),
+                )
               ],
             ),
           ),
@@ -123,7 +139,8 @@ class _AccountWidgetState extends State<AccountWidget>
                     Icons.history,
                     color: Colors.blue,
                   ),
-                  title: Text('消息记录：' + G.ac.allMessageHistories.length.toString()),
+                  title: Text(
+                      '消息记录：' + G.ac.allMessageHistories.length.toString()),
                   trailing: Icon(Icons.arrow_right),
                   onTap: () {
                     Navigator.of(context)

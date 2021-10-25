@@ -96,12 +96,12 @@ class _ChatListPageState extends State<ChatListPage>
             unreadCount = G.ac.unreadMessageCount[msg.keyId()];
           }
           if (unreadCount > 0) {
-            Color c = Colors.orange; // 重要消息：红色
+            Color c = Colors.blue; // 重要消息：红色
             bool showNum = true;
             if (msg.isGroup()) {
               if (G.st.importantGroups.contains(msg.groupId)) {
                 // 重要群组，也是红色
-                c = Colors.orange;
+                c = Colors.blue;
               } else if (G.st.enabledGroups.contains(msg.groupId)) {
                 // 通知群组，橙色
                 c = Colors.grey;

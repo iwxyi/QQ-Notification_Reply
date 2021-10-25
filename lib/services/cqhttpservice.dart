@@ -19,7 +19,8 @@ class CqhttpService {
   String token = "";
 
   IOWebSocketChannel channel;
-  List<String> wsReceives = [];
+  int lastHeartTime = 0; // 最后心跳的时间戳（毫秒）
+  List<String> wsReceives = []; // 收到的所有数据，用于调试
 
   num _reconnectCount = 0; // 重连次数，并且影响每次重连的时间间隔
   Timer _reconnectTimer;
@@ -149,6 +150,7 @@ class CqhttpService {
         // 第一次连接上
         _parseLifecycle(obj);
       }
+      lastHeartTime = DateTime.now().millisecondsSinceEpoch;
     } else if (postType == 'message' || postType == 'message_sent') {
       // 自己发送的群消息是 message_sent 类型
       String messageType = obj['message_type'];
