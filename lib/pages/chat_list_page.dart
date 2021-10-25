@@ -150,14 +150,17 @@ class _ChatListPageState extends State<ChatListPage>
                   child: SizedBox());
             }
 
-            Widget gd = GestureDetector(
-                child: container,
-                onTap: () {
-                  showReplyInChatList(msg);
-                });
-
-            tailWidgets.add(gd);
+            tailWidgets.add(container);
           }
+
+          Widget gd = GestureDetector(
+              child: Column(
+                  children: tailWidgets,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.end),
+              onTap: () {
+                showReplyInChatList(msg);
+              });
 
           // 消息内容
           List<Widget> bodyWidgets = [];
@@ -175,10 +178,7 @@ class _ChatListPageState extends State<ChatListPage>
             ),
             title: Text(title),
             subtitle: Text(subTitle, maxLines: 3),
-            trailing: Column(
-                children: tailWidgets,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.end),
+            trailing: gd,
             onTap: () {
               // 清除未读消息
               setState(() {

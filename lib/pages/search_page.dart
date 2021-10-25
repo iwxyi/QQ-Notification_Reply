@@ -28,16 +28,18 @@ class _SearchPageState extends State<SearchPage> {
     // 初始化好友内容
     Map<int, FriendInfo> friendList = G.ac.friendList;
     friendList.forEach((id, info) {
-      id = MsgBean.privateKeyId(id);
-      int time = G.ac.messageTimes.containsKey(id) ? G.ac.messageTimes[id] : 0;
+      int keyId = MsgBean.privateKeyId(id);
+      int time =
+          G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
       items.add(new FGInfo(id, info.username(), time, false));
     });
 
     // 初始化群组内容
     Map<int, GroupInfo> groupList = G.ac.groupList;
     groupList.forEach((id, info) {
-      id = MsgBean.groupKeyId(id);
-      int time = G.ac.messageTimes.containsKey(id) ? G.ac.messageTimes[id] : 0;
+      int keyId = MsgBean.groupKeyId(id);
+      int time =
+          G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
       items.add(new FGInfo(id, info.name, time, true));
     });
     items.sort((FGInfo a, FGInfo b) {
