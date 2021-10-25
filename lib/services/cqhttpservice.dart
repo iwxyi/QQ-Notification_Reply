@@ -83,7 +83,7 @@ class CqhttpService {
       print('ws错误: ' + ex.message);
     }, onDone: () {
       // 实际上是 onClose？连接结束，即关闭
-      print('ws完成');
+      print('ws断开，等待重连...');
       reconnect(host, token);
     });
 
@@ -104,11 +104,6 @@ class CqhttpService {
   }
 
   void reconnect(String host, String token) {
-    // 还是连接状态？
-    if (isConnected()) {
-      return;
-    }
-
     _reconnectCount++;
     if (_reconnectTimer != null) {
       _reconnectTimer.cancel();
@@ -121,6 +116,7 @@ class CqhttpService {
 
     _reconnectTimer =
         new Timer.periodic(Duration(seconds: _reconnectCount), (timer) {
+      print('重连检测：' + (isConnected() ? '已连接' : '尝试重连...'));
       // 已经连接上了
       if (isConnected()) {
         if (_reconnectTimer != null) {
