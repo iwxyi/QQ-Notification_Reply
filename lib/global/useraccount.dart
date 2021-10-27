@@ -52,18 +52,13 @@ class UserAccount {
   // 多线程Flag
   Map<int, bool> gettingGroupMembers = {};
 
-  // QQ号增加只12位，与QQ群分开
+  // QQ号增加至11位，与QQ群分开
   static int getNotificationId(MsgBean msg) {
-    int id = msg.isGroup()
-        ? msg.groupId
-        : msg.isPrivate()
-            ? msg.friendId + 10000000000
-            : 0;
+    int id = msg.keyId();
     if (!notificationIdMap.containsKey(id)) {
       notificationIdMap[id] = notificationIdMap.length + 1;
     }
-    id = notificationIdMap[id];
-    return id;
+    return notificationIdMap[id];
   }
 
   String selfInfo() => nickname + ' (' + qqId.toString() + ')';

@@ -31,7 +31,7 @@ const Color _appBarColor4 = const Color(0xFFF3A646);
 class MainPages extends StatefulWidget {
   MainPages() {
     // 自动登录
-    if (G.st.host != null && G.st.host.isNotEmpty) {
+    if (G.st.host != null && G.st.host.isNotEmpty && !G.cs.isConnected()) {
       G.cs.connect(G.st.host, G.st.token);
     }
   }
@@ -120,6 +120,13 @@ class _MainPagesState extends State<MainPages> {
 
     G.rt.mainContext = context;
     G.rt.showChatPage = (MsgBean msg) {
+      // 清除通知
+      if (flutterLocalNotificationsPlugin != null) {
+        if (UserAccount.notificationIdMap.containsKey(msg.keyId())) {
+          flutterLocalNotificationsPlugin
+              .cancel(UserAccount.notificationIdMap[msg.keyId()]);
+        }
+      }
       // 当前页面直接替换
       if (G.rt.currentChatPage != null) {
         G.rt.currentChatPage.setObject(msg);

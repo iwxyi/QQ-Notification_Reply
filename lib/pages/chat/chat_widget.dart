@@ -142,7 +142,9 @@ class _ChatWidgetState extends State<ChatWidget>
                       : _messages[index - 1].senderId ==
                           _messages[index].senderId, () {
                 if (_keepScrollBottom) {
-                  _scrollToBottom(true);
+                  print(
+                      '------------image load completed, scroll to bottom:${_messages[index].messageId}--------------');
+                  // _scrollToBottom(true);
                 }
               }, ValueKey(_messages[index].messageId)),
               itemCount: _messages.length,
