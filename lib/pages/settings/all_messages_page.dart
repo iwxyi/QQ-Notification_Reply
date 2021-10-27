@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/services/msgbean.dart';
 
 class AllMessageListWidget extends StatefulWidget {
   @override
@@ -13,8 +14,10 @@ class _AllMessageListWidgetState extends State<AllMessageListWidget> {
 
   @override
   void initState() {
-    G.ac.allMessageHistories.reversed.forEach((element) {
-      initList.add(element.simpleString());
+    G.ac.allLogs.reversed.forEach((element) {
+      if (element.action == ActionType.SystemLog) {
+        initList.add(element.simpleString());
+      }
     });
     showItemList.addAll(initList);
     super.initState();
@@ -57,9 +60,7 @@ class _AllMessageListWidgetState extends State<AllMessageListWidget> {
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text('${showItemList[index]}'),
-                  onTap: () {
-                  
-                  },
+                  onTap: () {},
                 );
               },
             ),

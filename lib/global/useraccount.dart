@@ -34,7 +34,7 @@ class UserAccount {
   Map<int, GroupInfo> groupList = {}; // 群组列表
 
   // 消息记录
-  List<MsgBean> allMessageHistories = []; // 所有消息记录
+  List<MsgBean> allLogs = []; // 所有消息记录
   Map<int, List<MsgBean>> allMessages = {}; // 所有消息记录
   Map<int, int> messageTimes = {}; // 消息事件
   Map<int, List<Message>> unreadMessages = {}; // 未读消息（通知）
@@ -69,13 +69,12 @@ class UserAccount {
   String selfInfo() => nickname + ' (' + qqId.toString() + ')';
 
   MsgBean getMsgById(int msgId) {
-    int index =
-        allMessageHistories.indexWhere((element) => element.messageId == msgId);
+    int index = allLogs.indexWhere((element) => element.messageId == msgId);
     if (index == -1) {
       print('未找到的MessageId: ' + msgId.toString());
       return null;
     }
-    return allMessageHistories[index];
+    return allLogs[index];
   }
 
   void clearUnread(MsgBean msg) {

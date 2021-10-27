@@ -216,8 +216,10 @@ class _MainPagesState extends State<MainPages> {
   /// 所有msg raw都会到这里来
   /// 进行数据的处理操作，例如准备头像的显示
   void _messageReceived(MsgBean msg) {
-    G.ac.eventBus.fire(EventFn(Event.messageReady, msg));
-
+    if (msg.action == ActionType.SystemLog) {
+      return ;
+    }
+    
     // 判断是否需要显示通知
     if (msg.isGroup()) {
       if (!G.st.enabledGroups.contains(msg.groupId)) {

@@ -1,3 +1,12 @@
+import 'package:date_format/date_format.dart';
+
+enum ActionType {
+  Message,
+  JoinAction,
+  ExitAction,
+  SystemLog,
+}
+
 class MsgBean {
   int senderId;
   String nickname;
@@ -7,6 +16,7 @@ class MsgBean {
   String subType;
   String remark; // 好友备注
   int targetId; // 准备发给谁，给对方还是给自己
+  ActionType action = ActionType.Message;
 
   int friendId;
   int groupId;
@@ -41,7 +51,8 @@ class MsgBean {
       this.fileSize,
       this.fileUrl,
       this.role,
-      this.timestamp});
+      this.timestamp,
+      this.action});
 
   String username() => (groupCard != null && groupCard.isNotEmpty)
       ? groupCard
@@ -52,6 +63,7 @@ class MsgBean {
   int keyId() => groupId != null && groupId != 0 ? -groupId : friendId;
 
   static int privateKeyId(int id) => id;
+
   static int groupKeyId(int id) => -id;
 
   String title() => isGroup() ? groupName : username();
@@ -72,15 +84,20 @@ class MsgBean {
 
   String simpleString() {
     String showed = message;
-    //    showed = showed.replaceAll(RegExp(r"\[CQ:(\w+),.*\]"), '1');
     showed = showed.replaceAllMapped(
         RegExp(r"\[CQ:(\w+),.*\]"), (match) => "[${match[1]}]");
-    if (isPrivate()) {
-      return "$nickname: $showed";
-    } else if (isGroup()) {
-      return "[$groupName] $nickname: $showed";
+    String ts = formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp),
+        ['HH', ':', 'nn', ':', 'ss']);
+    if (action == ActionType.SystemLog) {
+      return "$ts $showed";
     } else {
-      return "unknow message";
+      if (isPrivate()) {
+        return "$ts $nickname: $showed";
+      } else if (isGroup()) {
+        return "$ts [$groupName] $nickname: $showed";
+      } else {
+        return "$ts unknow message";
+      }
     }
   }
 }

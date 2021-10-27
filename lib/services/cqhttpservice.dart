@@ -20,7 +20,7 @@ class CqhttpService {
 
   IOWebSocketChannel channel;
   int lastHeartTime = 0; // 最后心跳的时间戳（毫秒）
-  List<String> wsReceives = []; // 收到的所有数据，用于调试
+  List<String> wsReceives = []; // 收到的所有数据，用于调试（仅消息的日志）
 
   num _reconnectCount = 0; // 重连次数，并且影响每次重连的时间间隔
   Timer _reconnectTimer;
@@ -30,7 +30,6 @@ class CqhttpService {
   /// 连接Socket
   Future<bool> connect(String host, String token) async {
     // 清理之前的数据
-    ac.allMessageHistories.clear();
     wsReceives.clear();
 
     // 预处理输入
@@ -55,7 +54,7 @@ class CqhttpService {
 
     // 旧的 channel 还在时依旧连接的话，会导致重复接收到消息
     if (isConnected()) {
-      print('关闭旧的ws连接');
+      print(log('关闭旧的ws连接'));
       channel.innerWebSocket.close();
       channel = null;
     }
@@ -63,27 +62,32 @@ class CqhttpService {
     // 开始连接
     try {
       // 如果网络有问题，这里会产生错误
-      print('ws连接: ' + host + ' ' + token);
+      print(log('ws连接: ' + host + ' ' + token));
       channel = IOWebSocketChannel.connect(host, headers: headers);
     } catch (e) {
-      print('ws连接错误');
+      print(log('ws连接错误'));
       return false;
     }
 
     // 连接成功，监听消息
     channel.stream.listen((message) {
       if (debugMode) {
-        print('ws收到数据:' + message.toString().substring(0, 1000));
+        print(log('ws收到数据:' + message.toString().substring(0, 1000)));
         wsReceives.insert(0, message.toString());
       }
 
       _processReceivedData(json.decode(message.toString()));
     }, onError: (e) {
       WebSocketChannelException ex = e;
-      print('ws错误: ' + ex.message);
+      print(log('ws错误: ' + ex.message));
     }, onDone: () {
       // 实际上是 onClose？连接结束，即关闭
-      print('ws断开，等待重连...');
+      print(log('ws断开，等待重连...'));
+      if (channel.innerWebSocket != null) {
+        print(log('清理旧连接'));
+        channel.innerWebSocket.close();
+        channel = null;
+      }
       reconnect(host, token);
     });
 
@@ -99,7 +103,7 @@ class CqhttpService {
 
   void send(Map<String, dynamic> obj) {
     String text = json.encode(obj);
-    print('ws发送数据：' + text);
+    print(log('ws发送数据：' + text));
     channel.sink.add(text);
   }
 
@@ -115,8 +119,8 @@ class CqhttpService {
     }
 
     _reconnectTimer =
-        new Timer.periodic(Duration(seconds: _reconnectCount), (timer) {
-      print('重连检测：' + (isConnected() ? '已连接' : '尝试重连...'));
+        new Timer.periodic(Duration(seconds: _reconnectCount * 2), (timer) {
+      print(log('重连检测：' + (isConnected() ? '已连接' : '尝试重连...')));
       // 已经连接上了
       if (isConnected()) {
         if (_reconnectTimer != null) {
@@ -197,14 +201,14 @@ class CqhttpService {
       var data = obj['data'];
       ac.qqId = data['user_id'];
       ac.nickname = data['nickname'];
-      print('登录账号：' + ac.nickname + "  " + ac.qqId.toString());
+      print(log('登录账号：' + ac.nickname + "  " + ac.qqId.toString()));
       ac.eventBus.fire(
           EventFn(Event.loginInfo, {'qqId': ac.qqId, 'nickname': ac.nickname}));
     } else if (echo == 'get_friend_list') {
       // 好友列表
       ac.friendList.clear();
       List data = obj['data']; // 好友数组
-      print('好友数量: ' + data.length.toString());
+      print(log('好友数量: ' + data.length.toString()));
       data.forEach((friend) {
         int userId = friend['user_id'];
         String nickname = friend['nickname'];
@@ -217,7 +221,7 @@ class CqhttpService {
       // 群组列表
       ac.groupList.clear();
       List data = obj['data']; // 好友数组
-      print('群组数量: ' + data.length.toString());
+      print(log('群组数量: ' + data.length.toString()));
       data.forEach((friend) {
         int groupId = friend['group_id'];
         String groupName = friend['group_name'];
@@ -234,7 +238,7 @@ class CqhttpService {
         int groupId = int.parse(match.group(1));
         ac.gettingGroupMembers.remove(groupId);
         if (!ac.groupList.containsKey(groupId)) {
-          print('群组列表未包含：' + groupId.toString() + '，无法设置群成员');
+          print(log('群组列表未包含：' + groupId.toString() + '，无法设置群成员'));
           return;
         }
         ac.groupList[groupId].members = {};
@@ -247,10 +251,10 @@ class CqhttpService {
               new FriendInfo(userId, nickname, card);
         });
       } else {
-        print('无法识别的群成员echo: ' + echo);
+        print(log('无法识别的群成员echo: ' + echo));
       }
     } else {
-      print('未处理类型的echo: ' + echo);
+      print(log('未处理类型的echo: ' + echo));
     }
   }
 
@@ -283,7 +287,7 @@ class CqhttpService {
 
     print('收到私聊消息：' + msg.username() + " : " + message);
 
-    _notifyOutter(msg);
+    _notifyOuter(msg);
   }
 
   void _parseGroupMessage(final obj) {
@@ -333,7 +337,7 @@ class CqhttpService {
             : null,
         role: role,
         timestamp: DateTime.now().millisecondsSinceEpoch);
-    _notifyOutter(msg);
+    _notifyOuter(msg);
   }
 
   void _parseGroupUpload(final obj) {}
@@ -388,9 +392,9 @@ class CqhttpService {
   /// - main_pages 通知
   /// - chats_page 消息列表
   /// - account_widget 消息数量（包括所有）
-  void _notifyOutter(MsgBean msg) {
+  void _notifyOuter(MsgBean msg) {
     // 保存所有 msg 记录
-    ac.allMessageHistories.add(msg);
+    // ac.allLogs.add(msg);
     /* if (ac.allMessages.length > st.keepMsgHistoryCount) {
       ac.allMessages.removeAt(0);
     } */
@@ -420,6 +424,15 @@ class CqhttpService {
 
     // 通知界面
     ac.eventBus.fire(EventFn(Event.messageRaw, msg));
+  }
+
+  /// 添加一个日志
+  String log(String text) {
+    ac.allLogs.add(new MsgBean(
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+        message: text,
+        action: ActionType.SystemLog));
+    return text;
   }
 
   /// 简易版数据展示
