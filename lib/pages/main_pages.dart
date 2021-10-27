@@ -217,9 +217,9 @@ class _MainPagesState extends State<MainPages> {
   /// 进行数据的处理操作，例如准备头像的显示
   void _messageReceived(MsgBean msg) {
     if (msg.action == ActionType.SystemLog) {
-      return ;
+      return;
     }
-    
+
     // 判断是否需要显示通知
     if (msg.isGroup()) {
       if (!G.st.enabledGroups.contains(msg.groupId)) {
@@ -319,13 +319,20 @@ class _MainPagesState extends State<MainPages> {
 
     await flutterLocalNotificationsPlugin.show(
         id, msg.username(), displayMessage, platformChannelSpecifics,
-        payload: msg.messageId.toString());
+        payload: msg.keyId().toString());
   }
 
   /// 通知点击回调
   Future<dynamic> onSelectNotification(String payload) async {
     print('通知.payload: $payload');
-    MsgBean msg = G.ac.getMsgById(int.parse(payload));
+    int keyId = int.parse(payload);
+    MsgBean msg;
+    if (G.ac.allMessages.containsKey(keyId))
+      msg = G.ac.allMessages[keyId].last ?? null;
+    if (msg == null) {
+      print('未找到payload:$keyId');
+      return;
+    }
 
     G.ac.clearUnread(msg);
 

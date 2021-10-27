@@ -62,8 +62,9 @@ class CqhttpService {
     // 开始连接
     try {
       // 如果网络有问题，这里会产生错误
-      print(log('ws连接: ' + host + ' ' + token));
+      print(log('ws连接: ' + host));
       channel = IOWebSocketChannel.connect(host, headers: headers);
+      print(log('ws连接成功'));
     } catch (e) {
       print(log('ws连接错误'));
       return false;
@@ -84,7 +85,6 @@ class CqhttpService {
       // 实际上是 onClose？连接结束，即关闭
       print(log('ws断开，等待重连...'));
       if (channel.innerWebSocket != null) {
-        print(log('清理旧连接'));
         channel.innerWebSocket.close();
         channel = null;
       }
@@ -119,8 +119,8 @@ class CqhttpService {
     }
 
     _reconnectTimer =
-        new Timer.periodic(Duration(seconds: _reconnectCount * 2), (timer) {
-      print(log('重连检测：' + (isConnected() ? '已连接' : '尝试重连...')));
+        new Timer.periodic(Duration(seconds: _reconnectCount), (timer) {
+      print(log('重连检测$_reconnectCount：' + (isConnected() ? '已连接' : '尝试重连...')));
       // 已经连接上了
       if (isConnected()) {
         if (_reconnectTimer != null) {
@@ -208,7 +208,7 @@ class CqhttpService {
       // 好友列表
       ac.friendList.clear();
       List data = obj['data']; // 好友数组
-      print(log('好友数量: ' + data.length.toString()));
+      print('好友数量: ' + data.length.toString());
       data.forEach((friend) {
         int userId = friend['user_id'];
         String nickname = friend['nickname'];
@@ -221,7 +221,7 @@ class CqhttpService {
       // 群组列表
       ac.groupList.clear();
       List data = obj['data']; // 好友数组
-      print(log('群组数量: ' + data.length.toString()));
+      print('群组数量: ' + data.length.toString());
       data.forEach((friend) {
         int groupId = friend['group_id'];
         String groupName = friend['group_name'];
@@ -238,7 +238,7 @@ class CqhttpService {
         int groupId = int.parse(match.group(1));
         ac.gettingGroupMembers.remove(groupId);
         if (!ac.groupList.containsKey(groupId)) {
-          print(log('群组列表未包含：' + groupId.toString() + '，无法设置群成员'));
+          print('群组列表未包含：' + groupId.toString() + '，无法设置群成员');
           return;
         }
         ac.groupList[groupId].members = {};
@@ -251,10 +251,10 @@ class CqhttpService {
               new FriendInfo(userId, nickname, card);
         });
       } else {
-        print(log('无法识别的群成员echo: ' + echo));
+        print('无法识别的群成员echo: ' + echo);
       }
     } else {
-      print(log('未处理类型的echo: ' + echo));
+      print('未处理类型的echo: ' + echo);
     }
   }
 
