@@ -64,7 +64,6 @@ class CqhttpService {
       // 如果网络有问题，这里会产生错误
       print(log('ws连接: ' + host));
       channel = IOWebSocketChannel.connect(host, headers: headers);
-      print(log('ws连接成功'));
     } catch (e) {
       print(log('ws连接错误'));
       return false;

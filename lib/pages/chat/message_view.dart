@@ -22,6 +22,7 @@ class MessageView extends StatefulWidget {
 class _MessageViewState extends State<MessageView> {
   final bool isNext;
   final MsgBean msg;
+  bool hasCompleted = false;
 
   _MessageViewState(this.msg, this.isNext);
 
@@ -171,7 +172,9 @@ class _MessageViewState extends State<MessageView> {
                         //return null;
                         //return state.completedWidget;
                         case LoadState.completed:
-                          if (widget.loadFinishedCallback != null) {
+                          if (!hasCompleted &&
+                              widget.loadFinishedCallback != null) {
+                            hasCompleted = true;
                             widget.loadFinishedCallback();
                           }
                           return ExtendedRawImage(
