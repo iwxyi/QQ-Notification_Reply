@@ -144,7 +144,7 @@ class _ChatWidgetState extends State<ChatWidget>
                 if (_keepScrollBottom) {
                   _scrollToBottom(true);
                 }
-              }),
+              }, ValueKey(_messages[index].messageId)),
               itemCount: _messages.length,
               controller: _scrollController,
             ),

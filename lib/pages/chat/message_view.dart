@@ -12,7 +12,8 @@ class MessageView extends StatefulWidget {
   final bool isNext;
   final loadFinishedCallback;
 
-  MessageView(this.msg, this.isNext, this.loadFinishedCallback);
+  MessageView(this.msg, this.isNext, this.loadFinishedCallback, Key key)
+      : super(key: key);
 
   @override
   _MessageViewState createState() => _MessageViewState(msg, isNext);
