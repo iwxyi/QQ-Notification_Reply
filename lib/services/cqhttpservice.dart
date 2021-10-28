@@ -102,7 +102,7 @@ class CqhttpService {
 
   void send(Map<String, dynamic> obj) {
     String text = json.encode(obj);
-    print(log('ws发送数据：' + text));
+    print('ws发送数据：' + text);
     channel.sink.add(text);
   }
 

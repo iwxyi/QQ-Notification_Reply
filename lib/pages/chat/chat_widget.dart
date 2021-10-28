@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -86,10 +87,10 @@ class _ChatWidgetState extends State<ChatWidget>
   void _initMessages() {
     MsgBean msg = widget.chatObj;
     // 获取历史消息
-    _messages = G.ac.allMessages[msg.keyId()];
-
-    if (_messages == null) {
-      _messages = [];
+    _messages = [];
+    if (G.ac.allMessages.containsKey(msg.keyId())) {
+      var list = G.ac.allMessages[msg.keyId()];
+      _messages = list.sublist(max(0, list.length - G.st.loadMsgHistoryCount));
     }
 
     // 默认滚动到底部
