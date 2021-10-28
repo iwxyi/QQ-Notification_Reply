@@ -130,82 +130,82 @@ class _MessageViewState extends State<MessageView> {
     return GestureDetector(
         child: Hero(
             tag: url,
-            child: url == 'This is an video'
-                ? Container(
-                    alignment: Alignment.center,
-                    child: const Text('This is an video'),
-                  )
-                : ExtendedImage.network(
-                    url,
-                    fit: BoxFit.contain,
-                    cache: true,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    scale: 1,
-                    mode: ExtendedImageMode.gesture,
-                    initGestureConfigHandler: (state) {
-                      return GestureConfig(
-                        minScale: 0.9,
-                        animationMinScale: 0.7,
-                        maxScale: 3.0,
-                        animationMaxScale: 3.5,
-                        speed: 1.0,
-                        inertialSpeed: 100.0,
-                        initialScale: 1.0,
-                        inPageView: false,
-                        initialAlignment: InitialAlignment.center,
-                      );
-                    },
-                    loadStateChanged: (ExtendedImageState state) {
-                      state.extendedImageInfo;
-                      switch (state.extendedImageLoadState) {
-                        case LoadState.loading:
-                          return Image.asset(
-                            "assets/images/loading.gif",
-                            fit: BoxFit.fill,
-                          );
+            child: ExtendedImage.network(
+              url,
+              fit: BoxFit.contain,
+              cache: true,
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              scale: 1,
+              mode: ExtendedImageMode.gesture,
+              initGestureConfigHandler: (state) {
+                return GestureConfig(
+                  minScale: 0.9,
+                  animationMinScale: 0.7,
+                  maxScale: 3.0,
+                  animationMaxScale: 3.5,
+                  speed: 1.0,
+                  inertialSpeed: 100.0,
+                  initialScale: 1.0,
+                  inPageView: false,
+                  initialAlignment: InitialAlignment.center,
+                );
+              },
+              loadStateChanged: (ExtendedImageState state) {
+                state.extendedImageInfo;
+                switch (state.extendedImageLoadState) {
+                  case LoadState.loading:
+                    return Image.asset(
+                      "assets/images/loading.gif",
+                      fit: BoxFit.fill,
+                    );
 
-                        ///if you don't want override completed widget
-                        ///please return null or state.completedWidget
-                        //return null;
-                        //return state.completedWidget;
-                        case LoadState.completed:
-                          if (widget.loadFinishedCallback != null) {
-                            widget.loadFinishedCallback();
-                          }
-                          return ExtendedRawImage(
-                            image: state.extendedImageInfo?.image,
-                            fit: BoxFit.contain,
-                          ); // 显示图片
-                        case LoadState.failed:
-                          return GestureDetector(
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: <Widget>[
-                                Image.asset(
-                                  "assets/images/failed.jpg",
-                                  fit: BoxFit.fill,
-                                ),
-                                Positioned(
-                                  bottom: 0.0,
-                                  left: 0.0,
-                                  right: 0.0,
-                                  child: Text(
-                                    "加载失败，点击重试",
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )
-                              ],
+                  ///if you don't want override completed widget
+                  ///please return null or state.completedWidget
+                  //return null;
+                  //return state.completedWidget;
+                  case LoadState.completed:
+                    if (widget.loadFinishedCallback != null) {
+                      widget.loadFinishedCallback();
+                    }
+                    return Container(
+                      child: ExtendedRawImage(
+                        image: state.extendedImageInfo?.image,
+                        fit: BoxFit.contain,
+                      ),
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height / 2,
+                      ),
+                    ); // 显示图片
+                  case LoadState.failed:
+                    return GestureDetector(
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          Image.asset(
+                            "assets/images/failed.jpg",
+                            fit: BoxFit.fill,
+                          ),
+                          Positioned(
+                            bottom: 0.0,
+                            left: 0.0,
+                            right: 0.0,
+                            child: Text(
+                              "加载失败，点击重试",
+                              textAlign: TextAlign.center,
                             ),
-                            onTap: () {
-                              state.reLoadImage();
-                            },
-                          );
-                          break;
-                      }
-                      return null;
-                    },
-                  )),
+                          )
+                        ],
+                      ),
+                      onTap: () {
+                        state.reLoadImage();
+                      },
+                    );
+                    break;
+                }
+                return null;
+              },
+            )),
         onTap: () {
           /* Navigator.of(context).push(MaterialPageRoute(builder: (context) {
               return new SlidePage(url: url);
