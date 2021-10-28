@@ -14,8 +14,9 @@ import 'message_view.dart';
 class ChatWidget extends StatefulWidget {
   MsgBean chatObj;
   var setObject;
+  bool innerMode;
 
-  ChatWidget(this.chatObj);
+  ChatWidget(this.chatObj, {this.innerMode = false});
 
   @override
   State<StatefulWidget> createState() {
@@ -112,64 +113,70 @@ class _ChatWidgetState extends State<ChatWidget>
     });
   }
 
+  Widget _buildBody(BuildContext context) {
+    return new Column(
+      children: <Widget>[
+        // 消息列表
+        new Flexible(
+          child: new ListView.separated(
+            separatorBuilder: (BuildContext context, int index) {
+              return Divider(
+                color: Colors.transparent,
+                height: 0.0,
+                indent: 0,
+              );
+            },
+            // padding: new EdgeInsets.all(8.0),
+            itemBuilder: (context, int index) => MessageView(
+                _messages[index],
+                index <= 0
+                    ? false
+                    : _messages[index - 1].senderId ==
+                        _messages[index].senderId, () {
+              if (_keepScrollBottom) {
+                _scrollToBottom(true);
+              }
+            }),
+            itemCount: _messages.length,
+            controller: _scrollController,
+          ),
+        ),
+        // 输入框
+        new Divider(height: 1.0),
+        new Container(
+          decoration: new BoxDecoration(
+            color: Theme.of(context).cardColor,
+          ),
+          child: _buildTextEditor(),
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    // 分割线
-    Widget divider = Divider(
-      color: Colors.transparent,
-      height: 0.0,
-      indent: 0,
-    );
-
-    return Scaffold(
-      appBar: AppBar(
-        title: new Text(widget.chatObj.title()),
-      ),
-      body: new Column(
-        children: <Widget>[
-          // 消息列表
-          new Flexible(
-            child: new ListView.separated(
-              separatorBuilder: (BuildContext context, int index) {
-                return divider;
-              },
-              // padding: new EdgeInsets.all(8.0),
-              itemBuilder: (context, int index) => MessageView(
-                  _messages[index],
-                  index <= 0
-                      ? false
-                      : _messages[index - 1].senderId ==
-                          _messages[index].senderId, () {
-                if (_keepScrollBottom) {
+    if (widget.innerMode) {
+      // 不显示脚手架
+      return _buildBody(context);
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: new Text(widget.chatObj.title()),
+        ),
+        body: _buildBody(context),
+        floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
+            ? FloatingActionButton(
+                child: Icon(Icons.arrow_downward),
+                onPressed: () {
                   _scrollToBottom(true);
-                }
-              }),
-              itemCount: _messages.length,
-              controller: _scrollController,
-            ),
-          ),
-          // 输入框
-          new Divider(height: 1.0),
-          new Container(
-            decoration: new BoxDecoration(
-              color: Theme.of(context).cardColor,
-            ),
-            child: _buildTextEditor(),
-          )
-        ],
-      ),
-      floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
-          ? FloatingActionButton(
-              child: Icon(Icons.arrow_downward),
-              onPressed: () {
-                _scrollToBottom(true);
-              },
-            )
-          : null,
-      floatingActionButtonLocation: CustomFloatingActionButtonLocation(
-          FloatingActionButtonLocation.miniEndFloat, 0, -56),
-    );
+                },
+              )
+            : null,
+        floatingActionButtonLocation: CustomFloatingActionButtonLocation(
+            FloatingActionButtonLocation.miniEndFloat, 0, -56),
+      );
+    }
   }
 
   /// 构造输入框
