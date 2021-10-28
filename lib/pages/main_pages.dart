@@ -40,7 +40,7 @@ class MainPages extends StatefulWidget {
   _MainPagesState createState() => _MainPagesState();
 }
 
-enum AppBarMenuItems { AllReaded }
+enum AppBarMenuItems { AllReaded, Contacts, Settings }
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0; // 导航栏当前项
@@ -118,6 +118,7 @@ class _MainPagesState extends State<MainPages> {
           flutterLocalNotificationsPlugin;
     }
 
+    // 任意位置打开聊天页面
     G.rt.mainContext = context;
     G.rt.showChatPage = (MsgBean msg) {
       // 清除通知
@@ -129,81 +130,166 @@ class _MainPagesState extends State<MainPages> {
       }
       // 当前页面直接替换
       if (G.rt.currentChatPage != null) {
-        G.rt.currentChatPage.setObject(msg);
-        return;
+        // 判断旧页面
+        if (G.rt.horizontal != G.rt.currentChatPage.innerMode) {
+          // 如果状态不一致，还是得先删除
+          G.rt.currentChatPage = null;
+        } else {
+          G.rt.currentChatPage.setObject(msg);
+          return;
+        }
       }
-      // 重新创建页面
-      Navigator.of(G.rt.mainContext).push(MaterialPageRoute(
-        builder: (context) {
-          G.rt.currentChatPage = new ChatWidget(msg);
-          return G.rt.currentChatPage;
-        },
-      )).then((value) {
-        G.rt.currentChatPage = null;
-        setState(() {});
-      });
+
+      if (G.rt.horizontal) {
+        setState(() {
+          G.rt.currentChatPage = new ChatWidget(msg, innerMode: true);
+        });
+      } else {
+        // 重新创建页面
+        Navigator.of(G.rt.mainContext).push(MaterialPageRoute(
+          builder: (context) {
+            G.rt.currentChatPage = new ChatWidget(msg);
+            return G.rt.currentChatPage;
+          },
+        )).then((value) {
+          G.rt.currentChatPage = null;
+          setState(() {});
+        });
+      }
     };
+  }
+
+  Widget _buildChatObjView(BuildContext context) {
+    if (G.rt.currentChatPage == null) {
+      return new Center(
+        child: new Text('没有聊天',
+            style: TextStyle(fontSize: 20, color: Colors.grey)),
+      );
+    }
+
+    // 构建聊天页面
+    return G.rt.currentChatPage;
+  }
+
+  Widget _buildBody(BuildContext context) {
+    // 判断横屏还是竖屏
+    bool hori = MediaQuery.of(context).size.width >
+        MediaQuery.of(context).size.height * 1.2;
+    G.rt.horizontal = hori;
+
+    // 横屏特判
+    if (_selectedIndex == 0 && hori) {
+      return Row(
+          children: [
+            Container(
+              constraints: BoxConstraints(maxWidth: 400),
+              child: allPages[_selectedIndex].contentWidget,
+            ),
+            Expanded(child: _buildChatObjView(context))
+          ],
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start);
+    }
+
+    // 默认状态
+    return allPages[_selectedIndex].contentWidget;
+  }
+
+  Widget _buildMenu(BuildContext context) {
+    List<PopupMenuEntry<AppBarMenuItems>> menus = [];
+
+    menus.add(const PopupMenuItem<AppBarMenuItems>(
+      value: AppBarMenuItems.AllReaded,
+      child: Text('全部标为已读'),
+    ));
+
+    if (G.rt.horizontal) {
+      menus.add(const PopupMenuItem<AppBarMenuItems>(
+        value: AppBarMenuItems.Contacts,
+        child: Text('联系人'),
+      ));
+      menus.add(const PopupMenuItem<AppBarMenuItems>(
+        value: AppBarMenuItems.Settings,
+        child: Text('设置'),
+      ));
+    }
+
+    return PopupMenuButton<AppBarMenuItems>(
+      itemBuilder: (BuildContext context) => menus,
+      onSelected: (AppBarMenuItems result) {
+        switch (result) {
+          case AppBarMenuItems.AllReaded:
+            setState(() {
+              _markAllReaded();
+            });
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('全部已读')));
+            G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+            break;
+          case AppBarMenuItems.Contacts:
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return createScafoldPage(context, new ContactsPage(), '联系人');
+              },
+            ));
+            break;
+          case AppBarMenuItems.Settings:
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return createScafoldPage(context, new AccountWidget(), '设置');
+              },
+            ));
+            break;
+        }
+      },
+    );
+  }
+
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    if (G.rt.horizontal) {
+      return null;
+    }
+    return BottomNavigationBar(
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat),
+          label: '会话',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.contacts),
+          label: '联系人',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: '设置',
+        ),
+      ],
+      currentIndex: _selectedIndex,
+      selectedItemColor: Colors.amber[800],
+      onTap: _onItemTapped,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     G.rt.mainContext = context;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('QQ'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: '搜索',
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return new SearchPage();
-                },
-              ));
-            },
-          ),
-          PopupMenuButton<AppBarMenuItems>(
-            onSelected: (AppBarMenuItems result) {
-              if (result == AppBarMenuItems.AllReaded) {
-                setState(() {
-                  _markAllReaded();
-                });
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text('全部已读')));
-                G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
-              }
-            },
-            itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<AppBarMenuItems>>[
-              const PopupMenuItem<AppBarMenuItems>(
-                value: AppBarMenuItems.AllReaded,
-                child: Text('全部标为已读'),
-              ),
-            ],
-          )
-        ],
-      ),
-      body: allPages[_selectedIndex].contentWidget,
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: '会话',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.contacts),
-            label: '联系人',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: '设置',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
-      ),
+      appBar: AppBar(title: const Text('QQ'), actions: <Widget>[
+        IconButton(
+          icon: const Icon(Icons.search),
+          tooltip: '搜索',
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return new SearchPage();
+              },
+            ));
+          },
+        ),
+        _buildMenu(context)
+      ]),
+      body: _buildBody(context),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
     /* // 自定义滑块视图
     return AppRetainWidget(
@@ -446,5 +532,14 @@ class _MainPagesState extends State<MainPages> {
       G.cs.channel.innerWebSocket.close();
     }
     super.dispose();
+  }
+
+  Widget createScafoldPage(BuildContext context, Widget widget, String title) {
+    return Scaffold(
+      appBar: AppBar(
+        title: new Text(title),
+      ),
+      body: widget,
+    );
   }
 }
