@@ -66,13 +66,22 @@ class _ChatWidgetState extends State<ChatWidget>
     _scrollController =
         new ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
     _scrollController.addListener(() {
+      // 是否保持底部（有新消息、图标加载完毕等事件）
       _keepScrollBottom = (_scrollController.offset >=
           _scrollController.position.maxScrollExtent - 50);
+
+      // 滚动时判断是否需要“回到底部”悬浮按钮
       bool _prevShow = _showGoToBottomButton;
       _showGoToBottomButton = (_scrollController.offset <
           _scrollController.position.maxScrollExtent - 500);
       if (_prevShow != _showGoToBottomButton) {
         setState(() {});
+      }
+
+      // 顶部加载历史消息
+      if (_scrollController.offset <= 0 && !_blankHistory) {
+        print('------------------load history------------------');
+        _loadMsgHistory();
       }
     });
 
@@ -89,7 +98,7 @@ class _ChatWidgetState extends State<ChatWidget>
     // 获取历史消息
     _messages = [];
     if (G.ac.allMessages.containsKey(msg.keyId())) {
-      var list = G.ac.allMessages[msg.keyId()];
+      List<MsgBean> list = G.ac.allMessages[msg.keyId()];
       _messages = list.sublist(max(0, list.length - G.st.loadMsgHistoryCount));
     }
 
@@ -102,6 +111,7 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   void _scrollToBottom(bool ani) {
+    print('-----------scroll to bottom--------------');
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (ani) {
         _scrollController.animateTo(_scrollController.position.maxScrollExtent,
@@ -135,6 +145,7 @@ class _ChatWidgetState extends State<ChatWidget>
                     : _messages[index - 1].senderId ==
                         _messages[index].senderId, () {
               if (_keepScrollBottom) {
+                // hasToBottom[_messages[index].messageId] = true;
                 _scrollToBottom(true);
               }
             }, ValueKey(_messages[index].messageId)),
@@ -271,5 +282,45 @@ class _ChatWidgetState extends State<ChatWidget>
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('等待开发')));
     }
+  }
+
+  void _loadMsgHistory() {
+    if (!G.ac.allMessages.containsKey(widget.chatObj.keyId())) {
+      _blankHistory = true;
+      return;
+    }
+
+    // 获取需要加载的位置
+    List<MsgBean> list = G.ac.allMessages[widget.chatObj.keyId()];
+    int endIndex = list.length, startIndex = 0; // 最后一个需要加载的位置+1（不包括）
+    if (_messages != null && _messages.length > 0) {
+      // 判断第一条消息的位置
+      int messageId = _messages[0].messageId;
+      while (endIndex-- > 0 && list[endIndex].messageId != messageId) {}
+      if (endIndex <= 0) {
+        print('获取第一条历史消息的位置出错');
+        return;
+      }
+    } else {
+      // 加载最新的
+    }
+    startIndex = max(0, endIndex - G.st.loadMsgHistoryCount);
+
+    // 进行加载操作
+    var deltaBottom = _scrollController.position.extentAfter; // 距离底部的位置
+    print('margin_bottom:' +
+        deltaBottom.toString() +
+        "   " +
+        (_keepScrollBottom ? "true" : "false"));
+    setState(() {
+      for (int i = endIndex - 1; i >= startIndex; i--) {
+        _messages.insert(0, list[i]);
+      }
+    });
+    // 恢复底部位置
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scrollController
+          .jumpTo(_scrollController.position.maxScrollExtent - deltaBottom);
+    });
   }
 }
