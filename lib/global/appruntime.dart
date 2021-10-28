@@ -11,6 +11,7 @@ class AppRuntime {
   var mainContext;
 
   bool horizontal = false;
+  bool runOnForeground = true;
 
   AppRuntime({@required this.dataPath, this.cachePath, this.storagePath}) {
     FileUtil.createDir(dataPath);

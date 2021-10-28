@@ -110,6 +110,7 @@ class CqhttpService {
     _reconnectCount++;
     if (_reconnectTimer != null) {
       _reconnectTimer.cancel();
+      _reconnectTimer = null;
     }
 
     if (this.host != host || this.token != token) {
@@ -118,7 +119,7 @@ class CqhttpService {
     }
 
     _reconnectTimer =
-        new Timer.periodic(Duration(seconds: _reconnectCount), (timer) {
+        new Timer.periodic(Duration(seconds: _reconnectCount * 2), (timer) {
       print(log('重连检测$_reconnectCount：' + (isConnected() ? '已连接' : '尝试重连...')));
       // 已经连接上了
       if (isConnected()) {

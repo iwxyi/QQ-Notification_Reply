@@ -42,8 +42,9 @@ class MainPages extends StatefulWidget {
 
 enum AppBarMenuItems { AllReaded, Contacts, Settings }
 
-class _MainPagesState extends State<MainPages> {
+class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   int _selectedIndex = 0; // 导航栏当前项
+  AppLifecycleState _notification;
 
   List<CardSection> allPages = <CardSection>[
     CardSection(
@@ -76,8 +77,22 @@ class _MainPagesState extends State<MainPages> {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() {
+      _notification = state;
+      print(_notification.index);
+      if (_notification.index == 1) {
+        G.rt.runOnForeground = true;
+      } else if (_notification.index == 2) {
+        G.rt.runOnForeground = false;
+      }
+    });
+  }
+
+  @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     // 读取配置
     _selectedIndex = G.st.getInt('recent/navigation', 0);
@@ -342,6 +357,11 @@ class _MainPagesState extends State<MainPages> {
       flutterLocalNotificationsPlugin.cancel(id);
       return;
     }
+    
+    // 前台不显示通知
+    if (G.rt.runOnForeground) {
+      return ;
+    }
 
     // 显示通知
     String personUri =
@@ -531,6 +551,7 @@ class _MainPagesState extends State<MainPages> {
     if (G.cs.channel != null && G.cs.channel.innerWebSocket != null) {
       G.cs.channel.innerWebSocket.close();
     }
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 

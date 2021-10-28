@@ -40,6 +40,7 @@ class _ChatWidgetState extends State<ChatWidget>
   num _hasNewMsg = 0; // 是否有新消息
 
   List<MsgBean> _messages = [];
+  Map<int, bool> hasToBottom = {};
 
   @override
   void initState() {
@@ -111,7 +112,6 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   void _scrollToBottom(bool ani) {
-    print('-----------scroll to bottom--------------');
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (ani) {
         _scrollController.animateTo(_scrollController.position.maxScrollExtent,
@@ -145,8 +145,10 @@ class _ChatWidgetState extends State<ChatWidget>
                     : _messages[index - 1].senderId ==
                         _messages[index].senderId, () {
               if (_keepScrollBottom) {
-                // hasToBottom[_messages[index].messageId] = true;
-                _scrollToBottom(true);
+                if (!hasToBottom.containsKey(_messages[index].messageId)) {
+                  hasToBottom[_messages[index].messageId] = true;
+                  _scrollToBottom(true);
+                }
               }
             }, ValueKey(_messages[index].messageId)),
             itemCount: _messages.length,

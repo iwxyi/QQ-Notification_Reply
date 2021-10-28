@@ -19,6 +19,7 @@ class _ChatListPageState extends State<ChatListPage>
   bool get wantKeepAlive => true;
 
   var eventBusFn;
+  FocusNode fastReplyFocusNode;
 
   @override
   void initState() {
