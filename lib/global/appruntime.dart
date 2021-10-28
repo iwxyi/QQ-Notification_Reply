@@ -10,6 +10,8 @@ class AppRuntime {
   var showChatPage;
   var mainContext;
 
+  bool horizontal = false;
+
   AppRuntime({@required this.dataPath, this.cachePath, this.storagePath}) {
     FileUtil.createDir(dataPath);
     FileUtil.createDir(cachePath);

@@ -37,9 +37,7 @@ class _ChatListPageState extends State<ChatListPage>
     super.initState();
   }
 
-  @override
-  // ignore: must_call_super
-  Widget build(BuildContext context) {
+  Widget _buildChatListView(BuildContext context) {
     DateTime currentDay = DateTime.now();
     int currentTimestamp = currentDay.millisecondsSinceEpoch;
 
@@ -51,8 +49,9 @@ class _ChatListPageState extends State<ChatListPage>
       );
     }
 
+    // 构建消息列表
     return ListView.builder(
-        shrinkWrap: false,
+        shrinkWrap: true,
         itemCount: timedMsgs.length,
         itemBuilder: (context, index) {
           MsgBean msg = timedMsgs[index];
@@ -232,6 +231,12 @@ class _ChatListPageState extends State<ChatListPage>
             ),
           );
         });
+  }
+
+  @override
+  // ignore: must_call_super
+  Widget build(BuildContext context) {
+    return _buildChatListView(context);
   }
 
   /// 收到消息

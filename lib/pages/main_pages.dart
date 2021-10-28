@@ -118,24 +118,103 @@ class _MainPagesState extends State<MainPages> {
           flutterLocalNotificationsPlugin;
     }
 
+    // 任意位置打开聊天页面
     G.rt.mainContext = context;
     G.rt.showChatPage = (MsgBean msg) {
+      print('-------------------G.rt.hori.createChatPage-----------');
+
       // 当前页面直接替换
       if (G.rt.currentChatPage != null) {
-        G.rt.currentChatPage.setObject(msg);
-        return;
+        // 判断旧页面
+        if (G.rt.horizontal != G.rt.currentChatPage.innerMode) {
+          // 如果状态不一致，还是得先删除
+          G.rt.currentChatPage = null;
+        } else {
+          G.rt.currentChatPage.setObject(msg);
+          return;
+        }
       }
-      // 重新创建页面
-      Navigator.of(G.rt.mainContext).push(MaterialPageRoute(
-        builder: (context) {
-          G.rt.currentChatPage = new ChatWidget(msg);
-          return G.rt.currentChatPage;
-        },
-      )).then((value) {
-        G.rt.currentChatPage = null;
-        setState(() {});
-      });
+
+      if (G.rt.horizontal) {
+        setState(() {
+          G.rt.currentChatPage = new ChatWidget(msg, innerMode: true);
+        });
+      } else {
+        // 重新创建页面
+        Navigator.of(G.rt.mainContext).push(MaterialPageRoute(
+          builder: (context) {
+            G.rt.currentChatPage = new ChatWidget(msg);
+            return G.rt.currentChatPage;
+          },
+        )).then((value) {
+          G.rt.currentChatPage = null;
+          setState(() {});
+        });
+      }
     };
+  }
+
+  Widget _buildChatObjView(BuildContext context) {
+    if (G.rt.currentChatPage == null) {
+      return new Center(
+        child: new Text('没有聊天',
+            style: TextStyle(fontSize: 20, color: Colors.grey)),
+      );
+    }
+
+    // 构建聊天页面
+    return G.rt.currentChatPage;
+  }
+
+  Widget _buildBody(BuildContext context) {
+    // 判断横屏还是竖屏
+    bool hori = MediaQuery.of(context).size.width >
+        MediaQuery.of(context).size.height * 1.2;
+    G.rt.horizontal = hori;
+
+    // 横屏特判
+    if (_selectedIndex == 0 && hori) {
+      return Row(
+          children: [
+            Container(
+              constraints: BoxConstraints(maxWidth: 400),
+              child: allPages[_selectedIndex].contentWidget,
+            ),
+            Expanded(child: _buildChatObjView(context))
+          ],
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start);
+    }
+
+    // 默认状态
+    return allPages[_selectedIndex].contentWidget;
+  }
+
+  Widget _buildMenu(BuildContext context) {}
+
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    if (G.rt.horizontal) {
+      return null;
+    }
+    return BottomNavigationBar(
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat),
+          label: '会话',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.contacts),
+          label: '联系人',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: '设置',
+        ),
+      ],
+      currentIndex: _selectedIndex,
+      selectedItemColor: Colors.amber[800],
+      onTap: _onItemTapped,
+    );
   }
 
   @override
@@ -177,26 +256,8 @@ class _MainPagesState extends State<MainPages> {
           )
         ],
       ),
-      body: allPages[_selectedIndex].contentWidget,
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: '会话',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.contacts),
-            label: '联系人',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: '设置',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
-      ),
+      body: _buildBody(context),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
     /* // 自定义滑块视图
     return AppRetainWidget(
