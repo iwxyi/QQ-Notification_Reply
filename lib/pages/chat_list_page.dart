@@ -82,14 +82,16 @@ class _ChatListPageState extends State<ChatListPage>
             timeStr = '刚刚';
           } else if (dt.day == currentDay.day) {
             // 今天
-            timeStr = formatDate(dt, ['HH', ':', 'mm']);
+            timeStr = formatDate(dt, ['HH', ':', 'nn']);
           } else {
             // 昨天
             timeStr = "昨天 " + formatDate(dt, ['HH', ':', 'nn']);
           }
 
           // 侧边
-          List<Widget> tailWidgets = [Text(timeStr)];
+          List<Widget> tailWidgets = [
+            Text(timeStr, key: ValueKey(msg.timestamp))
+          ];
           int unreadCount = 0;
           if (G.ac.unreadMessageCount.containsKey(msg.keyId())) {
             unreadCount = G.ac.unreadMessageCount[msg.keyId()];
