@@ -40,7 +40,7 @@ class MainPages extends StatefulWidget {
   _MainPagesState createState() => _MainPagesState();
 }
 
-enum AppBarMenuItems { AllReaded }
+enum AppBarMenuItems { AllReaded, Contacts, Settings }
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0; // 导航栏当前项
@@ -121,8 +121,6 @@ class _MainPagesState extends State<MainPages> {
     // 任意位置打开聊天页面
     G.rt.mainContext = context;
     G.rt.showChatPage = (MsgBean msg) {
-      print('-------------------G.rt.hori.createChatPage-----------');
-
       // 当前页面直接替换
       if (G.rt.currentChatPage != null) {
         // 判断旧页面
@@ -190,7 +188,55 @@ class _MainPagesState extends State<MainPages> {
     return allPages[_selectedIndex].contentWidget;
   }
 
-  Widget _buildMenu(BuildContext context) {}
+  Widget _buildMenu(BuildContext context) {
+    List<PopupMenuEntry<AppBarMenuItems>> menus = [];
+
+    menus.add(const PopupMenuItem<AppBarMenuItems>(
+      value: AppBarMenuItems.AllReaded,
+      child: Text('全部标为已读'),
+    ));
+
+    if (G.rt.horizontal) {
+      menus.add(const PopupMenuItem<AppBarMenuItems>(
+        value: AppBarMenuItems.Contacts,
+        child: Text('联系人'),
+      ));
+      menus.add(const PopupMenuItem<AppBarMenuItems>(
+        value: AppBarMenuItems.Settings,
+        child: Text('设置'),
+      ));
+    }
+
+    return PopupMenuButton<AppBarMenuItems>(
+      itemBuilder: (BuildContext context) => menus,
+      onSelected: (AppBarMenuItems result) {
+        switch (result) {
+          case AppBarMenuItems.AllReaded:
+            setState(() {
+              _markAllReaded();
+            });
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('全部已读')));
+            G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+            break;
+          case AppBarMenuItems.Contacts:
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return createScafoldPage(context, new ContactsPage(), '联系人');
+              },
+            ));
+            break;
+          case AppBarMenuItems.Settings:
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return createScafoldPage(context, new AccountWidget(), '设置');
+              },
+            ));
+            break;
+        }
+      },
+    );
+  }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
     if (G.rt.horizontal) {
@@ -221,41 +267,20 @@ class _MainPagesState extends State<MainPages> {
   Widget build(BuildContext context) {
     G.rt.mainContext = context;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('QQ'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: '搜索',
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return new SearchPage();
-                },
-              ));
-            },
-          ),
-          PopupMenuButton<AppBarMenuItems>(
-            onSelected: (AppBarMenuItems result) {
-              if (result == AppBarMenuItems.AllReaded) {
-                setState(() {
-                  _markAllReaded();
-                });
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text('全部已读')));
-                G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
-              }
-            },
-            itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<AppBarMenuItems>>[
-              const PopupMenuItem<AppBarMenuItems>(
-                value: AppBarMenuItems.AllReaded,
-                child: Text('全部标为已读'),
-              ),
-            ],
-          )
-        ],
-      ),
+      appBar: AppBar(title: const Text('QQ'), actions: <Widget>[
+        IconButton(
+          icon: const Icon(Icons.search),
+          tooltip: '搜索',
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return new SearchPage();
+              },
+            ));
+          },
+        ),
+        _buildMenu(context)
+      ]),
       body: _buildBody(context),
       bottomNavigationBar: _buildBottomNavigationBar(context),
     );
@@ -491,5 +516,14 @@ class _MainPagesState extends State<MainPages> {
       G.cs.channel.innerWebSocket.close();
     }
     super.dispose();
+  }
+
+  Widget createScafoldPage(BuildContext context, Widget widget, String title) {
+    return Scaffold(
+      appBar: AppBar(
+        title: new Text(title),
+      ),
+      body: widget,
+    );
   }
 }
