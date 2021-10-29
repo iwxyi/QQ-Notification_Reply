@@ -376,26 +376,28 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       Widget subContainer = Expanded(
           child: Container(
               padding: EdgeInsets.only(left: 12, right: 12, top: 0),
-              child: Card(
-                child: Container(
-                  child: Row(children: [
-                    new Text(
-                      title,
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600),
-                    )
-                  ]),
-                  padding:
-                      EdgeInsets.only(left: 24, right: 24, top: 9, bottom: 9),
-                ),
-                elevation: 2.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.all(Radius.circular(20.0)), //设定 Card 的倒角大小,
-                ),
-              )));
+              child: G.rt.currentChatPage == null
+                  ? Text('')
+                  : Card(
+                      child: Container(
+                        child: Row(children: [
+                          new Text(
+                            title,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600),
+                          )
+                        ]),
+                        padding: EdgeInsets.only(
+                            left: 24, right: 24, top: 9, bottom: 9),
+                      ),
+                      elevation: 2.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                            Radius.circular(20.0)), //设定 Card 的倒角大小,
+                      ),
+                    )));
       child = Row(
         children: [mainContainer, subContainer],
       );
