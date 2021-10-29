@@ -154,14 +154,9 @@ class _ChatWidgetState extends State<ChatWidget>
             controller: _scrollController,
           ),
         ),
+        // new Divider(height: 1.0), // 分割线
         // 输入框
-        new Divider(height: 1.0),
-        new Container(
-          decoration: new BoxDecoration(
-            color: Theme.of(context).cardColor,
-          ),
-          child: _buildTextEditor(),
-        )
+        _buildTextEditor()
       ],
     );
   }
@@ -203,11 +198,20 @@ class _ChatWidgetState extends State<ChatWidget>
               color: Theme.of(context).primaryColor),
           // 输入框
           new Flexible(
-              child: new TextField(
-            controller: _textController,
-            onSubmitted: _sendMessage,
-            decoration: new InputDecoration.collapsed(hintText: '发送消息'),
-            focusNode: _editorFocus,
+              child: Container(
+            child: new TextField(
+              controller: _textController,
+              onSubmitted: _sendMessage,
+              decoration: new InputDecoration.collapsed(
+                hintText: '发送消息',
+              ),
+              focusNode: _editorFocus,
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    color: Theme.of(context).primaryColor, width: 0.5),
+                borderRadius: BorderRadius.all(Radius.circular(15))),
           )),
           // 发送按钮
           new Container(
