@@ -41,7 +41,7 @@ class MainPages extends StatefulWidget {
   _MainPagesState createState() => _MainPagesState();
 }
 
-enum AppBarMenuItems { AllReaded, Contacts, Settings }
+enum AppBarMenuItems { AllReaded, Contacts, Settings, Search }
 
 class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   int _selectedIndex = 0; // 导航栏当前项
@@ -197,9 +197,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return Row(
           children: [
             Container(
-              constraints: BoxConstraints(maxWidth: G.rt.chatListFixedWidth),
-              child: allPages[_selectedIndex].contentWidget,
-            ),
+                constraints: BoxConstraints(maxWidth: G.rt.chatListFixedWidth),
+                child: allPages[_selectedIndex].contentWidget),
             Expanded(child: _buildChatObjView(context))
           ],
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,6 +221,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       menus.add(const PopupMenuItem<AppBarMenuItems>(
         value: AppBarMenuItems.Contacts,
         child: Text('联系人'),
+      ));
+      menus.add(const PopupMenuItem<AppBarMenuItems>(
+        value: AppBarMenuItems.Search,
+        child: Text('搜索'),
       ));
       menus.add(const PopupMenuItem<AppBarMenuItems>(
         value: AppBarMenuItems.Settings,
@@ -254,6 +257,13 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) {
                 return createScafoldPage(context, new AccountWidget(), '设置');
+              },
+            ));
+            break;
+          case AppBarMenuItems.Search:
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return SearchPage();
               },
             ));
             break;
@@ -324,26 +334,26 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     widgets.add(Expanded(child: new Text('')));
 
-    // 搜索按钮
-    widgets.add(IconButton(
-      icon: const Icon(
-        Icons.search,
-        color: Colors.black,
-      ),
-      tooltip: '搜索',
-      onPressed: () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) {
-            return new SearchPage();
-          },
-        ));
-      },
-    ));
+    if (!isHoriz) {
+      // 搜索按钮
+      widgets.add(IconButton(
+        icon: const Icon(
+          Icons.search,
+          color: Colors.black,
+        ),
+        tooltip: '搜索',
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) {
+              return new SearchPage();
+            },
+          ));
+        },
+      ));
+    }
 
     // 菜单
-    if (!isHoriz) {
-      widgets.add(_buildMenu(context));
-    }
+    widgets.add(_buildMenu(context));
 
     // 主标题的容器
     Widget mainContainer = Container(
@@ -408,9 +418,6 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
-    if (G.rt.horizontal) {
-      return null;
-    }
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
@@ -444,7 +451,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     return Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(context),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+      bottomNavigationBar:
+          G.rt.horizontal ? null : _buildBottomNavigationBar(context),
     );
     /* // 自定义滑块视图
     return AppRetainWidget(
