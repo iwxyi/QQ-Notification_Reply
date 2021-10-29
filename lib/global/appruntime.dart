@@ -12,6 +12,7 @@ class AppRuntime {
 
   bool horizontal = false;
   bool runOnForeground = true;
+  double chatListFixedWidth = 400; // 横屏时左边聊天列表的固定宽度
 
   AppRuntime({@required this.dataPath, this.cachePath, this.storagePath}) {
     FileUtil.createDir(dataPath);

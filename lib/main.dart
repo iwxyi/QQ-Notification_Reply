@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qqnotificationreply/pages/main_pages.dart';
 
 import 'global/g.dart';
@@ -21,7 +23,16 @@ void main() {
   G.init().then((e) {
     runApp(MyApp());
   });
-  // runApp(MyApp());
+
+  // 设置状态栏
+  if (Platform.isAndroid) {
+    SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      // statusBarBrightness: Brightness.light,
+      // statusBarIconBrightness: Brightness.dark
+    );
+    SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -30,8 +41,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'QQ通知',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        primaryColor: Colors.blue, // 图标颜色
+        primarySwatch: Colors.blue, // 标题栏颜色
+        visualDensity: VisualDensity.adaptivePlatformDensity, // 设置视觉密度：适应平台密度
         platform: TargetPlatform.iOS, // 页面滑动切换效果
       ),
       home: AppRetainWidget(child: MainPages()),

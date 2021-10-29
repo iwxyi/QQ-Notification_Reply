@@ -22,6 +22,7 @@ import 'chat/chat_widget.dart';
 import 'contact/contacts_page.dart';
 import 'search_page.dart';
 import '../widgets/slide_images_page.dart';
+import 'settings/my_app_bar.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
 const Color _appBarColor2 = const Color(0xFF8266D4);
@@ -187,17 +188,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   }
 
   Widget _buildBody(BuildContext context) {
-    // 判断横屏还是竖屏
-    bool hori = MediaQuery.of(context).size.width >
-        MediaQuery.of(context).size.height * 1.2;
-    G.rt.horizontal = hori;
-
     // 横屏特判
-    if (_selectedIndex == 0 && hori) {
+    if (_selectedIndex == 0 && G.rt.horizontal) {
       return Row(
           children: [
             Container(
-              constraints: BoxConstraints(maxWidth: 400),
+              constraints: BoxConstraints(maxWidth: G.rt.chatListFixedWidth),
               child: allPages[_selectedIndex].contentWidget,
             ),
             Expanded(child: _buildChatObjView(context))
@@ -230,6 +226,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     return PopupMenuButton<AppBarMenuItems>(
+      icon: Icon(Icons.more_vert, color: Colors.black),
+      tooltip: '菜单',
       itemBuilder: (BuildContext context) => menus,
       onSelected: (AppBarMenuItems result) {
         switch (result) {
@@ -260,6 +258,103 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildAppBar0(BuildContext context) {
+    List<Widget> btnWidget = [];
+    if (G.rt.horizontal) {
+      // 横屏，分列
+      btnWidget.add(IconButton(
+        icon: const Icon(
+          Icons.search,
+          color: Colors.black,
+        ),
+        tooltip: '搜索',
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) {
+              return new SearchPage();
+            },
+          ));
+        },
+      ));
+    } else {
+      // 竖屏，默认
+      btnWidget.add(IconButton(
+        icon: const Icon(
+          Icons.search,
+          color: Colors.black,
+        ),
+        tooltip: '搜索',
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) {
+              return new SearchPage();
+            },
+          ));
+        },
+      ));
+      btnWidget.add(_buildMenu(context));
+    }
+
+    return AppBar(
+        brightness: Brightness.light,
+        title: const Text(
+          'Message',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: btnWidget);
+  }
+
+  MyAppBar _buildAppBar(BuildContext context) {
+    List<Widget> widgets = [];
+
+    // 标题
+    widgets.add(const Text(
+      'Message',
+      style: TextStyle(
+          color: Colors.black, fontSize: 20, fontWeight: FontWeight.w600),
+    ));
+
+    widgets.add(Expanded(child: new Text('')));
+
+    // 搜索按钮
+    widgets.add(IconButton(
+      icon: const Icon(
+        Icons.search,
+        color: Colors.black,
+      ),
+      tooltip: '搜索',
+      onPressed: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) {
+            return new SearchPage();
+          },
+        ));
+      },
+    ));
+
+    // 菜单
+    if (!G.rt.horizontal) {
+      widgets.add(_buildMenu(context));
+    }
+
+    // 主标题的容器
+    Widget mainContainer = Container(
+      child: Row(
+        children: widgets,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      ),
+    );
+
+    // 返回
+    return MyAppBar(
+        Container(
+          child: mainContainer,
+          margin: EdgeInsets.only(left: 12, right: 12, top: 6, bottom: 6),
+        ));
+  }
+
   Widget _buildBottomNavigationBar(BuildContext context) {
     if (G.rt.horizontal) {
       return null;
@@ -288,21 +383,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     G.rt.mainContext = context;
+    // 判断横屏还是竖屏
+    bool hori = MediaQuery.of(context).size.width >
+            MediaQuery.of(context).size.height * 1.2 &&
+        MediaQuery.of(context).size.width > G.rt.chatListFixedWidth * 1.5;
+    G.rt.horizontal = hori;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('QQ'), actions: <Widget>[
-        IconButton(
-          icon: const Icon(Icons.search),
-          tooltip: '搜索',
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) {
-                return new SearchPage();
-              },
-            ));
-          },
-        ),
-        _buildMenu(context)
-      ]),
+      appBar: _buildAppBar(context),
       body: _buildBody(context),
       bottomNavigationBar: _buildBottomNavigationBar(context),
     );
@@ -559,6 +647,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     return Scaffold(
       appBar: AppBar(
         title: new Text(title),
+        // backgroundColor: Colors.transparent,
+        // elevation: 0,
       ),
       body: widget,
     );

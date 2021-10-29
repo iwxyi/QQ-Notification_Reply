@@ -41,7 +41,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'QQ通知',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MainPages(),

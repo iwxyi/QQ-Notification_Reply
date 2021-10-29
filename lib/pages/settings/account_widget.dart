@@ -55,7 +55,6 @@ class _AccountWidgetState extends State<AccountWidget>
   // ignore: must_call_super
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.grey.shade200,
       child: ListView(
         children: <Widget>[
           Padding(
