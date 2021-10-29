@@ -223,7 +223,6 @@ class _ChatListPageState extends State<ChatListPage>
               color: Color(0xFFEEEEEE),
               // 背景颜色
               elevation: 0.0,
-              borderOnForeground: true,
               // 投影
               child: Column(children: bodyWidgets),
               shape: RoundedRectangleBorder(

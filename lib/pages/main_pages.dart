@@ -351,7 +351,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         children: widgets,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
       ),
-      padding: EdgeInsets.only(left: 18, right: 18),
+      padding: EdgeInsets.only(left: 18, right: 18, top: 6),
       constraints: BoxConstraints(
           maxWidth: isHoriz ? G.rt.chatListFixedWidth : double.infinity),
     );
@@ -360,17 +360,32 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     if (isHoriz) {
       // 副标题的容器
-      String title = G.rt.currentChatPage == null
-          ? ''
-          : G.rt.currentChatPage.chatObj.title();
-      Widget subContainer = Container(
-          child: Expanded(
-        child: new Text(title,
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontWeight: FontWeight.w600)),
-      ));
+      String title = G.rt.currentChatPage != null
+          ? G.rt.currentChatPage.chatObj.title()
+          : '';
+      Widget subContainer = Expanded(
+          child: Container(
+              padding: EdgeInsets.only(left: 12, right: 12, top: 0),
+              child: Card(
+                child: Container(
+                  child: Row(children: [
+                    new Text(
+                      title,
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600),
+                    )
+                  ]),
+                  padding:
+                      EdgeInsets.only(left: 24, right: 24, top: 9, bottom: 9),
+                ),
+                elevation: 2.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.all(Radius.circular(20.0)), //设定 Card 的倒角大小,
+                ),
+              )));
       child = Row(
         children: [mainContainer, subContainer],
       );
@@ -380,13 +395,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     return MyAppBar(
         Container(
           child: child,
-          padding: EdgeInsets.only(top: 6, bottom: 6),
           /* decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [
-          Color(0xFFFAD956),
-          Colors.white,
-        ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-      ), */
+            gradient: LinearGradient(colors: [
+              Color(0xFFFAD956),
+              Colors.white,
+            ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+          ), */
         ),
         ValueKey(G.rt.currentChatPage == null
             ? 0
