@@ -155,7 +155,8 @@ class _ChatListPageState extends State<ChatListPage>
             tailWidgets.add(container);
           }
 
-          Widget gd = GestureDetector(
+          Widget gd = InkWell(
+              radius: 5,
               child: Column(
                   children: tailWidgets,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -210,6 +211,11 @@ class _ChatListPageState extends State<ChatListPage>
             ));
           }
 
+          // 显示状态
+          bool showingChat = G.rt.horizontal &&
+              G.rt.currentChatPage != null &&
+              G.rt.currentChatPage.chatObj.isObj(msg);
+
           // 单条消息的外部容器
           return new Container(
             padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
@@ -217,18 +223,22 @@ class _ChatListPageState extends State<ChatListPage>
               color: Color(0xFFEEEEEE),
               // 背景颜色
               elevation: 0.0,
+              borderOnForeground: true,
               // 投影
               child: Column(children: bodyWidgets),
               shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.all(Radius.circular(10.0)), //设定 Card 的倒角大小
-                /* borderRadius: BorderRadius.only(
+                  borderRadius:
+                      BorderRadius.all(Radius.circular(10.0)), //设定 Card 的倒角大小
+                  /* borderRadius: BorderRadius.only(
                   //设定 Card 的每个角的倒角大小
                   topLeft: Radius.circular(20.0),
                   topRight: Radius.zero,
                   bottomLeft: Radius.zero,
                   bottomRight: Radius.circular(20.0)),*/
-              ),
+                  side: showingChat
+                      ? BorderSide(
+                          color: Theme.of(context).primaryColor, width: 1)
+                      : BorderSide.none), // 设置边框
               clipBehavior:
                   Clip.antiAlias, //对Widget截取的行为，比如这里 Clip.antiAlias 指抗锯齿
             ),

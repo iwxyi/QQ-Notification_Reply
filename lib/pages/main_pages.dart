@@ -144,6 +144,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
               .cancel(UserAccount.notificationIdMap[msg.keyId()]);
         }
       }
+
       // 当前页面直接替换
       if (G.rt.currentChatPage != null) {
         // 判断旧页面
@@ -151,12 +152,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           // 如果状态不一致，还是得先删除
           G.rt.currentChatPage = null;
         } else {
-          G.rt.currentChatPage.setObject(msg);
+          setState(() {
+            G.rt.currentChatPage.setObject(msg);
+          });
           return;
         }
       }
 
       if (G.rt.horizontal) {
+        // 横屏页面
         setState(() {
           G.rt.currentChatPage = new ChatWidget(msg, innerMode: true);
         });
@@ -258,6 +262,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     );
   }
 
+  // ignore: unused_element
   Widget _buildAppBar0(BuildContext context) {
     List<Widget> btnWidget = [];
     if (G.rt.horizontal) {
@@ -308,6 +313,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
   MyAppBar _buildAppBar(BuildContext context) {
     List<Widget> widgets = [];
+    bool isHoriz = G.rt.horizontal;
 
     // 标题
     widgets.add(const Text(
@@ -335,7 +341,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     ));
 
     // 菜单
-    if (!G.rt.horizontal) {
+    if (!isHoriz) {
       widgets.add(_buildMenu(context));
     }
 
@@ -345,14 +351,46 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         children: widgets,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
       ),
+      padding: EdgeInsets.only(left: 18, right: 18),
+      constraints: BoxConstraints(
+          maxWidth: isHoriz ? G.rt.chatListFixedWidth : double.infinity),
     );
+
+    Widget child = mainContainer;
+
+    if (isHoriz) {
+      // 副标题的容器
+      String title = G.rt.currentChatPage == null
+          ? ''
+          : G.rt.currentChatPage.chatObj.title();
+      Widget subContainer = Container(
+          child: Expanded(
+        child: new Text(title,
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.w600)),
+      ));
+      child = Row(
+        children: [mainContainer, subContainer],
+      );
+    }
 
     // 返回
     return MyAppBar(
         Container(
-          child: mainContainer,
-          margin: EdgeInsets.only(left: 12, right: 12, top: 6, bottom: 6),
-        ));
+          child: child,
+          padding: EdgeInsets.only(top: 6, bottom: 6),
+          /* decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [
+          Color(0xFFFAD956),
+          Colors.white,
+        ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+      ), */
+        ),
+        ValueKey(G.rt.currentChatPage == null
+            ? 0
+            : G.rt.currentChatPage.chatObj.keyId()));
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
