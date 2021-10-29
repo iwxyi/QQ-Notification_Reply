@@ -81,7 +81,6 @@ class _ChatWidgetState extends State<ChatWidget>
 
       // 顶部加载历史消息
       if (_scrollController.offset <= 0 && !_blankHistory) {
-        print('------------------load history------------------');
         _loadMsgHistory();
       }
     });
@@ -228,6 +227,7 @@ class _ChatWidgetState extends State<ChatWidget>
     if (!msg.isObj(widget.chatObj)) {
       return;
     }
+    _messages.add(msg);
     if (!_keepScrollBottom) {
       _hasNewMsg++;
     }
@@ -241,6 +241,12 @@ class _ChatWidgetState extends State<ChatWidget>
     if (_keepScrollBottom) {
       _scrollToBottom(true);
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    eventBusFn.cancel();
   }
 
   ///发送信息
@@ -293,6 +299,7 @@ class _ChatWidgetState extends State<ChatWidget>
     }
 
     // 获取需要加载的位置
+    print('chatWidget.loadHistory()');
     List<MsgBean> list = G.ac.allMessages[widget.chatObj.keyId()];
     int endIndex = list.length, startIndex = 0; // 最后一个需要加载的位置+1（不包括）
     if (_messages != null && _messages.length > 0) {

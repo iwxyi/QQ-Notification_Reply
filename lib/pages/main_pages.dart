@@ -357,10 +357,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       flutterLocalNotificationsPlugin.cancel(id);
       return;
     }
-    
+
     // 前台不显示通知
     if (G.rt.runOnForeground) {
-      return ;
+      return;
     }
 
     // 显示通知
