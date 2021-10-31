@@ -11,6 +11,7 @@ class AppRuntime {
   var mainContext;
 
   bool horizontal = false;
+  bool enableNotification = true;
   bool runOnForeground = true;
   double chatListFixedWidth = 400; // 横屏时左边聊天列表的固定宽度
 

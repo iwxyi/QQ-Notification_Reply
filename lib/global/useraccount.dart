@@ -1,5 +1,4 @@
 import 'package:event_bus/event_bus.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
 class FriendInfo {
@@ -37,7 +36,7 @@ class UserAccount {
   List<MsgBean> allLogs = []; // 所有消息记录
   Map<int, List<MsgBean>> allMessages = {}; // 所有消息记录
   Map<int, int> messageTimes = {}; // 消息事件
-  Map<int, List<Message>> unreadMessages = {}; // 未读消息（通知）
+//  Map<int, List<Message>> unreadMessages = {}; // 未读消息（通知）
   Map<int, int> unreadMessageCount = {}; // 未读消息数量
   Map<int, bool> chatListShowReply = {}; // 聊天记录显示回复框
 
@@ -76,8 +75,8 @@ class UserAccount {
     if (unreadMessageCount.containsKey(msg.keyId())) {
       unreadMessageCount.remove(msg.keyId());
     }
-    if (unreadMessages.containsKey(msg.keyId())) {
-      unreadMessages.remove(msg.keyId());
-    }
+//    if (unreadMessages.containsKey(msg.keyId())) {
+//      unreadMessages.remove(msg.keyId());
+//    }
   }
 }

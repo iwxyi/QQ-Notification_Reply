@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/settings/group_select_widget.dart';
@@ -158,7 +157,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
       'Jeff Chang    Launch Party'
     ];
 
-    InboxStyleInformation inboxStyleInformation = InboxStyleInformation(lines,
+    /*InboxStyleInformation inboxStyleInformation = InboxStyleInformation(lines,
         contentTitle: '2 messages', summaryText: 'janedoe@example.com');
 
     // ignore: unused_local_variable
@@ -182,7 +181,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await UserAccount.flutterLocalNotificationsPlugin
-        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);
+        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);*/
   }
 
   /// 显示通知根方法
@@ -201,7 +200,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
       String body,
       String payload) async {
     // 添加新的通知
-    AndroidNotificationDetails androidPlatformChannelSpecifics =
+    /*AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(channelId, channelName, channelDescription,
             importance: Importance.max,
             priority: Priority.high,
@@ -210,6 +209,6 @@ class _NotificationWidgetState extends State<NotificationWidget> {
         NotificationDetails(android: androidPlatformChannelSpecifics);
     await UserAccount.flutterLocalNotificationsPlugin.show(
         notificationId, title, body, platformChannelSpecifics,
-        payload: payload);
+        payload: payload);*/
   }
 }

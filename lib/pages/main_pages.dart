@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
@@ -46,7 +46,7 @@ enum AppBarMenuItems { AllReaded, Contacts, Settings, Search }
 
 class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   int _selectedIndex = 0; // 导航栏当前项
-  AppLifecycleState _notification;
+  AppLifecycleState _notification; // 前后台判断
 
   List<CardSection> allPages = <CardSection>[
     CardSection(
@@ -75,9 +75,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         contentWidget: new NotificationWidget()),
   ];
 
-  var eventBusFn;
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  var eventBusFn; // 通知
 
+  /// 判断前后台的状态
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     setState(() {
@@ -109,40 +109,16 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       }
     });
 
-    // 判断是否需要通知
-    // Windows不支持通知
-    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
-      // 获取通知权限
-      requireNotificationPermission();
-
-      // 初始化通知
-      flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-      const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings("@mipmap/appicon");
-      final IOSInitializationSettings initializationSettingsIOS =
-          IOSInitializationSettings(
-              onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-      final MacOSInitializationSettings initializationSettingsMacOS =
-          MacOSInitializationSettings();
-      final InitializationSettings initializationSettings =
-          InitializationSettings(
-              android: initializationSettingsAndroid,
-              iOS: initializationSettingsIOS,
-              macOS: initializationSettingsMacOS);
-      flutterLocalNotificationsPlugin.initialize(initializationSettings,
-          onSelectNotification: onSelectNotification);
-      UserAccount.flutterLocalNotificationsPlugin =
-          flutterLocalNotificationsPlugin;
-    }
+    // 初始化通知
+    _initNotifications();
 
     // 任意位置打开聊天页面
     G.rt.mainContext = context;
     G.rt.showChatPage = (MsgBean msg) {
       // 清除通知
-      if (flutterLocalNotificationsPlugin != null) {
+      if (G.rt.enableNotification) {
         if (UserAccount.notificationIdMap.containsKey(msg.keyId())) {
-          flutterLocalNotificationsPlugin
-              .cancel(UserAccount.notificationIdMap[msg.keyId()]);
+          _cancelNotification(UserAccount.notificationIdMap[msg.keyId()]);
         }
       }
 
@@ -493,11 +469,38 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     _showNotification(msg);
   }
 
+  /// 初始化通知
+  void _initNotifications() {
+    // 判断是否需要通知（Windows不支持通知）
+    G.rt.enableNotification =
+        (Platform.isAndroid || Platform.isIOS || Platform.isMacOS);
+    if (!G.rt.enableNotification) {
+      return;
+    }
+    // 获取通知权限
+    requireNotificationPermission();
+
+    
+
+    // 监听tap
+    AwesomeNotifications().actionStream.listen((receivedNotification) {
+      // receivedNotification.id
+      print('-------------notification.tap----------------');
+      print(receivedNotification.id.toString());
+    });
+  }
+  
+  /// 取消通知
+  /// @param id 通知的ID，不是聊天ID或者消息ID
+  void _cancelNotification(int id) {
+    AwesomeNotifications().cancel(id);
+  }
+
   /// 显示通知栏通知
   /// 仅支持 Android、IOS、MacOS
   void _showNotification(MsgBean msg) async {
     // 当前平台不支持该通知
-    if (flutterLocalNotificationsPlugin == null) {
+    if (!G.rt.enableNotification) {
       return;
     }
 
@@ -508,20 +511,30 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (msg.senderId == G.ac.qqId) {
       // 自己发的，一定不需要再通知了
       // 还需要消除掉该聊天对象的通知
-      flutterLocalNotificationsPlugin.cancel(id);
+      _cancelNotification(id);
       return;
     }
 
     // 前台不显示通知
     if (G.rt.runOnForeground) {
-      return;
+//      return;
     }
 
     // 显示通知
     String personUri =
         'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
     String displayMessage = G.cs.getMessageDisplay(msg);
-    Person person = new Person(
+    AwesomeNotifications().createNotification(
+        content: NotificationContent(
+            id: 10,
+            channelKey: 'basic_channel',
+            title: 'Simple Notification',
+            body: 'Simple body'
+        )
+    );
+  
+  
+    /*Person person = new Person(
         bot: false, important: true, name: msg.username(), uri: personUri);
     Message message = new Message(displayMessage, DateTime.now(), person);
     AndroidNotificationDetails androidPlatformChannelSpecifics;
@@ -532,7 +545,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     G.ac.unreadMessages[msg.keyId()].add(message);
     if (msg.isPrivate()) {
       // 私聊消息
-      /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
+      *//*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*//*
 
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(person,
@@ -586,7 +599,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     await flutterLocalNotificationsPlugin.show(
         id, msg.username(), displayMessage, platformChannelSpecifics,
-        payload: msg.keyId().toString());
+        payload: msg.keyId().toString());*/
   }
 
   /// 通知点击回调
@@ -619,7 +632,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             msg.groupId.toString() +
             '&version=1&src_type=web';
       }
-      G.ac.unreadMessages[msg.keyId()].clear();
+//      G.ac.unreadMessages[msg.keyId()].clear();
 
       // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
       // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
@@ -664,38 +677,28 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
   /// 对于 iOS 和 MacOS，需要获取通知权限
   void requireNotificationPermission() async {
-    bool result = true;
-    if (Platform.isIOS) {
-      result = await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-    } else if (Platform.isMacOS) {
-      result = await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              MacOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-    }
-    if (!result) {
-      Fluttertoast.showToast(
-        msg: "请授权通知权限，否则本程序无法正常使用",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-      );
-    }
+    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+      if (!isAllowed) {
+        // Insert here your friendly dialog box before call the request method
+        // This is very important to not harm the user experience
+        AwesomeNotifications()
+            .requestPermissionToSendNotifications()
+            .then((result) {
+          if (!result) {
+            Fluttertoast.showToast(
+              msg: "请授权通知权限，否则本程序无法正常使用",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+            );
+          }
+        });
+      }
+    });
   }
 
   void _markAllReaded() {
-    G.ac.unreadMessages.clear();
+//    G.ac.unreadMessages.clear();
     G.ac.unreadMessageCount.clear();
   }
 
