@@ -480,8 +480,6 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     // 获取通知权限
     requireNotificationPermission();
 
-    
-
     // 监听tap
     AwesomeNotifications().actionStream.listen((receivedNotification) {
       // receivedNotification.id
@@ -489,7 +487,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       print(receivedNotification.id.toString());
     });
   }
-  
+
   /// 取消通知
   /// @param id 通知的ID，不是聊天ID或者消息ID
   void _cancelNotification(int id) {
@@ -517,7 +515,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 前台不显示通知
     if (G.rt.runOnForeground) {
-//      return;
+      //      return;
     }
 
     // 显示通知
@@ -528,12 +526,18 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         content: NotificationContent(
             id: 10,
             channelKey: 'basic_channel',
-            title: 'Simple Notification',
-            body: 'Simple body'
-        )
-    );
-  
-  
+            summary: 'chatName',
+            title: 'username',
+            body: 'message',
+            notificationLayout: NotificationLayout.MessagingGroup),
+        actionButtons: [
+          NotificationActionButton(
+              key: 'test',
+              label: 'label',
+              autoDismissable: true,
+              buttonType: ActionButtonType.InputField)
+        ]);
+
     /*Person person = new Person(
         bot: false, important: true, name: msg.username(), uri: personUri);
     Message message = new Message(displayMessage, DateTime.now(), person);
@@ -545,7 +549,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     G.ac.unreadMessages[msg.keyId()].add(message);
     if (msg.isPrivate()) {
       // 私聊消息
-      *//*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*//*
+      */ /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/ /*
 
       MessagingStyleInformation messagingStyleInformation =
           new MessagingStyleInformation(person,
@@ -632,7 +636,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             msg.groupId.toString() +
             '&version=1&src_type=web';
       }
-//      G.ac.unreadMessages[msg.keyId()].clear();
+      //      G.ac.unreadMessages[msg.keyId()].clear();
 
       // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
       // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
@@ -698,7 +702,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   }
 
   void _markAllReaded() {
-//    G.ac.unreadMessages.clear();
+    //    G.ac.unreadMessages.clear();
     G.ac.unreadMessageCount.clear();
   }
 
