@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
@@ -103,11 +105,14 @@ class _MessageViewState extends State<MessageView> {
       return _buildImageWidget(url);
     } else {
       // 未知，当做纯文本了
-      return new Card(
-        child: new Container(
-            margin: const EdgeInsets.all(8.0), child: _buildTextWidget(msg)),
-        color: Color(0xFFEEEEEE),
-        elevation: 0.0,
+      return new Container(
+        child: _buildTextWidget(msg),
+        padding: EdgeInsets.all(8.0),
+        margin: EdgeInsets.only(top: 3.0, bottom: 3.0),
+        decoration: new BoxDecoration(
+          color: Color(0xFFEEEEEE),
+          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+        ),
       );
     }
   }
@@ -138,7 +143,7 @@ class _MessageViewState extends State<MessageView> {
               cache: true,
               shape: BoxShape.rectangle,
               borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              scale: 1,
+              scale: 2,
               mode: ExtendedImageMode.gesture,
               initGestureConfigHandler: (state) {
                 return GestureConfig(
@@ -160,6 +165,7 @@ class _MessageViewState extends State<MessageView> {
                     return Image.asset(
                       "assets/images/loading.gif",
                       fit: BoxFit.fill,
+                      scale: 2,
                     );
 
                   ///if you don't want override completed widget
@@ -171,10 +177,24 @@ class _MessageViewState extends State<MessageView> {
                       hasCompleted = true;
                       widget.loadFinishedCallback();
                     }
+
+                    // 自适应缩放
+                    double scale = 4;
+                    var image = state.extendedImageInfo?.image;
+                    if (image != null) {
+                      int minHW = min(image.width, image.height);
+                      if (minHW < 64) {
+                        scale = 1;
+                      } else if (minHW < 256) {
+                        scale = 2;
+                      }
+                    }
+
                     return Container(
                       child: ExtendedRawImage(
-                        image: state.extendedImageInfo?.image,
+                        image: image,
                         fit: BoxFit.contain,
+                        scale: scale,
                       ),
                       constraints: BoxConstraints(
                         maxHeight: MediaQuery.of(context).size.height / 2,

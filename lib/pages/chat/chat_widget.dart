@@ -156,7 +156,7 @@ class _ChatWidgetState extends State<ChatWidget>
         ),
         // new Divider(height: 1.0), // 分割线
         // 输入框
-        _buildTextEditor()
+        widget.innerMode ? _buildTextEditor() : _buildLineEditor()
       ],
     );
   }
@@ -187,8 +187,8 @@ class _ChatWidgetState extends State<ChatWidget>
     }
   }
 
-  /// 构造输入框
-  Widget _buildTextEditor() {
+  /// 构造单行输入框
+  Widget _buildLineEditor() {
     return new Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: new Row(children: <Widget>[
@@ -203,6 +203,46 @@ class _ChatWidgetState extends State<ChatWidget>
               controller: _textController,
               onSubmitted: _sendMessage,
               decoration: new InputDecoration.collapsed(
+                hintText: '发送消息',
+              ),
+              focusNode: _editorFocus,
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    color: Theme.of(context).primaryColor, width: 0.5),
+                borderRadius: BorderRadius.all(Radius.circular(15))),
+          )),
+          // 发送按钮
+          new Container(
+            margin: new EdgeInsets.symmetric(horizontal: 4.0),
+            child: new IconButton(
+                icon: new Icon(
+                  Icons.send,
+                  color: Colors.blue,
+                ),
+                onPressed: () => _sendMessage(_textController.text)),
+          )
+        ]));
+  }
+
+  /// 构造多行输入框（横屏）
+  Widget _buildTextEditor() {
+    return new Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: new Row(children: <Widget>[
+          new IconButton(
+              icon: new Icon(Icons.image),
+              onPressed: () => getImage(false),
+              color: Theme.of(context).primaryColor),
+          // 输入框
+          new Flexible(
+              child: Container(
+            constraints: BoxConstraints(maxHeight: 105, minHeight: 75),
+            child: new TextField(
+              controller: _textController,
+              onSubmitted: _sendMessage,
+              decoration: new InputDecoration.collapsed( // 取消奇怪的padding
                 hintText: '发送消息',
               ),
               focusNode: _editorFocus,
@@ -303,7 +343,6 @@ class _ChatWidgetState extends State<ChatWidget>
     }
 
     // 获取需要加载的位置
-    print('chatWidget.loadHistory()');
     List<MsgBean> list = G.ac.allMessages[widget.chatObj.keyId()];
     int endIndex = list.length, startIndex = 0; // 最后一个需要加载的位置+1（不包括）
     if (_messages != null && _messages.length > 0) {
@@ -311,7 +350,7 @@ class _ChatWidgetState extends State<ChatWidget>
       int messageId = _messages[0].messageId;
       while (endIndex-- > 0 && list[endIndex].messageId != messageId) {}
       if (endIndex <= 0) {
-        print('获取第一条历史消息的位置出错');
+        print('没有历史消息');
         return;
       }
     } else {
