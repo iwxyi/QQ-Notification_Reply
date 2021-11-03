@@ -108,6 +108,7 @@ class _ChatWidgetState extends State<ChatWidget>
     _showGoToBottomButton = false;
     _hasNewMsg = 0;
     _scrollToBottom(false);
+    _textController.text = "";
   }
 
   void _scrollToBottom(bool ani) {
@@ -154,7 +155,7 @@ class _ChatWidgetState extends State<ChatWidget>
             controller: _scrollController,
           ),
         ),
-        // new Divider(height: 1.0), // 分割线
+        SizedBox(height: 8),
         // 输入框
         widget.innerMode ? _buildTextEditor() : _buildLineEditor()
       ],
@@ -230,40 +231,41 @@ class _ChatWidgetState extends State<ChatWidget>
   Widget _buildTextEditor() {
     return new Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: new Row(children: <Widget>[
-          new IconButton(
-              icon: new Icon(Icons.image),
-              onPressed: () => getImage(false),
-              color: Theme.of(context).primaryColor),
-          // 输入框
-          new Flexible(
-              child: Container(
-            constraints: BoxConstraints(maxHeight: 105, minHeight: 75),
-            child: new TextField(
-              controller: _textController,
-              onSubmitted: _sendMessage,
-              decoration: new InputDecoration.collapsed( // 取消奇怪的padding
-                hintText: '发送消息',
-              ),
-              focusNode: _editorFocus,
+        child: new Column(
+          children: <Widget>[
+            // 分割线
+            Divider(
+              color: Color(0xFFCCCCCC),
+              height: 1.0,
+              indent: 8,
             ),
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-            decoration: BoxDecoration(
-                border: Border.all(
-                    color: Theme.of(context).primaryColor, width: 0.5),
-                borderRadius: BorderRadius.all(Radius.circular(15))),
-          )),
-          // 发送按钮
-          new Container(
-            margin: new EdgeInsets.symmetric(horizontal: 4.0),
-            child: new IconButton(
-                icon: new Icon(
-                  Icons.send,
-                  color: Colors.blue,
+            // 输入框
+            Container(
+              constraints: BoxConstraints(maxHeight: 105, minHeight: 75),
+              child: new TextField(
+                controller: _textController,
+                maxLines: 3,
+                decoration: new InputDecoration.collapsed(
+                  // 取消奇怪的padding
+                  hintText: '发送消息',
                 ),
-                onPressed: () => _sendMessage(_textController.text)),
-          )
-        ]));
+                focusNode: _editorFocus,
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            ),
+            // 发送按钮
+            new Container(
+              margin: new EdgeInsets.symmetric(horizontal: 4.0),
+              child: new IconButton(
+                  icon: new Icon(
+                    Icons.send,
+                    color: Colors.blue,
+                  ),
+                  onPressed: () => _sendMessage(_textController.text)),
+            )
+          ],
+          crossAxisAlignment: CrossAxisAlignment.end,
+        ));
   }
 
   /// 收到消息

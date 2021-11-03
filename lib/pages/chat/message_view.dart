@@ -82,6 +82,7 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建昵称控件
+  /// 自己发的没有昵称
   Widget _buildNicknameView() {
     return new Container(
       margin: const EdgeInsets.only(top: 5.0),
@@ -96,25 +97,33 @@ class _MessageViewState extends State<MessageView> {
 
   /// 构建消息控件
   Widget _buildMessageTypeView() {
+    EdgeInsets bubblePadding = EdgeInsets.all(8.0); // 消息内部间距
+    EdgeInsets bubbleMargin = EdgeInsets.only(top: 3.0, bottom: 3.0);
+    Color bubbleColor = Color(0xFFEEEEEE);
+    Widget bubbleContent;
+
     String text = msg.message;
     Match match;
     RegExp imageRE = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+?)?\]$');
     if ((match = imageRE.firstMatch(text)) != null) {
       // 如果是图片
       String url = match.group(1);
-      return _buildImageWidget(url);
+      bubbleContent = _buildImageWidget(url);
+      bubblePadding = EdgeInsets.only();
     } else {
       // 未知，当做纯文本了
-      return new Container(
-        child: _buildTextWidget(msg),
-        padding: EdgeInsets.all(8.0),
-        margin: EdgeInsets.only(top: 3.0, bottom: 3.0),
-        decoration: new BoxDecoration(
-          color: Color(0xFFEEEEEE),
-          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-        ),
-      );
+      bubbleContent = _buildTextWidget(msg);
     }
+
+    return new Container(
+      child: bubbleContent,
+      padding: bubblePadding,
+      margin: bubbleMargin, // 上限间距
+      decoration: new BoxDecoration(
+        color: bubbleColor,
+        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+      ),
+    );
   }
 
   /// 构建富文本消息框
@@ -135,108 +144,112 @@ class _MessageViewState extends State<MessageView> {
   /// 构建一个纯图片消息框
   Widget _buildImageWidget(String url) {
     return GestureDetector(
-        child: Hero(
-            tag: url,
-            child: ExtendedImage.network(
-              url,
-              fit: BoxFit.contain,
-              cache: true,
-              shape: BoxShape.rectangle,
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              scale: 2,
-              mode: ExtendedImageMode.gesture,
-              initGestureConfigHandler: (state) {
-                return GestureConfig(
-                  minScale: 0.9,
-                  animationMinScale: 0.7,
-                  maxScale: 3.0,
-                  animationMaxScale: 3.5,
-                  speed: 1.0,
-                  inertialSpeed: 100.0,
-                  initialScale: 1.0,
-                  inPageView: false,
-                  initialAlignment: InitialAlignment.center,
-                );
-              },
-              loadStateChanged: (ExtendedImageState state) {
-                state.extendedImageInfo;
-                switch (state.extendedImageLoadState) {
-                  case LoadState.loading:
-                    return Image.asset(
-                      "assets/images/loading.gif",
-                      fit: BoxFit.fill,
-                      scale: 2,
-                    );
+      child: Hero(
+          tag: url,
+          child: ExtendedImage.network(
+            url,
+            fit: BoxFit.contain,
+            cache: true,
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+            scale: 2,
+            mode: ExtendedImageMode.gesture,
+            initGestureConfigHandler: (state) {
+              return GestureConfig(
+                minScale: 0.9,
+                animationMinScale: 0.7,
+                maxScale: 3.0,
+                animationMaxScale: 3.5,
+                speed: 1.0,
+                inertialSpeed: 100.0,
+                initialScale: 1.0,
+                inPageView: false,
+                initialAlignment: InitialAlignment.center,
+              );
+            },
+            loadStateChanged: (ExtendedImageState state) {
+              state.extendedImageInfo;
+              switch (state.extendedImageLoadState) {
+                case LoadState.loading:
+                  return Image.asset(
+                    "assets/images/loading.gif",
+                    fit: BoxFit.fill,
+                    scale: 2,
+                  );
 
-                  ///if you don't want override completed widget
-                  ///please return null or state.completedWidget
-                  //return null;
-                  //return state.completedWidget;
-                  case LoadState.completed:
-                    if (!hasCompleted && widget.loadFinishedCallback != null) {
-                      hasCompleted = true;
-                      widget.loadFinishedCallback();
+                ///if you don't want override completed widget
+                ///please return null or state.completedWidget
+                //return null;
+                //return state.completedWidget;
+                case LoadState.completed:
+                  if (!hasCompleted && widget.loadFinishedCallback != null) {
+                    hasCompleted = true;
+                    widget.loadFinishedCallback();
+                  }
+
+                  // 自适应缩放
+                  double scale = 4;
+                  var image = state.extendedImageInfo?.image;
+                  if (image != null) {
+                    int minHW = min(image.width, image.height);
+                    if (minHW < 64) {
+                      scale = 1;
+                    } else if (minHW < 128) {
+                      scale = 1.5;
+                    } else if (minHW < 256) {
+                      scale = 2;
                     }
+                  }
 
-                    // 自适应缩放
-                    double scale = 4;
-                    var image = state.extendedImageInfo?.image;
-                    if (image != null) {
-                      int minHW = min(image.width, image.height);
-                      if (minHW < 64) {
-                        scale = 1;
-                      } else if (minHW < 256) {
-                        scale = 2;
-                      }
-                    }
-
-                    return Container(
-                      child: ExtendedRawImage(
-                        image: image,
-                        fit: BoxFit.contain,
-                        scale: scale,
-                      ),
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height / 2,
-                      ),
-                    ); // 显示图片
-                  case LoadState.failed:
-                    return GestureDetector(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[
-                          Image.asset(
-                            "assets/images/failed.jpg",
-                            fit: BoxFit.fill,
+                  return Container(
+                    child: ExtendedRawImage(
+                      image: image,
+                      fit: BoxFit.contain,
+                      scale: scale,
+                    ),
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height / 2,
+                    ),
+                  ); // 显示图片
+                case LoadState.failed:
+                  return GestureDetector(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        Image.asset(
+                          "assets/images/failed.jpg",
+                          fit: BoxFit.fill,
+                        ),
+                        Positioned(
+                          bottom: 0.0,
+                          left: 0.0,
+                          right: 0.0,
+                          child: Text(
+                            "加载失败，点击重试",
+                            textAlign: TextAlign.center,
                           ),
-                          Positioned(
-                            bottom: 0.0,
-                            left: 0.0,
-                            right: 0.0,
-                            child: Text(
-                              "加载失败，点击重试",
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                        ],
-                      ),
-                      onTap: () {
-                        state.reLoadImage();
-                      },
-                    );
-                    break;
-                }
-                return null;
-              },
-            )),
-        onTap: () {
-          /* Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                        )
+                      ],
+                    ),
+                    onTap: () {
+                      state.reLoadImage();
+                    },
+                  );
+                  break;
+              }
+              return null;
+            },
+          )),
+      onTap: () {
+        // 查看图片
+        /* Navigator.of(context).push(MaterialPageRoute(builder: (context) {
               return new SlidePage(url: url);
             })); */
-          Navigator.of(context).push(PageRouteBuilder(
-              opaque: false,
-              pageBuilder: (_, __, ___) => new SlidePage(url: url)));
-        });
+        Navigator.of(context).push(PageRouteBuilder(
+            opaque: false,
+            pageBuilder: (_, __, ___) => new SlidePage(url: url)));
+      },
+    );
   }
 
   @override
