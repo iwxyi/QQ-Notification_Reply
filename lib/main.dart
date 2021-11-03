@@ -21,18 +21,9 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized(); // 解决加载json错误
 
   G.init().then((e) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     runApp(MyApp());
   });
-
-  // 设置状态栏
-  if (Platform.isAndroid) {
-    SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      // statusBarBrightness: Brightness.light,
-      // statusBarIconBrightness: Brightness.dark
-    );
-    SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -41,9 +32,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'QQ通知',
       theme: ThemeData(
-        primaryColor: Colors.blue, // 图标颜色
-        primarySwatch: Colors.blue, // 标题栏颜色
-        visualDensity: VisualDensity.adaptivePlatformDensity, // 设置视觉密度：适应平台密度
+        primaryColor: Colors.blue,
+        // 图标颜色
+        primarySwatch: Colors.blue,
+        // 标题栏颜色
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        // 设置视觉密度：适应平台密度
         platform: TargetPlatform.iOS, // 页面滑动切换效果
       ),
       home: AppRetainWidget(child: MainPages()),
