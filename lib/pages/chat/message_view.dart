@@ -38,7 +38,7 @@ class _MessageViewState extends State<MessageView> {
     if (!isSelf && !isNext) {
       vWidgets.add(_buildNicknameView());
     }
-    vWidgets.add(_buildMessageTypeView());
+    vWidgets.add(_buildMessageBubble());
 
     Widget vWidget = Flexible(
       child: Column(
@@ -96,7 +96,7 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建消息控件
-  Widget _buildMessageTypeView() {
+  Widget _buildMessageBubble() {
     EdgeInsets bubblePadding = EdgeInsets.all(8.0); // 消息内部间距
     EdgeInsets bubbleMargin = EdgeInsets.only(top: 3.0, bottom: 3.0);
     Color bubbleColor = Color(0xFFEEEEEE);
@@ -128,9 +128,69 @@ class _MessageViewState extends State<MessageView> {
 
   /// 构建富文本消息框
   Widget _buildTextWidget(MsgBean msg) {
-    List<Widget> spans = [];
-    // 先解析文本
-    return _buildSimpleTextWidget(msg);
+    List<InlineSpan> spans = [];
+    RegExp re = new RegExp(r"\[CQ:(\w+),?([^\]]*)\]");
+    var originText = msg.message;
+    Iterable<RegExpMatch> matches = re.allMatches(originText);
+    if (matches.length == 0) {
+      // 纯文本
+      return _buildSimpleTextWidget(msg);
+    }
+
+    // 是富文本了
+    int pos = 0;
+    for (int i = 0; i < matches.length; i++) {
+      RegExpMatch match = matches.elementAt(i);
+
+      // 前面的纯文本[match]
+      if (match.start > pos) {
+        var span = new TextSpan(text: originText.substring(pos, match.start));
+        spans.add(span);
+      }
+
+      // 匹配到的内容
+      String cqCode = match.group(1); // CQ码
+      String params = match.group(2); // 参数字符串
+      InlineSpan span;
+
+      // 判断CQ码
+      Match mat;
+      if (cqCode == 'face') {
+        // 替换成表情
+        RegExp faceRE = RegExp(r'^id=(\d+)$');
+        if ((mat = faceRE.firstMatch(params)) != null) {
+          String id = mat[1];
+          span = new WidgetSpan(child: Image.asset("assets/qq_face/$id.gif", scale: 2));
+        }
+      } else if (cqCode == 'image') {
+        // 替换成图片
+        RegExp imageRE = RegExp(r'^file=.+?,url=([^,]+)$');
+        if ((mat = imageRE.firstMatch(params)) != null) {
+          String url = mat[1];
+          span = new WidgetSpan(child: _buildImageWidget(url));
+        }
+      } else if (cqCode == 'reply') {
+        span = new TextSpan(text: "[回复]");
+      } else if (cqCode == 'bag') {
+        span = new TextSpan(text: "[红包]");
+      } else {
+        span = new TextSpan(text: "[$cqCode]");
+      }
+
+      if (span != null) {
+        spans.add(span);
+      }
+      pos = match.end;
+    }
+
+    // 剩下的普通文本
+    if (pos < originText.length) {
+      var span =
+          new TextSpan(text: originText.substring(pos, originText.length));
+      spans.add(span);
+    }
+
+    return Text.rich(TextSpan(children: spans));
   }
 
   /// 构建一个最简单的纯文本消息框

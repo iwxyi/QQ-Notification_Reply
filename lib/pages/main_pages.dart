@@ -377,31 +377,40 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       String title = G.rt.currentChatPage != null
           ? G.rt.currentChatPage.chatObj.title()
           : '';
+
+      /* // 卡片标题
+      Widget titleCard = Card(
+        child: Container(
+          child: Row(children: [
+            new Text(
+              title,
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600),
+            )
+          ]),
+          padding: EdgeInsets.only(left: 24, right: 24, top: 9, bottom: 9),
+        ),
+        elevation: 2.0,
+        shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.all(Radius.circular(20.0)), //设定 Card 的倒角大小,
+        ),
+      ); */
+
+      Widget titleCard = new Text(
+        title,
+        style: TextStyle(
+            color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
+      );
+
       Widget subContainer = Expanded(
           child: Container(
               padding: EdgeInsets.only(left: 12, right: 12, top: 0),
-              child: G.rt.currentChatPage == null
-                  ? Text('')
-                  : Card(
-                      child: Container(
-                        child: Row(children: [
-                          new Text(
-                            title,
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600),
-                          )
-                        ]),
-                        padding: EdgeInsets.only(
-                            left: 24, right: 24, top: 9, bottom: 9),
-                      ),
-                      elevation: 2.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                            Radius.circular(20.0)), //设定 Card 的倒角大小,
-                      ),
-                    )));
+              constraints: BoxConstraints(minHeight: kToolbarHeight),
+              alignment: Alignment.center,
+              child: G.rt.currentChatPage == null ? Text('') : titleCard));
       child = Row(
         children: [mainContainer, subContainer],
       );

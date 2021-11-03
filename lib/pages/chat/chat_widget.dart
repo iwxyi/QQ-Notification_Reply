@@ -246,12 +246,12 @@ class _ChatWidgetState extends State<ChatWidget>
                 constraints: BoxConstraints(maxHeight: 105, minHeight: 75),
                 child: new TextField(
                   controller: _textController,
-                  maxLines: 3,
                   decoration: new InputDecoration.collapsed(
                     // 取消奇怪的padding
                     hintText: '发送消息',
                   ),
                   focusNode: _editorFocus,
+                  onSubmitted: _sendMessage, // TODO: CtrlEnter发送
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
               ),
