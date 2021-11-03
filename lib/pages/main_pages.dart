@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -356,12 +357,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     widgets.add(_buildMenu(context));
 
     // 主标题的容器
+    double statusBarHeight =
+        MediaQueryData.fromWindow(window).padding.top; // 系统状态栏高度
     Widget mainContainer = Container(
       child: Row(
         children: widgets,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
       ),
-      padding: EdgeInsets.only(left: 18, right: 18, top: 6),
+      padding: EdgeInsets.only(left: 18, right: 18, top: statusBarHeight),
       constraints: BoxConstraints(
           maxWidth: isHoriz ? G.rt.chatListFixedWidth : double.infinity),
     );

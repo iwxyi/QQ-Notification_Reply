@@ -6,7 +6,7 @@ class MyAppBar extends StatefulWidget implements PreferredSizeWidget {
   MyAppBar(this.child, Key key) : super(key: key);
 
   @override
-  Size get preferredSize => const Size.fromHeight(50);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight );
 
   @override
   State<StatefulWidget> createState() => _MyAppBarState();
