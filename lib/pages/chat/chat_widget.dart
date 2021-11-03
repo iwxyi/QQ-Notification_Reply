@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
@@ -229,43 +230,48 @@ class _ChatWidgetState extends State<ChatWidget>
 
   /// 构造多行输入框（横屏）
   Widget _buildTextEditor() {
-    return new Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: new Column(
-          children: <Widget>[
-            // 分割线
-            Divider(
-              color: Color(0xFFCCCCCC),
-              height: 1.0,
-              indent: 8,
-            ),
-            // 输入框
-            Container(
-              constraints: BoxConstraints(maxHeight: 105, minHeight: 75),
-              child: new TextField(
-                controller: _textController,
-                maxLines: 3,
-                decoration: new InputDecoration.collapsed(
-                  // 取消奇怪的padding
-                  hintText: '发送消息',
-                ),
-                focusNode: _editorFocus,
+    return new CtrlEnterWidget(
+      child: new Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: new Column(
+            children: <Widget>[
+              // 分割线
+              Divider(
+                color: Color(0xFFCCCCCC),
+                height: 1.0,
+                indent: 8,
               ),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-            ),
-            // 发送按钮
-            new Container(
-              margin: new EdgeInsets.symmetric(horizontal: 4.0),
-              child: new IconButton(
-                  icon: new Icon(
-                    Icons.send,
-                    color: Colors.blue,
+              // 输入框
+              Container(
+                constraints: BoxConstraints(maxHeight: 105, minHeight: 75),
+                child: new TextField(
+                  controller: _textController,
+                  maxLines: 3,
+                  decoration: new InputDecoration.collapsed(
+                    // 取消奇怪的padding
+                    hintText: '发送消息',
                   ),
-                  onPressed: () => _sendMessage(_textController.text)),
-            )
-          ],
-          crossAxisAlignment: CrossAxisAlignment.end,
-        ));
+                  focusNode: _editorFocus,
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              ),
+              // 发送按钮
+              new Container(
+                margin: new EdgeInsets.symmetric(horizontal: 4.0),
+                child: new IconButton(
+                    icon: new Icon(
+                      Icons.send,
+                      color: Colors.blue,
+                    ),
+                    onPressed: () => _sendMessage(_textController.text)),
+              )
+            ],
+            crossAxisAlignment: CrossAxisAlignment.end,
+          )),
+      onCtrlEnterCallback: () {
+        _sendMessage(_textController.text);
+      },
+    );
   }
 
   /// 收到消息
@@ -375,6 +381,34 @@ class _ChatWidgetState extends State<ChatWidget>
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _scrollController
           .jumpTo(_scrollController.position.maxScrollExtent - deltaBottom);
+    });
+  }
+}
+
+final ctrlEnterKeySet = LogicalKeySet(
+  Platform.isMacOS
+      ? LogicalKeyboardKey.meta
+      : LogicalKeyboardKey.control, // Windows:control, MacOS:meta
+  LogicalKeyboardKey.arrowUp,
+);
+
+class CtrlEnterIntent extends Intent {}
+
+class CtrlEnterWidget extends StatelessWidget {
+  final Widget child;
+  final VoidCallback onCtrlEnterCallback;
+
+  const CtrlEnterWidget(
+      {Key key, @required this.child, @required this.onCtrlEnterCallback})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FocusableActionDetector(child: child, autofocus: true, shortcuts: {
+      ctrlEnterKeySet: CtrlEnterIntent(),
+    }, actions: {
+      CtrlEnterIntent:
+          CallbackAction(onInvoke: (e) => onCtrlEnterCallback?.call()),
     });
   }
 }
