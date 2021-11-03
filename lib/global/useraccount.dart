@@ -80,4 +80,21 @@ class UserAccount {
       unreadMessages.remove(msg.keyId());
     }
   }
+
+  String getGroupMemberName(int userId, int groupId) {
+    if (groupId != null && groupId != 0) {
+      // 艾特群成员
+      if (groupList.containsKey(groupId)) {
+        if (groupList[groupId].members.containsKey(userId)) {
+          return groupList[groupId].members[userId].username();
+        }
+      }
+    } else {
+      // 艾特私聊
+      if (friendList.containsKey(userId)) {
+        return friendList[userId].username();
+      }
+    }
+    return null;
+  }
 }

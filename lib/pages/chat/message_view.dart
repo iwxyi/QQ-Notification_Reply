@@ -157,10 +157,11 @@ class _MessageViewState extends State<MessageView> {
       Match mat;
       if (cqCode == 'face') {
         // 替换成表情
-        RegExp faceRE = RegExp(r'^id=(\d+)$');
-        if ((mat = faceRE.firstMatch(params)) != null) {
+        RegExp re = RegExp(r'^id=(\d+)$');
+        if ((mat = re.firstMatch(params)) != null) {
           String id = mat[1];
-          span = new WidgetSpan(child: Image.asset("assets/qq_face/$id.gif", scale: 2));
+          span = new WidgetSpan(
+              child: Image.asset("assets/qq_face/$id.gif", scale: 2));
         }
       } else if (cqCode == 'image') {
         // 替换成图片
@@ -170,9 +171,26 @@ class _MessageViewState extends State<MessageView> {
           span = new WidgetSpan(child: _buildImageWidget(url));
         }
       } else if (cqCode == 'reply') {
+        // 判断下一个at
         span = new TextSpan(text: "[回复]");
       } else if (cqCode == 'bag') {
         span = new TextSpan(text: "[红包]");
+      } else if (cqCode == 'at') {
+        RegExp re = RegExp(r'^qq=(\w+)$');
+        if ((mat = re.firstMatch(params)) != null) {
+          String id = mat[1];
+          if (id == 'all') {
+            // @全体成员
+            span = new TextSpan(text: "@全体成员");
+          } else {
+            // @qq
+            String username = G.ac.getGroupMemberName(int.parse(id), msg.groupId);
+            if (username == null) {
+              username = id;
+            }
+            span = new TextSpan(text: "@$username");
+          }
+        }
       } else {
         span = new TextSpan(text: "[$cqCode]");
       }

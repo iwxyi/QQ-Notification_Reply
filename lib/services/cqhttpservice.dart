@@ -449,20 +449,12 @@ class CqhttpService {
     text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
     text = text.replaceAllMapped(RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) {
       var id = int.parse(match[1]);
+      String username = ac.getGroupMemberName(id, msg.groupId);
+      if (username != null) return username;
+      // 未获取到昵称
       if (msg.isGroup()) {
-        // 艾特群成员
-        if (ac.groupList.containsKey(msg.groupId)) {
-          if (ac.groupList[msg.groupId].members.containsKey(id)) {
-            return '@' + ac.groupList[msg.groupId].members[id].username();
-          } else {
-            refreshGroupMembers(msg.groupId);
-          }
-        }
-      } else if (msg.isPrivate()) {
-        // 艾特私聊
-        if (ac.friendList.containsKey(id)) {
-          return '@' + ac.friendList[id].username();
-        }
+        // 获取群成员
+        refreshGroupMembers(msg.groupId);
       }
       return '@' + match[1];
     });
