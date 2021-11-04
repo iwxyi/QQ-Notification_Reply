@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/slide_images_page.dart';
 
@@ -112,7 +113,7 @@ class _MessageViewState extends State<MessageView> {
       bubbleContent = _buildImageWidget(url);
       bubblePadding = EdgeInsets.only();
     } else {
-      // 未知，当做纯文本了
+      // 纯文本或者富文本
       bubbleContent = _buildRichWidget(msg);
     }
 
@@ -125,6 +126,19 @@ class _MessageViewState extends State<MessageView> {
         borderRadius: BorderRadius.all(Radius.circular(5.0)),
       ),
     );
+  }
+
+  InlineSpan _buildPureTextSpan(String text) {
+    // 替换实体
+    text = text
+        .replaceAll("&#44;", ",")
+        .replaceAll("&amp;", ";")
+        .replaceAll("&#91;", "[")
+        .replaceAll("&#93;", "]");
+
+    // 处理网址、邮箱、号码等
+
+    return TextSpan(text: text, style: TextStyle(fontSize: G.st.msgFontSize));
   }
 
   /// 构建富文本消息框
@@ -148,7 +162,7 @@ class _MessageViewState extends State<MessageView> {
 
       // 前面的纯文本[match]
       if (match.start > pos) {
-        var span = new TextSpan(text: originText.substring(pos, match.start));
+        var span = _buildPureTextSpan(originText.substring(pos, match.start));
         spans.add(span);
       }
 
@@ -156,6 +170,7 @@ class _MessageViewState extends State<MessageView> {
       String cqCode = match.group(1); // CQ码
       String params = match.group(2); // 参数字符串
       InlineSpan span;
+      bool insertFirst = false; // 一些图片是否插入到前面
 
       // 判断CQ码
       Match mat;
@@ -165,7 +180,8 @@ class _MessageViewState extends State<MessageView> {
         if ((mat = re.firstMatch(params)) != null) {
           String id = mat[1];
           span = new WidgetSpan(
-              child: Image.asset("assets/qq_face/$id.gif", scale: 2));
+              child:
+                  Image.asset("assets/qq_face/$id.gif", scale: 2, height: 28));
         }
       } else if (cqCode == 'image') {
         // 替换成图片
@@ -180,7 +196,8 @@ class _MessageViewState extends State<MessageView> {
             recognizer: TapGestureRecognizer()
               ..onTap = () {
                 print('TODO: 回复');
-              });
+              },
+            style: TextStyle(fontSize: G.st.msgFontSize));
         replyEndPos = match.end; // 用来取消后面的at
       } else if (cqCode == 'bag') {
         span = new WidgetSpan(child: Image.asset("assets/icons/redbag.png"));
@@ -195,7 +212,8 @@ class _MessageViewState extends State<MessageView> {
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
                     print('TODO: @全体成员');
-                  });
+                  },
+                style: TextStyle(fontSize: G.st.msgFontSize));
           } else if (match.start != replyEndPos) {
             // @qq，已经判断了不是reply自带的at
             String username =
@@ -211,16 +229,17 @@ class _MessageViewState extends State<MessageView> {
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
                     print('TODO: @$username');
-                  });
+                  },
+                style: TextStyle(fontSize: G.st.msgFontSize));
           }
         }
       } else if (cqCode == 'json') {
         // JSON卡片
         params = params
-            .replaceAll("&#44", ",")
+            .replaceAll("&#44;", ",")
             .replaceAll("&amp;", ";")
-            .replaceAll("&#91", "[")
-            .replaceAll("&#93", "]");
+            .replaceAll("&#91;", "[")
+            .replaceAll("&#93;", "]");
 
         // 获取简介
         String prompt = "";
@@ -232,8 +251,9 @@ class _MessageViewState extends State<MessageView> {
         // 获取网址参数
         String jumpUrl = "";
         String preview = "";
-        re = RegExp(r'"(jumpUrl|qqdocurl|preview)":\s*"([\w:/&;#=_]+)"$');
-        Iterable<RegExpMatch> mates = re.allMatches(originText);
+        re = RegExp(r'"(jumpUrl|qqdocurl|preview)":\s*"(.+?)"');
+        Iterable<RegExpMatch> mates = re.allMatches(params);
+        print(mates);
         for (int j = 0; j < mates.length; j++) {
           RegExpMatch match = mates.elementAt(j);
           String key = match.group(1);
@@ -252,46 +272,70 @@ class _MessageViewState extends State<MessageView> {
             }
           }
         }
+        jumpUrl = jumpUrl.replaceAll("\\", "");
+        preview = preview.replaceAll("\\", "");
 
-        print('-------json: $prompt: $jumpUrl ------- $preview');
+        TapGestureRecognizer tap;
+        if (jumpUrl.isNotEmpty) {
+          tap = TapGestureRecognizer()
+            ..onTap = () {
+              print('launch url: $jumpUrl');
+              launch(jumpUrl);
+            };
+        }
 
-        span = new TextSpan(
-            text: "[$cqCode]",
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                print('TODO: json.jumpUrl');
-              });
+        if (preview.isNotEmpty) {
+          span = new WidgetSpan(
+              child: _buildImageWidget(preview, onTap: () {
+            print('launch url: $jumpUrl');
+            launch(jumpUrl);
+          }));
+          insertFirst = true;
+        } else {
+          span = new TextSpan(
+              text: "[$cqCode]",
+              recognizer: tap,
+              style: TextStyle(
+                  fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+        }
       } else {
         // 未处理的格式
-        span = new TextSpan(text: "[$cqCode]");
+        span = new TextSpan(
+            text: "[$cqCode]", style: TextStyle(fontSize: G.st.msgFontSize));
       }
 
       if (span != null) {
-        spans.add(span);
+        if (insertFirst) {
+          spans.insert(0, span);
+        } else {
+          spans.add(span);
+        }
       }
       pos = match.end;
     }
 
     // 剩下的普通文本
     if (pos < originText.length) {
-      var span =
-          new TextSpan(text: originText.substring(pos, originText.length));
+      var span = new TextSpan(
+          text: originText.substring(pos, originText.length),
+          style: TextStyle(fontSize: G.st.msgFontSize));
       spans.add(span);
     }
 
-    return Text.rich(TextSpan(children: spans));
+    return Text.rich(TextSpan(children: spans),
+        style: TextStyle(fontSize: G.st.msgFontSize));
   }
 
   /// 构建一个最简单的纯文本消息框
   Widget _buildSimpleTextWidget(MsgBean msg) {
     return new Text(
       G.cs.getMessageDisplay(msg),
-      style: TextStyle(color: Colors.black, fontSize: 16),
+      style: TextStyle(color: Colors.black, fontSize: G.st.msgFontSize),
     );
   }
 
   /// 构建一个纯图片消息框
-  Widget _buildImageWidget(String url) {
+  Widget _buildImageWidget(String url, {var onTap}) {
     return GestureDetector(
       child: Hero(
           tag: url,
@@ -380,24 +424,26 @@ class _MessageViewState extends State<MessageView> {
                         )
                       ],
                     ),
-                    onTap: () {
-                      state.reLoadImage();
-                    },
+                    onTap: onTap ??
+                        () {
+                          state.reLoadImage();
+                        },
                   );
                   break;
               }
               return null;
             },
           )),
-      onTap: () {
-        // 查看图片
-        /* Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+      onTap: onTap ??
+          () {
+            // 查看图片
+            /* Navigator.of(context).push(MaterialPageRoute(builder: (context) {
               return new SlidePage(url: url);
             })); */
-        Navigator.of(context).push(PageRouteBuilder(
-            opaque: false,
-            pageBuilder: (_, __, ___) => new SlidePage(url: url)));
-      },
+            Navigator.of(context).push(PageRouteBuilder(
+                opaque: false,
+                pageBuilder: (_, __, ___) => new SlidePage(url: url)));
+          },
     );
   }
 
