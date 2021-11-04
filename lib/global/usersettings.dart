@@ -26,15 +26,16 @@ class UserSettings extends MySettings {
   bool enableHeader = true; // 显示头像（稍微增加性能）
   int keepMsgHistoryCount = 100; // 保留多少消息记录
   int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
+  bool showRecursionReply = true; // 回复中允许再显示回复
 
-  // 界面选项
+  // 界面显示
   double msgBubbleRadius = 5; // 气泡圆角
   double msgFontSize = 16; // 聊天界面字体大小
   Color msgLinkColor = Colors.blue; // 链接的颜色
   double replyFontSize = 14; // 回复字体的大小
   Color msgBubbleColor = Color(0xFFEEEEEE); // 消息气泡颜色
   Color replyBubbleColor = Color(0xFFDDDDDD); // 回复气泡颜色
-  Color replyFontColor = Color(0xFF444444); // 回复消息颜色
+  Color replyFontColor = Color(0x10000000); // 回复消息颜色
 
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
     // readFromFile(); // super会调用，原来这是虚继承

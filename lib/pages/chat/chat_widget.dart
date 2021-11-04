@@ -381,6 +381,7 @@ class _ChatWidgetState extends State<ChatWidget>
       while (endIndex-- > 0 && list[endIndex].messageId != messageId) {}
       if (endIndex <= 0) {
         print('没有历史消息');
+        _blankHistory = true;
         return;
       }
     } else {

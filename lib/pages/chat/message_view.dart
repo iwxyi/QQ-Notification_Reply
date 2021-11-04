@@ -136,8 +136,8 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建富文本消息框的入口
-  Widget _buildRichContentWidget(MsgBean msg) {
-    String message = msg.message;
+  Widget _buildRichContentWidget(MsgBean msg, {String useMessage}) {
+    String message = useMessage ?? msg.message;
 
     // 是回复的消息，要单独提取
     Widget replyWidget;
@@ -425,8 +425,16 @@ class _MessageViewState extends State<MessageView> {
         MsgBean replyMsg = G.ac.allMessages[msg.keyId()].elementAt(index);
         String username =
             G.ac.getGroupMemberName(replyMsg.senderId, replyMsg.groupId);
-        return _buildRichTextSpans(
-            replyMsg, username + ': ' + replyMsg.message);
+        if (G.st.showRecursionReply) {
+          // 显示递归回复，即回复里面可以再显示回复的内容
+          // 回复越深，颜色越深
+          return _buildRichContentWidget(replyMsg,
+              useMessage: username + ': ' + replyMsg.message);
+        } else {
+          // 只显示最近的回复，回复中的回复将以“[回复]@user”的形式显示
+          return _buildRichTextSpans(
+              replyMsg, username + ': ' + replyMsg.message);
+        }
       }
     }
     return new Text('[回复]');
