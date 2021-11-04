@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
@@ -46,7 +46,7 @@ enum AppBarMenuItems { AllReaded, Contacts, Settings, Search }
 
 class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   int _selectedIndex = 0; // 导航栏当前项
-  AppLifecycleState _notification;
+  AppLifecycleState _notification; // 前后台判断
 
   List<CardSection> allPages = <CardSection>[
     CardSection(
@@ -75,15 +75,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         contentWidget: new NotificationWidget()),
   ];
 
-  var eventBusFn;
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  var eventBusFn; // 通知
 
+  /// 判断前后台的状态
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     setState(() {
       _notification = state;
-      print(_notification.index);
-      if (_notification.index == 1) {
+      print('应用状态：' + _notification.index.toString());
+      if (_notification.index == 1 || _notification.index == 0) {
         G.rt.runOnForeground = true;
       } else if (_notification.index == 2) {
         G.rt.runOnForeground = false;
@@ -109,40 +109,16 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       }
     });
 
-    // 判断是否需要通知
-    // Windows不支持通知
-    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
-      // 获取通知权限
-      requireNotificationPermission();
-
-      // 初始化通知
-      flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-      const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings("@mipmap/appicon");
-      final IOSInitializationSettings initializationSettingsIOS =
-          IOSInitializationSettings(
-              onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-      final MacOSInitializationSettings initializationSettingsMacOS =
-          MacOSInitializationSettings();
-      final InitializationSettings initializationSettings =
-          InitializationSettings(
-              android: initializationSettingsAndroid,
-              iOS: initializationSettingsIOS,
-              macOS: initializationSettingsMacOS);
-      flutterLocalNotificationsPlugin.initialize(initializationSettings,
-          onSelectNotification: onSelectNotification);
-      UserAccount.flutterLocalNotificationsPlugin =
-          flutterLocalNotificationsPlugin;
-    }
+    // 初始化通知
+    _initNotifications();
 
     // 任意位置打开聊天页面
     G.rt.mainContext = context;
     G.rt.showChatPage = (MsgBean msg) {
       // 清除通知
-      if (flutterLocalNotificationsPlugin != null) {
+      if (G.rt.enableNotification) {
         if (UserAccount.notificationIdMap.containsKey(msg.keyId())) {
-          flutterLocalNotificationsPlugin
-              .cancel(UserAccount.notificationIdMap[msg.keyId()]);
+          _cancelNotification(UserAccount.notificationIdMap[msg.keyId()]);
         }
       }
 
@@ -250,14 +226,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           case AppBarMenuItems.Contacts:
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) {
-                return createScafoldPage(context, new ContactsPage(), '联系人');
+                return createScaffoldPage(context, new ContactsPage(), '联系人');
               },
             ));
             break;
           case AppBarMenuItems.Settings:
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) {
-                return createScafoldPage(context, new AccountWidget(), '设置');
+                return createScaffoldPage(context, new AccountWidget(), '设置');
               },
             ));
             break;
@@ -502,11 +478,46 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     _showNotification(msg);
   }
 
+  /// 初始化通知
+  void _initNotifications() {
+    // 判断是否需要通知（Windows不支持通知）
+    G.rt.enableNotification =
+        (Platform.isAndroid || Platform.isIOS || Platform.isMacOS);
+    if (!G.rt.enableNotification) {
+      return;
+    }
+    // 获取通知权限
+    requireNotificationPermission();
+
+    // 监听tap
+    AwesomeNotifications().actionStream.listen((receivedNotification) {
+      int keyId = int.parse(receivedNotification.payload['id']);
+      print(
+          'notification chatId: $keyId, keyButton: ${receivedNotification.buttonKeyPressed}, keyInput:${receivedNotification.buttonKeyInput}');
+      if (receivedNotification.buttonKeyInput.isNotEmpty) {
+        // 输入
+        onNotificationReply(keyId, receivedNotification.buttonKeyInput);
+      } else if (receivedNotification.buttonKeyPressed.isNotEmpty) {
+        // 点击动作按钮（输入也会触发）
+      } else {
+        // 点击通知
+        print('点击通知');
+        onSelectNotification(keyId);
+      }
+    });
+  }
+
+  /// 取消通知
+  /// @param id 通知的ID，不是聊天ID或者消息ID
+  void _cancelNotification(int id) {
+    AwesomeNotifications().cancel(id);
+  }
+
   /// 显示通知栏通知
   /// 仅支持 Android、IOS、MacOS
   void _showNotification(MsgBean msg) async {
     // 当前平台不支持该通知
-    if (flutterLocalNotificationsPlugin == null) {
+    if (!G.rt.enableNotification) {
       return;
     }
 
@@ -517,91 +528,52 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (msg.senderId == G.ac.qqId) {
       // 自己发的，一定不需要再通知了
       // 还需要消除掉该聊天对象的通知
-      flutterLocalNotificationsPlugin.cancel(id);
+      _cancelNotification(id);
       return;
     }
 
     // 前台不显示通知
-    if (G.rt.runOnForeground) {
+    /*if (G.rt.runOnForeground) {
       return;
-    }
+    }*/
 
     // 显示通知
-    String personUri =
-        'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
-    String displayMessage = G.cs.getMessageDisplay(msg);
-    Person person = new Person(
-        bot: false, important: true, name: msg.username(), uri: personUri);
-    Message message = new Message(displayMessage, DateTime.now(), person);
-    AndroidNotificationDetails androidPlatformChannelSpecifics;
-
-    if (!G.ac.unreadMessages.containsKey(msg.keyId())) {
-      G.ac.unreadMessages[msg.keyId()] = [];
-    }
-    G.ac.unreadMessages[msg.keyId()].add(message);
+    String channelKey = 'notice';
     if (msg.isPrivate()) {
-      // 私聊消息
-      /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/
-
-      MessagingStyleInformation messagingStyleInformation =
-          new MessagingStyleInformation(person,
-              conversationTitle: msg.username(),
-              messages: G.ac.unreadMessages[msg.keyId()]);
-
-      androidPlatformChannelSpecifics = AndroidNotificationDetails(
-          'private_message', '私聊消息', 'QQ好友消息/临时会话',
-          styleInformation: messagingStyleInformation,
-          groupKey: 'chat',
-          priority: Priority.high,
-          importance: Importance.high);
+      channelKey = 'private_chats';
     } else if (msg.isGroup()) {
-      // 群聊消息
-      Person group = new Person(
-          bot: false, important: true, name: msg.groupName, uri: personUri);
-
-      MessagingStyleInformation messagingStyleInformation =
-          new MessagingStyleInformation(group,
-              conversationTitle: msg.groupName,
-              messages: G.ac.unreadMessages[msg.keyId()]);
-
-      String channelId, channelName;
-      Priority priority;
-      Importance importance;
       if (G.st.importantGroups.contains(msg.groupId)) {
-        channelId = "important_group_message";
-        channelName = "重要群组消息";
-        priority = Priority.high;
-        importance = Importance.high;
+        channelKey = 'important_group_chats';
       } else {
-        channelId = "group_message";
-        channelName = "普通群组消息";
-        priority = Priority.defaultPriority;
-        importance = Importance.defaultImportance;
+        channelKey = 'normal_group_chats';
       }
-
-      androidPlatformChannelSpecifics = AndroidNotificationDetails(
-          channelId, channelName, 'QQ群组消息',
-          styleInformation: messagingStyleInformation,
-          groupKey: 'chat',
-          priority: priority,
-          importance: importance);
-    }
-    if (androidPlatformChannelSpecifics == null) {
-      return;
     }
 
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
-        id, msg.username(), displayMessage, platformChannelSpecifics,
-        payload: msg.keyId().toString());
+    AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: id,
+        channelKey: channelKey,
+        groupKey: msg.keyId().toString(),
+        summary: msg.title(),
+        title: msg.username(),
+        body: G.cs.getMessageDisplay(msg),
+        notificationLayout: NotificationLayout.Messaging,
+        displayOnForeground: false,
+        payload: {'id': msg.keyId().toString()},
+      ),
+      actionButtons: [
+        NotificationActionButton(
+          key: 'reply',
+          label: '回复',
+          buttonType: ActionButtonType.InputField,
+        )
+      ],
+    );
   }
 
   /// 通知点击回调
-  Future<dynamic> onSelectNotification(String payload) async {
-    print('通知.payload: $payload');
-    int keyId = int.parse(payload);
+  Future<dynamic> onSelectNotification(int notificationId) async {
+    int keyId = notificationId;
     MsgBean msg;
     if (G.ac.allMessages.containsKey(keyId))
       msg = G.ac.allMessages[keyId].last ?? null;
@@ -628,7 +600,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             msg.groupId.toString() +
             '&version=1&src_type=web';
       }
-      G.ac.unreadMessages[msg.keyId()].clear();
+      //      G.ac.unreadMessages[msg.keyId()].clear();
 
       // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
       // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
@@ -666,6 +638,22 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
   }
 
+  void onNotificationReply(int keyId, String text) {
+    MsgBean msg;
+    if (G.ac.allMessages.containsKey(keyId))
+      msg = G.ac.allMessages[keyId].last ?? null;
+    if (msg == null) {
+      print('未找到payload:$keyId');
+      return;
+    }
+
+    if (msg.isPrivate()) {
+      G.cs.sendPrivateMessage(msg.friendId, text);
+    } else if (msg.isGroup()) {
+      G.cs.sendGroupMessage(msg.groupId, text);
+    }
+  }
+
   /// 这个是 iOS 的通知回调
   // ignore: missing_return
   Future onDidReceiveLocalNotification(
@@ -673,38 +661,28 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
   /// 对于 iOS 和 MacOS，需要获取通知权限
   void requireNotificationPermission() async {
-    bool result = true;
-    if (Platform.isIOS) {
-      result = await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-    } else if (Platform.isMacOS) {
-      result = await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              MacOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-    }
-    if (!result) {
-      Fluttertoast.showToast(
-        msg: "请授权通知权限，否则本程序无法正常使用",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-      );
-    }
+    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+      if (!isAllowed) {
+        // Insert here your friendly dialog box before call the request method
+        // This is very important to not harm the user experience
+        AwesomeNotifications()
+            .requestPermissionToSendNotifications()
+            .then((result) {
+          if (!result) {
+            Fluttertoast.showToast(
+              msg: "请授权通知权限，否则本程序无法正常使用",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+            );
+          }
+        });
+      }
+    });
   }
 
   void _markAllReaded() {
-    G.ac.unreadMessages.clear();
+    //    G.ac.unreadMessages.clear();
     G.ac.unreadMessageCount.clear();
   }
 
@@ -718,7 +696,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  Widget createScafoldPage(BuildContext context, Widget widget, String title) {
+  Widget createScaffoldPage(BuildContext context, Widget widget, String title) {
     return Scaffold(
       appBar: AppBar(
         title: new Text(title),

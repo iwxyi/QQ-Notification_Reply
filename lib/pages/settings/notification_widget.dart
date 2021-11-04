@@ -1,6 +1,8 @@
+import 'dart:math';
+
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/settings/group_select_widget.dart';
@@ -153,63 +155,67 @@ class _NotificationWidgetState extends State<NotificationWidget> {
   }
 
   void testOperator() async {
-    List<String> lines = <String>[
-      'Alex Faarborg  Check this out',
-      'Jeff Chang    Launch Party'
-    ];
-
-    InboxStyleInformation inboxStyleInformation = InboxStyleInformation(lines,
-        contentTitle: '2 messages', summaryText: 'janedoe@example.com');
-
-    // ignore: unused_local_variable
-    AndroidNotificationDetails androidPlatformChannelSpecifics0 =
-        AndroidNotificationDetails(
-            'channelId', 'channelName', 'channelDescription',
-            importance: Importance.max,
-            priority: Priority.high,
-            showWhen: false);
-
-    AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-            'groupChannelId', 'groupChannelName', 'groupChannelDescription',
-            styleInformation: inboxStyleInformation,
-            groupKey: 'groupKey',
-            priority: Priority.high,
-            setAsGroupSummary: true,
-            importance: Importance.max);
-
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await UserAccount.flutterLocalNotificationsPlugin
-        .show(0, 'Attention', 'Two messages', platformChannelSpecifics);
+    simulateChatConversation(groupKey: 'jhonny_group');
   }
 
-  /// 显示通知根方法
-  /// @param channelId: 是通知分类ID，相同ID会导致覆盖
-  /// @param channelName: 是分类名字
-  /// @param channelDescription: 是分类点进设置后的底部说明
-  /// @param title: 通知标题
-  /// @param content: 通知内容
-  /// @param payload: 回调的字符串
-  void showPlatNotification(
-      int notificationId,
-      String channelId,
-      String channelName,
-      String channelDescription,
-      String title,
-      String body,
-      String payload) async {
-    // 添加新的通知
-    AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(channelId, channelName, channelDescription,
-            importance: Importance.max,
-            priority: Priority.high,
-            showWhen: false);
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-    await UserAccount.flutterLocalNotificationsPlugin.show(
-        notificationId, title, body, platformChannelSpecifics,
-        payload: payload);
+  int createUniqueID(int maxValue) {
+    Random random = new Random();
+    return random.nextInt(maxValue);
+  }
+
+  Future<void> createMessagingNotification(
+      {@required String channelKey,
+      @required String groupKey,
+      @required String chatName,
+      @required String username,
+      @required String message,
+      String largeIcon,
+      bool checkPermission = true}) async {
+    await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+            id: createUniqueID(AwesomeNotifications.maxID),
+            groupKey: groupKey,
+            channelKey: channelKey,
+            summary: chatName,
+            title: username,
+            body: message,
+            largeIcon: largeIcon,
+            notificationLayout: NotificationLayout.Messaging),
+        actionButtons: [
+          NotificationActionButton(
+            key: 'REPLY',
+            label: 'Reply',
+            buttonType: ActionButtonType.InputField,
+            autoDismissable: false,
+          ),
+          NotificationActionButton(
+            key: 'READ',
+            label: 'Mark as Read',
+            autoDismissable: true,
+            buttonType: ActionButtonType.InputField,
+          )
+        ]);
+  }
+
+  int _messageIncrement = 0;
+
+  Future<void> simulateChatConversation({@required String groupKey}) async {
+    _messageIncrement++ % 4 < 2
+        ? createMessagingNotification(
+            channelKey: 'important_group_chats',
+            groupKey: groupKey,
+            chatName: 'Jhonny\'s Group',
+            username: 'Jhonny',
+            largeIcon: 'asset://assets/images/80s-disc.jpg',
+            message: 'Jhonny\'s message $_messageIncrement',
+          )
+        : createMessagingNotification(
+            channelKey: 'important_group_chats',
+            groupKey: 'jhonny_group',
+            chatName: 'Michael\'s Group',
+            username: 'Michael',
+            largeIcon: 'asset://assets/images/dj-disc.jpg',
+            message: 'Michael\'s message $_messageIncrement',
+          );
   }
 }
