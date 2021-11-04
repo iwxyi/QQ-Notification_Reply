@@ -14,9 +14,17 @@ import '../../widgets/slide_images_page.dart';
 class MessageView extends StatefulWidget {
   final MsgBean msg;
   final bool isNext;
-  final loadFinishedCallback;
 
-  MessageView(this.msg, this.isNext, this.loadFinishedCallback, Key key)
+  final loadFinishedCallback;
+  final jumpMessageCallback;
+  final addMessageCallback;
+  final sendMessageCallback;
+
+  MessageView(this.msg, this.isNext, Key key,
+      {this.loadFinishedCallback,
+      this.jumpMessageCallback,
+      this.addMessageCallback,
+      this.sendMessageCallback})
       : super(key: key);
 
   @override
@@ -123,7 +131,7 @@ class _MessageViewState extends State<MessageView> {
       margin: bubbleMargin, // 上限间距
       decoration: new BoxDecoration(
         color: bubbleColor,
-        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+        borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
       ),
     );
   }
@@ -160,6 +168,7 @@ class _MessageViewState extends State<MessageView> {
 
       if (match.group(0).startsWith("[CQ:")) {
         // 是CQ码，挨个判断匹配到的内容
+        String mAll = match.group(0);
         String cqCode = match.group(1); // CQ码
         String params = match.group(2); // 参数字符串
 
@@ -182,14 +191,61 @@ class _MessageViewState extends State<MessageView> {
             span = new WidgetSpan(child: _buildImageWidget(url));
           }
         } else if (cqCode == 'reply') {
-          span = new TextSpan(
-              text: "[回复]",
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  print('TODO: 回复');
-                },
-              style: TextStyle(fontSize: G.st.msgFontSize));
+          // 回复
           replyEndPos = match.end; // 用来取消后面的at
+          String reply = '[回复]'; // 没找到的默认文字
+          int replyMessageId = 0;
+          RegExp re = RegExp(r'id=(-?\w+)$');
+          Widget replyContentWidget = null;
+          if ((mat = re.firstMatch(params)) != null) {
+            replyMessageId = int.parse(mat.group(1));
+            if (G.ac.allMessages.containsKey(msg.keyId())) {
+              int index =
+                  G.ac.allMessages[msg.keyId()].lastIndexWhere((element) {
+                return element.messageId == replyMessageId;
+              });
+              if (index > -1) {
+                // 找到对应的回复对象
+                MsgBean replyMsg =
+                    G.ac.allMessages[msg.keyId()].elementAt(index);
+                String text = G.cs.getMessageDisplay(replyMsg);
+                String username = G.ac
+                    .getGroupMemberName(replyMsg.senderId, replyMsg.groupId);
+                reply = username + ": " + text;
+
+                // 判断是不是图片，如果是图片，则直接显示图片
+              }
+            }
+          }
+
+          if (replyContentWidget == null) {
+            replyContentWidget = Text(
+              reply,
+              style: TextStyle(
+                  color: G.st.replyFontColor, fontSize: G.st.replyFontSize),
+              maxLines: 3,
+            );
+          }
+
+          span = new WidgetSpan(
+              child: Container(
+            child: InkWell(
+                child: Row(children: [
+                  // Row是为了将区域铺平
+                  replyContentWidget
+                ]),
+                onTap: () {
+                  print('回复跳转：$replyMessageId');
+                  if (widget.jumpMessageCallback != null) {
+                    widget.jumpMessageCallback(replyMessageId);
+                  }
+                }),
+            decoration: new BoxDecoration(
+              color: G.st.replyBubbleColor,
+              borderRadius: BorderRadius.circular(G.st.msgBubbleRadius),
+            ),
+            padding: EdgeInsets.all(5),
+          ));
         } else if (cqCode == 'bag') {
           span = new WidgetSpan(child: Image.asset("assets/icons/redbag.png"));
         } else if (cqCode == 'at') {
@@ -202,9 +258,13 @@ class _MessageViewState extends State<MessageView> {
                   text: "@全体成员",
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      print('TODO: @全体成员');
+                      print('@全体成员');
+                      if (widget.addMessageCallback) {
+                        widget.addMessageCallback(mAll);
+                      }
                     },
-                  style: TextStyle(fontSize: G.st.msgFontSize));
+                  style: TextStyle(
+                      fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
             } else if (match.start != replyEndPos) {
               // @qq，已经判断了不是reply自带的at
               String username =
@@ -219,9 +279,13 @@ class _MessageViewState extends State<MessageView> {
                   text: "@$username",
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      print('TODO: @$username');
+                      print('@$username');
+                      if (widget.addMessageCallback) {
+                        widget.addMessageCallback(mAll);
+                      }
                     },
-                  style: TextStyle(fontSize: G.st.msgFontSize));
+                  style: TextStyle(
+                      fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
             }
           }
         } else if (cqCode == 'json') {
@@ -244,7 +308,6 @@ class _MessageViewState extends State<MessageView> {
           String preview = "";
           re = RegExp(r'"(jumpUrl|qqdocurl|preview)":\s*"(.+?)"');
           Iterable<RegExpMatch> mates = re.allMatches(params);
-          print(mates);
           for (int j = 0; j < mates.length; j++) {
             RegExpMatch match = mates.elementAt(j);
             String key = match.group(1);
@@ -313,8 +376,8 @@ class _MessageViewState extends State<MessageView> {
             text: matchedText,
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                print('launch url: $matchedText');
-                // TODO
+                print('launch number: $matchedText');
+                // TODO: 号码选项
               },
             style: TextStyle(
                 fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
@@ -325,7 +388,8 @@ class _MessageViewState extends State<MessageView> {
             text: matchedText,
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                // TODO
+                print('launch email: $matchedText');
+                // TODO: 邮箱选项
               },
             style: TextStyle(
                 fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));

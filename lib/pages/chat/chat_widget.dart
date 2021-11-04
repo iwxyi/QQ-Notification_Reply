@@ -140,18 +140,31 @@ class _ChatWidgetState extends State<ChatWidget>
             },
             // padding: new EdgeInsets.all(8.0),
             itemBuilder: (context, int index) => MessageView(
-                _messages[index],
-                index <= 0
-                    ? false
-                    : _messages[index - 1].senderId ==
-                        _messages[index].senderId, () {
-              if (_keepScrollBottom) {
-                if (!hasToBottom.containsKey(_messages[index].messageId)) {
-                  hasToBottom[_messages[index].messageId] = true;
-                  _scrollToBottom(true);
+              _messages[index],
+              index <= 0
+                  ? false
+                  : _messages[index - 1].senderId == _messages[index].senderId,
+              ValueKey(_messages[index].messageId),
+              loadFinishedCallback: () {
+                // 图片加载完毕，会影响大小
+                if (_keepScrollBottom) {
+                  if (!hasToBottom.containsKey(_messages[index].messageId)) {
+                    // 重复判断，避免不知道哪来的多次complete
+                    hasToBottom[_messages[index].messageId] = true;
+                    _scrollToBottom(true);
+                  }
                 }
-              }
-            }, ValueKey(_messages[index].messageId)),
+              },
+              jumpMessageCallback: (int messageId) {
+                // 跳转到指定消息（如果有）
+              },
+              addMessageCallback: (String text) {
+                // 添加消息到发送框
+              },
+              sendMessageCallback: (String text) {
+                // 直接发送消息
+              },
+            ),
             itemCount: _messages.length,
             controller: _scrollController,
           ),
