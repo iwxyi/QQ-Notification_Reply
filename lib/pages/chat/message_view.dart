@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -112,7 +113,7 @@ class _MessageViewState extends State<MessageView> {
       bubblePadding = EdgeInsets.only();
     } else {
       // 未知，当做纯文本了
-      bubbleContent = _buildTextWidget(msg);
+      bubbleContent = _buildRichWidget(msg);
     }
 
     return new Container(
@@ -127,7 +128,7 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建富文本消息框
-  Widget _buildTextWidget(MsgBean msg) {
+  Widget _buildRichWidget(MsgBean msg) {
     List<InlineSpan> spans = [];
     RegExp re = new RegExp(r"\[CQ:(\w+),?([^\]]*)\]");
     var originText = msg.message;
@@ -139,6 +140,9 @@ class _MessageViewState extends State<MessageView> {
 
     // 是富文本了
     int pos = 0;
+    int replyEndPos = -2; // reply结束的时候，用来取消后面的艾特
+
+    // 遍历每一个CQ
     for (int i = 0; i < matches.length; i++) {
       RegExpMatch match = matches.elementAt(i);
 
@@ -171,27 +175,94 @@ class _MessageViewState extends State<MessageView> {
           span = new WidgetSpan(child: _buildImageWidget(url));
         }
       } else if (cqCode == 'reply') {
-        // 判断下一个at
-        span = new TextSpan(text: "[回复]");
+        span = new TextSpan(
+            text: "[回复]",
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                print('TODO: 回复');
+              });
+        replyEndPos = match.end; // 用来取消后面的at
       } else if (cqCode == 'bag') {
-        span = new TextSpan(text: "[红包]");
+        span = new WidgetSpan(child: Image.asset("assets/icons/redbag.png"));
       } else if (cqCode == 'at') {
         RegExp re = RegExp(r'^qq=(\w+)$');
         if ((mat = re.firstMatch(params)) != null) {
           String id = mat[1];
           if (id == 'all') {
             // @全体成员
-            span = new TextSpan(text: "@全体成员");
-          } else {
-            // @qq
-            String username = G.ac.getGroupMemberName(int.parse(id), msg.groupId);
+            span = new TextSpan(
+                text: "@全体成员",
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    print('TODO: @全体成员');
+                  });
+          } else if (match.start != replyEndPos) {
+            // @qq，已经判断了不是reply自带的at
+            String username =
+                G.ac.getGroupMemberName(int.parse(id), msg.groupId);
             if (username == null) {
               username = id;
+              if (msg.isGroup()) {
+                G.cs.refreshGroupMembers(msg.groupId);
+              }
             }
-            span = new TextSpan(text: "@$username");
+            span = new TextSpan(
+                text: "@$username",
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    print('TODO: @$username');
+                  });
           }
         }
+      } else if (cqCode == 'json') {
+        // JSON卡片
+        params = params
+            .replaceAll("&#44", ",")
+            .replaceAll("&amp;", ";")
+            .replaceAll("&#91", "[")
+            .replaceAll("&#93", "]");
+
+        // 获取简介
+        String prompt = "";
+        RegExp r = new RegExp(r'"prompt":\s*"(.+?)"');
+        if ((mat = r.firstMatch(params)) != null) {
+          prompt = mat[1];
+        }
+
+        // 获取网址参数
+        String jumpUrl = "";
+        String preview = "";
+        re = RegExp(r'"(jumpUrl|qqdocurl|preview)":\s*"([\w:/&;#=_]+)"$');
+        Iterable<RegExpMatch> mates = re.allMatches(originText);
+        for (int j = 0; j < mates.length; j++) {
+          RegExpMatch match = mates.elementAt(j);
+          String key = match.group(1);
+          String val = match.group(2);
+          if (key == 'jumpUrl') {
+            jumpUrl = val;
+          } else if (key == 'qqdocurl') {
+            if (jumpUrl.isEmpty) {
+              jumpUrl = val;
+            }
+          } else if (key == 'preview') {
+            preview = val;
+          } else if (key == "icon") {
+            if (preview.isEmpty) {
+              preview = val;
+            }
+          }
+        }
+
+        print('-------json: $prompt: $jumpUrl ------- $preview');
+
+        span = new TextSpan(
+            text: "[$cqCode]",
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                print('TODO: json.jumpUrl');
+              });
       } else {
+        // 未处理的格式
         span = new TextSpan(text: "[$cqCode]");
       }
 
