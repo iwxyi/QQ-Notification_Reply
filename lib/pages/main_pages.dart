@@ -518,10 +518,21 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     // 显示通知
+    String channelKey = 'notice';
+    if (msg.isPrivate()) {
+      channelKey = 'private_chats';
+    } else if (msg.isGroup()) {
+      if (G.st.importantGroups.contains(msg.groupId)) {
+        channelKey = 'important_group_chats';
+      } else {
+        channelKey = 'normal_group_chats';
+      }
+    }
+
     AwesomeNotifications().createNotification(
         content: NotificationContent(
             id: id,
-            channelKey: 'chats',
+            channelKey: channelKey,
             groupKey: msg.keyId().toString(),
             summary: msg.title(),
             title: msg.username(),
@@ -545,7 +556,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         keyId = key;
       }
     });
-    print('notification chat keyId: $keyId notification id: $notificationId');
+    print('notification chat keyId: $keyId, notification id: $notificationId');
     MsgBean msg;
     if (G.ac.allMessages.containsKey(keyId))
       msg = G.ac.allMessages[keyId].last ?? null;

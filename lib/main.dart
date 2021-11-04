@@ -24,21 +24,33 @@ void main() {
   G.init().then((e) {
     // 初始化通知
     AwesomeNotifications().initialize(
-      // set the icon to null if you want to use the default app icon
+        // set the icon to null if you want to use the default app icon
         'resource://drawable/notification_icon',
         [
           NotificationChannel(
-              channelKey: 'basic_channel',
-              channelName: 'Basic notifications',
-              channelDescription: 'Notification channel for basic tests',
+              channelKey: 'notices',
+              channelName: '通知',
+              channelDescription: '交互通知',
               defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white),
           NotificationChannel(
-              channelKey: 'chats',
-              channelName: 'Basic notifications',
-              channelDescription: 'Notification channel for basic tests',
+              channelKey: 'private_chats',
+              channelName: '私聊通知',
+              channelDescription: '好友私聊通知',
               defaultColor: Color(0xFF9D50DD),
-              ledColor: Colors.white)
+              ledColor: Colors.white),
+          NotificationChannel(
+              channelKey: 'normal_group_chats',
+              channelName: '普通群组通知',
+              channelDescription: '普通群组通知',
+              defaultColor: Color(0xFF9D50DD),
+              ledColor: Colors.white),
+          NotificationChannel(
+              channelKey: 'important_group_chats',
+              channelName: '重要群组通知',
+              channelDescription: '重要群组通知',
+              defaultColor: Color(0xFF9D50DD),
+              ledColor: Colors.white),
         ]);
 
     // 开始运行

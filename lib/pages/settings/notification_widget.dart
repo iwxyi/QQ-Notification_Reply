@@ -202,7 +202,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
   Future<void> simulateChatConversation({@required String groupKey}) async {
     _messageIncrement++ % 4 < 2
         ? createMessagingNotification(
-            channelKey: 'chats',
+            channelKey: 'important_group_chats',
             groupKey: groupKey,
             chatName: 'Jhonny\'s Group',
             username: 'Jhonny',
@@ -210,7 +210,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
             message: 'Jhonny\'s message $_messageIncrement',
           )
         : createMessagingNotification(
-            channelKey: 'chats',
+            channelKey: 'important_group_chats',
             groupKey: 'jhonny_group',
             chatName: 'Michael\'s Group',
             username: 'Michael',
