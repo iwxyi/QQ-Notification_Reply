@@ -25,6 +25,15 @@ class CqhttpService {
   num _reconnectCount = 0; // 重连次数，并且影响每次重连的时间间隔
   Timer _reconnectTimer;
 
+  Map<String, String> CQCodeMap = {
+    'face': '表情',
+    'image': '图片',
+    'video': '视频',
+    'reply': '回复',
+    'forward': '转发',
+    'redbag': '红包'
+  };
+
   CqhttpService({this.rt, this.st, this.ac});
 
   /// 连接Socket
@@ -445,7 +454,6 @@ class CqhttpService {
     text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
     text = text.replaceAll(
         RegExp(r"\[CQ:reply,.+?\](\[CQ:at,qq=\d+?\])?"), '[回复]');
-    text = text.replaceAll(RegExp(r"\[CQ:reply,.+?\]"), '[回复]');
     text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
     text = text.replaceAllMapped(RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) {
       var id = int.parse(match[1]);
@@ -459,10 +467,14 @@ class CqhttpService {
       return '@' + match[1];
     });
     text = text.replaceAllMapped(
-        RegExp(r'\[CQ:json,data=.+?"prompt":"(.+?)".*?\]'),
+        RegExp(r'^\[CQ:json,data=.+?"prompt":"(.+?)".*?\]'),
         (match) => '[${match[1]}]');
-    text = text.replaceAll(RegExp(r"\[CQ:json,.+?\]"), '[JSON]');
-    text = text.replaceAll(RegExp(r"\[CQ:video,.+?\]"), '[视频]');
+    text = text.replaceAllMapped(RegExp(r"\[CQ:([^,]+),.+?\]"), (match) {
+      if (CQCodeMap.containsKey(match[1])) {
+        return "[${CQCodeMap[match[1]]}]";
+      }
+      return match[1];
+    });
     text = text.replaceAllMapped(
         RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '[${match[1]}]');
     text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');

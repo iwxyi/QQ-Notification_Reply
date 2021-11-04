@@ -35,6 +35,8 @@ class _ChatWidgetState extends State<ChatWidget>
   TextEditingController _textController;
   FocusNode _editorFocus;
   ScrollController _scrollController;
+  final GlobalKey globalKey = GlobalKey();
+
   bool _keepScrollBottom = true; // 修改内容时是否滚动到末尾
   bool _blankHistory = false; // 是否已经将加载完历史记录
   bool _showGoToBottomButton = false; // 是否显示返回底部按钮
@@ -140,18 +142,38 @@ class _ChatWidgetState extends State<ChatWidget>
             },
             // padding: new EdgeInsets.all(8.0),
             itemBuilder: (context, int index) => MessageView(
-                _messages[index],
-                index <= 0
-                    ? false
-                    : _messages[index - 1].senderId ==
-                        _messages[index].senderId, () {
-              if (_keepScrollBottom) {
-                if (!hasToBottom.containsKey(_messages[index].messageId)) {
-                  hasToBottom[_messages[index].messageId] = true;
-                  _scrollToBottom(true);
+              _messages[index],
+              index <= 0
+                  ? false
+                  : _messages[index - 1].senderId == _messages[index].senderId,
+              ValueKey(_messages[index].messageId),
+              loadFinishedCallback: () {
+                // 图片加载完毕，会影响大小
+                if (_keepScrollBottom) {
+                  if (!hasToBottom.containsKey(_messages[index].messageId)) {
+                    // 重复判断，避免不知道哪来的多次complete
+                    hasToBottom[_messages[index].messageId] = true;
+                    _scrollToBottom(true);
+                  }
                 }
-              }
-            }, ValueKey(_messages[index].messageId)),
+              },
+              jumpMessageCallback: (int messageId) {
+                // 跳转到指定消息（如果有）
+                int index = _messages.lastIndexWhere((element) {
+                  return element.messageId == messageId;
+                });
+                if (index > -1) {
+                  // 滚动到index
+
+                }
+              },
+              addMessageCallback: (String text) {
+                // 添加消息到发送框
+              },
+              sendMessageCallback: (String text) {
+                // 直接发送消息
+              },
+            ),
             itemCount: _messages.length,
             controller: _scrollController,
           ),
@@ -359,6 +381,7 @@ class _ChatWidgetState extends State<ChatWidget>
       while (endIndex-- > 0 && list[endIndex].messageId != messageId) {}
       if (endIndex <= 0) {
         print('没有历史消息');
+        _blankHistory = true;
         return;
       }
     } else {
