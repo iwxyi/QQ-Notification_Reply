@@ -109,7 +109,6 @@ class _MessageViewState extends State<MessageView> {
   Widget _buildMessageBubble() {
     EdgeInsets bubblePadding = EdgeInsets.all(8.0); // 消息内部间距
     EdgeInsets bubbleMargin = EdgeInsets.only(top: 3.0, bottom: 3.0);
-    Color bubbleColor = Color(0xFFEEEEEE);
     Widget bubbleContent;
 
     String text = msg.message;
@@ -122,30 +121,72 @@ class _MessageViewState extends State<MessageView> {
       bubblePadding = EdgeInsets.only();
     } else {
       // 纯文本或者富文本
-      bubbleContent = _buildRichWidget(msg);
+      bubbleContent = _buildRichContentWidget(msg);
     }
 
-    return new Container(
+    return Container(
       child: bubbleContent,
       padding: bubblePadding,
       margin: bubbleMargin, // 上限间距
       decoration: new BoxDecoration(
-        color: bubbleColor,
+        color: G.st.msgBubbleColor,
         borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
       ),
     );
   }
 
-  /// 构建富文本消息框
-  Widget _buildRichWidget(MsgBean msg) {
+  /// 构建富文本消息框的入口
+  Widget _buildRichContentWidget(MsgBean msg) {
+    String message = msg.message;
+
+    // 是回复的消息，要单独提取
+    Widget replyWidget;
+    if (message.contains("[CQ:reply,")) {
+      RegExp re = new RegExp(r"\[CQ:reply,id=(-?\w+)\]\s*(\[CQ:at,qq=\d+\])?");
+      RegExpMatch match = re.firstMatch(message);
+      if (match != null) {
+        message = message.replaceAll(match.group(0), ""); // 去掉回复的代码
+        int messageId = int.parse(match.group(1)); // 回复ID
+        replyWidget = _buildReplyRichWidget(msg, messageId);
+      }
+    }
+
+    // 判断是卡片还是纯文本
+    if (message.contains("[CQ:json,")) {
+      return _buildJsonCardWidget(msg);
+    }
+
+    Widget contentWidget = _buildRichTextSpans(msg, message);
+    if (replyWidget != null) {
+      // 设置回复的颜色
+      replyWidget = Container(
+          child: replyWidget,
+          padding: EdgeInsets.all(5.0),
+          decoration: new BoxDecoration(
+            color: G.st.replyBubbleColor,
+            borderRadius:
+                BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
+          ));
+
+      // 回复-内容 进行col连接
+      contentWidget = Column(
+        children: [replyWidget, contentWidget],
+        crossAxisAlignment: CrossAxisAlignment.start,
+      );
+    }
+    return contentWidget;
+  }
+
+  /// 构建纯内容的span
+  /// 不包含回复、JSON等单独大格式
+  Widget _buildRichTextSpans(MsgBean msg, String originText) {
     List<InlineSpan> spans = [];
     RegExp re =
         new RegExp(r"\[CQ:(\w+),?([^\]]*)\]|https?://\S+|\d{5,}|\w+@[\w\.]+");
-    var originText = msg.message;
     Iterable<RegExpMatch> matches = re.allMatches(originText);
     if (matches.length == 0) {
       // 纯文本
-      return _buildSimpleTextWidget(msg);
+      return _buildSimpleTextWidget(msg, originText);
     }
 
     // 是富文本了
@@ -164,6 +205,7 @@ class _MessageViewState extends State<MessageView> {
       // 各类型判断
       String matchedText = match.group(0);
       InlineSpan span;
+      InlineSpan spanAfter;
       bool insertFirst = false; // 一些图片是否插入到前面
 
       if (match.group(0).startsWith("[CQ:")) {
@@ -190,62 +232,6 @@ class _MessageViewState extends State<MessageView> {
             String url = mat[1];
             span = new WidgetSpan(child: _buildImageWidget(url));
           }
-        } else if (cqCode == 'reply') {
-          // 回复
-          replyEndPos = match.end; // 用来取消后面的at
-          String reply = '[回复]'; // 没找到的默认文字
-          int replyMessageId = 0;
-          RegExp re = RegExp(r'id=(-?\w+)$');
-          Widget replyContentWidget = null;
-          if ((mat = re.firstMatch(params)) != null) {
-            replyMessageId = int.parse(mat.group(1));
-            if (G.ac.allMessages.containsKey(msg.keyId())) {
-              int index =
-                  G.ac.allMessages[msg.keyId()].lastIndexWhere((element) {
-                return element.messageId == replyMessageId;
-              });
-              if (index > -1) {
-                // 找到对应的回复对象
-                MsgBean replyMsg =
-                    G.ac.allMessages[msg.keyId()].elementAt(index);
-                String text = G.cs.getMessageDisplay(replyMsg);
-                String username = G.ac
-                    .getGroupMemberName(replyMsg.senderId, replyMsg.groupId);
-                reply = username + ": " + text;
-
-                // 判断是不是图片，如果是图片，则直接显示图片
-              }
-            }
-          }
-
-          if (replyContentWidget == null) {
-            replyContentWidget = Text(
-              reply,
-              style: TextStyle(
-                  color: G.st.replyFontColor, fontSize: G.st.replyFontSize),
-              maxLines: 3,
-            );
-          }
-
-          span = new WidgetSpan(
-              child: Container(
-            child: InkWell(
-                child: Row(children: [
-                  // Row是为了将区域铺平
-                  replyContentWidget
-                ]),
-                onTap: () {
-                  print('回复跳转：$replyMessageId');
-                  if (widget.jumpMessageCallback != null) {
-                    widget.jumpMessageCallback(replyMessageId);
-                  }
-                }),
-            decoration: new BoxDecoration(
-              color: G.st.replyBubbleColor,
-              borderRadius: BorderRadius.circular(G.st.msgBubbleRadius),
-            ),
-            padding: EdgeInsets.all(5),
-          ));
         } else if (cqCode == 'bag') {
           span = new WidgetSpan(child: Image.asset("assets/icons/redbag.png"));
         } else if (cqCode == 'at') {
@@ -259,7 +245,7 @@ class _MessageViewState extends State<MessageView> {
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       print('@全体成员');
-                      if (widget.addMessageCallback) {
+                      if (widget.addMessageCallback != null) {
                         widget.addMessageCallback(mAll);
                       }
                     },
@@ -280,7 +266,7 @@ class _MessageViewState extends State<MessageView> {
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       print('@$username');
-                      if (widget.addMessageCallback) {
+                      if (widget.addMessageCallback != null) {
                         widget.addMessageCallback(mAll);
                       }
                     },
@@ -354,7 +340,10 @@ class _MessageViewState extends State<MessageView> {
               style: TextStyle(
                   fontSize: G.st.msgFontSize, color: G.st.msgLinkColor)));
         } else {
-          // 未处理的格式
+          // 进行替换未处理的CQ码
+          if (G.cs.CQCodeMap.containsKey(cqCode)) {
+            cqCode = G.cs.CQCodeMap[cqCode];
+          }
           span = new TextSpan(
               text: "[$cqCode]", style: TextStyle(fontSize: G.st.msgFontSize));
         }
@@ -406,6 +395,9 @@ class _MessageViewState extends State<MessageView> {
           spans.add(span);
         }
       }
+      if (spanAfter != null) {
+        spans.add(spanAfter);
+      }
       pos = match.end;
     }
 
@@ -420,6 +412,36 @@ class _MessageViewState extends State<MessageView> {
         style: TextStyle(fontSize: G.st.msgFontSize));
   }
 
+  /// 构建回复框控件
+  /// 本质上还是调用富文本构建的方法
+  /// 在外面再设置底色用以区分
+  Widget _buildReplyRichWidget(MsgBean msg, int messageId) {
+    if (G.ac.allMessages.containsKey(msg.keyId())) {
+      int index = G.ac.allMessages[msg.keyId()].lastIndexWhere((element) {
+        return element.messageId == messageId;
+      });
+      if (index > -1) {
+        // 找到对应的回复对象
+        MsgBean replyMsg = G.ac.allMessages[msg.keyId()].elementAt(index);
+        String username =
+            G.ac.getGroupMemberName(replyMsg.senderId, replyMsg.groupId);
+        return _buildRichTextSpans(
+            replyMsg, username + ': ' + replyMsg.message);
+      }
+    }
+    return new Text('[回复]');
+  }
+
+  /// 单独构建一个JSON卡片控件
+  Widget _buildJsonCardWidget(MsgBean msg) {
+    return Container(
+      child: Text('TODO'),
+    );
+  }
+
+  /// 构建纯文本span
+  /// 替换一些因为CQ码导致的内容
+  /// 用来统一字体、颜色等
   InlineSpan _buildPureTextSpan(String text) {
     // 替换实体
     text = text
@@ -431,9 +453,9 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建一个最简单的纯文本消息框
-  Widget _buildSimpleTextWidget(MsgBean msg) {
+  Widget _buildSimpleTextWidget(MsgBean msg, String text) {
     return new Text(
-      G.cs.getMessageDisplay(msg),
+      text,
       style: TextStyle(color: Colors.black, fontSize: G.st.msgFontSize),
     );
   }

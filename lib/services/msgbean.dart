@@ -54,6 +54,29 @@ class MsgBean {
       this.timestamp,
       this.action});
 
+  MsgBean deepCopy() {
+    return new MsgBean(
+        senderId: this.senderId,
+        nickname: this.nickname,
+        message: this.message,
+        messageId: this.messageId,
+        rawMessage: this.rawMessage,
+        subType: this.subType,
+        remark: this.remark,
+        targetId: this.targetId,
+        friendId: this.friendId,
+        groupId: this.groupId,
+        groupName: this.groupName,
+        groupCard: this.groupCard,
+        fileId: this.fileId,
+        fileName: this.fileName,
+        fileSize: this.fileSize,
+        fileUrl: this.fileUrl,
+        role: this.role,
+        timestamp: this.timestamp,
+        action: this.action);
+  }
+
   String username() => (groupCard != null && groupCard.isNotEmpty)
       ? groupCard
       : (remark != null && remark.isNotEmpty)

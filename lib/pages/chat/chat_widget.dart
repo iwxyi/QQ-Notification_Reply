@@ -35,6 +35,8 @@ class _ChatWidgetState extends State<ChatWidget>
   TextEditingController _textController;
   FocusNode _editorFocus;
   ScrollController _scrollController;
+  final GlobalKey globalKey = GlobalKey();
+
   bool _keepScrollBottom = true; // 修改内容时是否滚动到末尾
   bool _blankHistory = false; // 是否已经将加载完历史记录
   bool _showGoToBottomButton = false; // 是否显示返回底部按钮
@@ -157,6 +159,13 @@ class _ChatWidgetState extends State<ChatWidget>
               },
               jumpMessageCallback: (int messageId) {
                 // 跳转到指定消息（如果有）
+                int index = _messages.lastIndexWhere((element) {
+                  return element.messageId == messageId;
+                });
+                if (index > -1) {
+                  // 滚动到index
+
+                }
               },
               addMessageCallback: (String text) {
                 // 添加消息到发送框
