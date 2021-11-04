@@ -32,6 +32,12 @@ void main() {
               channelName: 'Basic notifications',
               channelDescription: 'Notification channel for basic tests',
               defaultColor: Color(0xFF9D50DD),
+              ledColor: Colors.white),
+          NotificationChannel(
+              channelKey: 'chats',
+              channelName: 'Basic notifications',
+              channelDescription: 'Notification channel for basic tests',
+              defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white)
         ]);
 

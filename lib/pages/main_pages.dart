@@ -82,8 +82,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     setState(() {
       _notification = state;
-      print(_notification.index);
-      if (_notification.index == 1) {
+      print('应用状态：' + _notification.index.toString());
+      if (_notification.index == 1 || _notification.index == 0) {
         G.rt.runOnForeground = true;
       } else if (_notification.index == 2) {
         G.rt.runOnForeground = false;
@@ -226,14 +226,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           case AppBarMenuItems.Contacts:
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) {
-                return createScafoldPage(context, new ContactsPage(), '联系人');
+                return createScaffoldPage(context, new ContactsPage(), '联系人');
               },
             ));
             break;
           case AppBarMenuItems.Settings:
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) {
-                return createScafoldPage(context, new AccountWidget(), '设置');
+                return createScaffoldPage(context, new AccountWidget(), '设置');
               },
             ));
             break;
@@ -483,8 +483,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     // 监听tap
     AwesomeNotifications().actionStream.listen((receivedNotification) {
       // receivedNotification.id
-      print('-------------notification.tap----------------');
-      print(receivedNotification.id.toString());
+      onSelectNotification(receivedNotification.id.toInt());
     });
   }
 
@@ -515,101 +514,38 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 前台不显示通知
     if (G.rt.runOnForeground) {
-      //      return;
-    }
-
-    // 显示通知
-    String personUri =
-        'mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=${msg.senderId}';
-    String displayMessage = G.cs.getMessageDisplay(msg);
-    AwesomeNotifications().createNotification(
-        content: NotificationContent(
-            id: 10,
-            channelKey: 'basic_channel',
-            summary: 'chatName',
-            title: 'username',
-            body: 'message',
-            notificationLayout: NotificationLayout.MessagingGroup),
-        actionButtons: [
-          NotificationActionButton(
-              key: 'test',
-              label: 'label',
-              autoDismissable: true,
-              buttonType: ActionButtonType.InputField)
-        ]);
-
-    /*Person person = new Person(
-        bot: false, important: true, name: msg.username(), uri: personUri);
-    Message message = new Message(displayMessage, DateTime.now(), person);
-    AndroidNotificationDetails androidPlatformChannelSpecifics;
-
-    if (!G.ac.unreadMessages.containsKey(msg.keyId())) {
-      G.ac.unreadMessages[msg.keyId()] = [];
-    }
-    G.ac.unreadMessages[msg.keyId()].add(message);
-    if (msg.isPrivate()) {
-      // 私聊消息
-      */ /*print('----id private:' + msg.friendId.toString() + ' ' + id.toString());*/ /*
-
-      MessagingStyleInformation messagingStyleInformation =
-          new MessagingStyleInformation(person,
-              conversationTitle: msg.username(),
-              messages: G.ac.unreadMessages[msg.keyId()]);
-
-      androidPlatformChannelSpecifics = AndroidNotificationDetails(
-          'private_message', '私聊消息', 'QQ好友消息/临时会话',
-          styleInformation: messagingStyleInformation,
-          groupKey: 'chat',
-          priority: Priority.high,
-          importance: Importance.high);
-    } else if (msg.isGroup()) {
-      // 群聊消息
-      Person group = new Person(
-          bot: false, important: true, name: msg.groupName, uri: personUri);
-
-      MessagingStyleInformation messagingStyleInformation =
-          new MessagingStyleInformation(group,
-              conversationTitle: msg.groupName,
-              messages: G.ac.unreadMessages[msg.keyId()]);
-
-      String channelId, channelName;
-      Priority priority;
-      Importance importance;
-      if (G.st.importantGroups.contains(msg.groupId)) {
-        channelId = "important_group_message";
-        channelName = "重要群组消息";
-        priority = Priority.high;
-        importance = Importance.high;
-      } else {
-        channelId = "group_message";
-        channelName = "普通群组消息";
-        priority = Priority.defaultPriority;
-        importance = Importance.defaultImportance;
-      }
-
-      androidPlatformChannelSpecifics = AndroidNotificationDetails(
-          channelId, channelName, 'QQ群组消息',
-          styleInformation: messagingStyleInformation,
-          groupKey: 'chat',
-          priority: priority,
-          importance: importance);
-    }
-    if (androidPlatformChannelSpecifics == null) {
       return;
     }
 
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
-        id, msg.username(), displayMessage, platformChannelSpecifics,
-        payload: msg.keyId().toString());*/
+    // 显示通知
+    AwesomeNotifications().createNotification(
+        content: NotificationContent(
+            id: id,
+            channelKey: 'chats',
+            groupKey: msg.keyId().toString(),
+            summary: msg.title(),
+            title: msg.username(),
+            body: G.cs.getMessageDisplay(msg),
+            notificationLayout: NotificationLayout.Messaging,
+            payload: {'id': msg.keyId().toString()}),
+        actionButtons: [
+          NotificationActionButton(
+              key: 'reply',
+              label: '回复',
+              autoDismissable: true,
+              buttonType: ActionButtonType.InputField)
+        ]);
   }
 
   /// 通知点击回调
-  Future<dynamic> onSelectNotification(String payload) async {
-    print('通知.payload: $payload');
-    int keyId = int.parse(payload);
+  Future<dynamic> onSelectNotification(int notificationId) async {
+    int keyId = 0;
+    UserAccount.notificationIdMap.forEach((int key, int value) {
+      if (value == notificationId) {
+        keyId = key;
+      }
+    });
+    print('notification chat keyId: $keyId notification id: $notificationId');
     MsgBean msg;
     if (G.ac.allMessages.containsKey(keyId))
       msg = G.ac.allMessages[keyId].last ?? null;
@@ -716,7 +652,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  Widget createScafoldPage(BuildContext context, Widget widget, String title) {
+  Widget createScaffoldPage(BuildContext context, Widget widget, String title) {
     return Scaffold(
       appBar: AppBar(
         title: new Text(title),
