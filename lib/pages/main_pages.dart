@@ -482,8 +482,19 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 监听tap
     AwesomeNotifications().actionStream.listen((receivedNotification) {
-      // receivedNotification.id
-      onSelectNotification(receivedNotification.id.toInt());
+      int keyId = int.parse(receivedNotification.payload['id']);
+      print(
+          'notification chatId: $keyId, keyButton: ${receivedNotification.buttonKeyPressed}, keyInput:${receivedNotification.buttonKeyInput}');
+      if (receivedNotification.buttonKeyInput.isNotEmpty) {
+        // 输入
+        onNotificationReply(keyId, receivedNotification.buttonKeyInput);
+      } else if (receivedNotification.buttonKeyPressed.isNotEmpty) {
+        // 点击动作按钮（输入也会触发）
+      } else {
+        // 点击通知
+        print('点击通知');
+        onSelectNotification(keyId);
+      }
     });
   }
 
@@ -513,9 +524,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     // 前台不显示通知
-    if (G.rt.runOnForeground) {
+    /*if (G.rt.runOnForeground) {
       return;
-    }
+    }*/
 
     // 显示通知
     String channelKey = 'notice';
@@ -530,33 +541,30 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     AwesomeNotifications().createNotification(
-        content: NotificationContent(
-            id: id,
-            channelKey: channelKey,
-            groupKey: msg.keyId().toString(),
-            summary: msg.title(),
-            title: msg.username(),
-            body: G.cs.getMessageDisplay(msg),
-            notificationLayout: NotificationLayout.Messaging,
-            payload: {'id': msg.keyId().toString()}),
-        actionButtons: [
-          NotificationActionButton(
-              key: 'reply',
-              label: '回复',
-              autoDismissable: true,
-              buttonType: ActionButtonType.InputField)
-        ]);
+      content: NotificationContent(
+        id: id,
+        channelKey: channelKey,
+        groupKey: msg.keyId().toString(),
+        summary: msg.title(),
+        title: msg.username(),
+        body: G.cs.getMessageDisplay(msg),
+        notificationLayout: NotificationLayout.Messaging,
+        displayOnForeground: false,
+        payload: {'id': msg.keyId().toString()},
+      ),
+      actionButtons: [
+        NotificationActionButton(
+          key: 'reply',
+          label: '回复',
+          buttonType: ActionButtonType.InputField,
+        )
+      ],
+    );
   }
 
   /// 通知点击回调
   Future<dynamic> onSelectNotification(int notificationId) async {
-    int keyId = 0;
-    UserAccount.notificationIdMap.forEach((int key, int value) {
-      if (value == notificationId) {
-        keyId = key;
-      }
-    });
-    print('notification chat keyId: $keyId, notification id: $notificationId');
+    int keyId = notificationId;
     MsgBean msg;
     if (G.ac.allMessages.containsKey(keyId))
       msg = G.ac.allMessages[keyId].last ?? null;
@@ -618,6 +626,22 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           timeInSecForIosWeb: 1,
         );
       }
+    }
+  }
+
+  void onNotificationReply(int keyId, String text) {
+    MsgBean msg;
+    if (G.ac.allMessages.containsKey(keyId))
+      msg = G.ac.allMessages[keyId].last ?? null;
+    if (msg == null) {
+      print('未找到payload:$keyId');
+      return;
+    }
+
+    if (msg.isPrivate()) {
+      G.cs.sendPrivateMessage(msg.friendId, text);
+    } else if (msg.isGroup()) {
+      G.cs.sendGroupMessage(msg.groupId, text);
     }
   }
 
