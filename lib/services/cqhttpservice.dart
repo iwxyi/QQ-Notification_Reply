@@ -412,10 +412,20 @@ class CqhttpService {
 
   void refreshGroups() {}
 
-  void refreshGroupMembers(int groupId) {
+  void refreshGroupMembers(int groupId, {int userId}) {
     if (ac.gettingGroupMembers.containsKey(groupId)) {
       // 有其他线程获取了
       return;
+    }
+    if (userId != null) {
+      if (ac.groupList[groupId].ignoredMembers == null) {
+        ac.groupList[groupId].ignoredMembers = {};
+      } else if (ac.groupList[groupId].ignoredMembers.contains(userId)) {
+        // 已经获取过这个用户了
+        return;
+      }
+      ac.groupList[groupId].ignoredMembers.add(userId);
+      print('-------添加忽略用户中 $userId');
     }
     ac.gettingGroupMembers[groupId] = true;
     send({
@@ -530,7 +540,7 @@ class CqhttpService {
       // 未获取到昵称
       if (msg.isGroup()) {
         // 获取群成员
-        refreshGroupMembers(msg.groupId);
+        refreshGroupMembers(msg.groupId, userId: id);
       }
       return '@' + match[1];
     });

@@ -17,6 +17,8 @@ class GroupInfo {
   int groupId;
   String name;
   Map<int, FriendInfo> members;
+  int refreshMemberTime = 0; // 刷新成员的时间，避免死循环
+  Set<int> ignoredMembers; // 需要这些群成员时不进行刷新
 
   GroupInfo(this.groupId, this.name) {
     this.members = {};

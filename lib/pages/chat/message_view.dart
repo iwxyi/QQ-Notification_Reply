@@ -277,7 +277,7 @@ class _MessageViewState extends State<MessageView> {
               if (username == null) {
                 username = id;
                 if (msg.isGroup()) {
-                  G.cs.refreshGroupMembers(msg.groupId);
+                  G.cs.refreshGroupMembers(msg.groupId, userId: int.parse(id));
                 }
               }
               span = new TextSpan(
@@ -446,7 +446,7 @@ class _MessageViewState extends State<MessageView> {
             G.ac.getGroupMemberName(replyMsg.senderId, replyMsg.groupId);
         if (username == null || username.isEmpty) {
           username = replyMsg.senderId.toString();
-          G.cs.refreshGroupMembers(replyMsg.groupId);
+          G.cs.refreshGroupMembers(replyMsg.groupId, userId: replyMsg.senderId);
         }
         if (G.st.showRecursionReply) {
           // 显示递归回复，即回复里面可以再显示回复的内容
