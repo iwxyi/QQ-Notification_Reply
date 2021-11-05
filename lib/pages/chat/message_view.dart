@@ -85,14 +85,21 @@ class _MessageViewState extends State<MessageView> {
       // 24*2 + 12 + 12 = 72
       return SizedBox(width: 72, height: 48);
     }
+    
     String headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=${msg.senderId}&s=100&t=";
-    return new Container(
+    Widget container = new Container(
         margin: const EdgeInsets.only(left: 12.0, right: 12.0),
         child: new CircleAvatar(
           backgroundImage: NetworkImage(headerUrl),
           radius: 24.0,
           backgroundColor: Colors.transparent,
         ));
+
+    return GestureDetector(
+        child: container,
+        onLongPress: () {
+          widget.addMessageCallback('[CQ:at,qq=${msg.senderId}] ');
+        });
   }
 
   /// 构建昵称控件
