@@ -35,6 +35,7 @@ class _MessageViewState extends State<MessageView> {
   final bool isNext;
   final MsgBean msg;
   bool hasCompleted = false;
+  GlobalKey anchorKey = GlobalKey();
 
   _MessageViewState(this.msg, this.isNext);
 
@@ -48,7 +49,7 @@ class _MessageViewState extends State<MessageView> {
     if (!isSelf && !isNext) {
       vWidgets.add(_buildNicknameView());
     }
-    vWidgets.add(_buildMessageBubble());
+    vWidgets.add(_buildMessageContainer());
 
     Widget vWidget = Flexible(
       child: Column(
@@ -106,7 +107,7 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建消息控件
-  Widget _buildMessageBubble() {
+  Widget _buildMessageContainer() {
     EdgeInsets bubblePadding = EdgeInsets.all(8.0); // 消息内部间距
     EdgeInsets bubbleMargin = EdgeInsets.only(top: 3.0, bottom: 3.0);
     Widget bubbleContent;
@@ -124,15 +125,21 @@ class _MessageViewState extends State<MessageView> {
       bubbleContent = _buildRichContentWidget(msg);
     }
 
-    return Container(
-      child: bubbleContent,
-      padding: bubblePadding,
-      margin: bubbleMargin, // 上限间距
-      decoration: new BoxDecoration(
-        color: G.st.msgBubbleColor,
-        borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
-      ),
-    );
+    return GestureDetector(
+        key: anchorKey,
+        child: Container(
+          child: bubbleContent,
+          padding: bubblePadding,
+          margin: bubbleMargin, // 上限间距
+          decoration: new BoxDecoration(
+            color: G.st.msgBubbleColor,
+            borderRadius:
+                BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
+          ),
+        ),
+        onLongPressStart: (details) {
+          _showMessageMenu(context, details);
+        });
   }
 
   /// 构建富文本消息框的入口
@@ -586,5 +593,84 @@ class _MessageViewState extends State<MessageView> {
     return new Container(
       child: _buildMessageLine(),
     );
+  }
+
+  PopupMenuButton _popMenu() {
+    return PopupMenuButton(
+      itemBuilder: (context) => _getPopupMenu(context),
+      onSelected: (value) {
+        print('onSelected');
+        _selectValueChange(value);
+      },
+      onCanceled: () {
+        print('onCanceled');
+        // bgColor = Colors.white;
+        setState(() {});
+      },
+    );
+  }
+
+  _selectValueChange(String value) {
+    setState(() {});
+  }
+
+  void _showMessageMenu(BuildContext context, LongPressStartDetails detail) {
+    // RenderBox renderBox = anchorKey.currentContext.findRenderObject();
+    // var offset = renderBox.localToGlobal(Offset(0.0, renderBox.size.height));
+    final RelativeRect position = RelativeRect.fromLTRB(
+        detail.globalPosition.dx, // 取点击位置坐弹出x坐标
+        detail.globalPosition.dy, // offset.dy取控件高度做弹出y坐标（这样弹出就不会遮挡文本）
+        detail.globalPosition.dx,
+        detail.globalPosition.dy);
+    var pop = _popMenu();
+    showMenu(
+      context: context,
+      items: pop.itemBuilder(context),
+      position: position, //弹出框位置
+    ).then((newValue) {
+      if (!mounted) return null;
+      if (newValue == null) {
+        if (pop.onCanceled != null) pop.onCanceled();
+        return null;
+      }
+      if (pop.onSelected != null) pop.onSelected(newValue);
+    });
+  }
+
+  _getPopupMenu(BuildContext context) {
+    List<PopupMenuEntry> items = [
+      PopupMenuItem(
+        value: 'copy',
+        child: Text('复制'),
+      ),
+      PopupMenuItem(
+        value: 'reply',
+        child: Text('回复'),
+      ),
+      PopupMenuItem(
+        value: 'repeat',
+        child: Text('+1'),
+      ),
+      PopupMenuItem(
+        value: 'cq',
+        child: Text('CQ码'),
+      ),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text('删除'),
+      ),
+    ];
+
+    int insertPos = 3; // 自己的要插入的位置
+    if (msg.senderId == G.ac.qqId) {
+      items.insert(
+          insertPos,
+          PopupMenuItem(
+            value: 'recall',
+            child: Text('撤回'),
+          ));
+    }
+
+    return items;
   }
 }

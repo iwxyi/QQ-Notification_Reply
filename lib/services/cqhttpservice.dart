@@ -449,16 +449,14 @@ class CqhttpService {
   String getMessageDisplay(MsgBean msg) {
     String text = msg.message;
 
-    text = text.replaceAll(RegExp(r"\[CQ:face,id=(\d+)\]"), '[表情]');
     text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
-    text = text.replaceAll(RegExp(r"\[CQ:image,.+?\]"), '[图片]');
     text = text.replaceAll(
         RegExp(r"\[CQ:reply,.+?\](\[CQ:at,qq=\d+?\])?"), '[回复]');
     text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
     text = text.replaceAllMapped(RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) {
       var id = int.parse(match[1]);
       String username = ac.getGroupMemberName(id, msg.groupId);
-      if (username != null) return username;
+      if (username != null) return '@' + username;
       // 未获取到昵称
       if (msg.isGroup()) {
         // 获取群成员

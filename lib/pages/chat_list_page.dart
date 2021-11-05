@@ -168,33 +168,32 @@ class _ChatListPageState extends State<ChatListPage>
           // 消息内容
           List<Widget> bodyWidgets = [];
           bodyWidgets.add(ListTile(
-            leading: new ClipOval(
-              // 圆形头像
-              child: new FadeInImage.assetNetwork(
-                placeholder: "assets/icons/default_header.png",
-                //预览图
-                fit: BoxFit.contain,
-                image: headerUrl,
-                width: 40.0,
-                height: 40.0,
+              leading: new ClipOval(
+                // 圆形头像
+                child: new FadeInImage.assetNetwork(
+                  placeholder: "assets/icons/default_header.png",
+                  //预览图
+                  fit: BoxFit.contain,
+                  image: headerUrl,
+                  width: 40.0,
+                  height: 40.0,
+                ),
               ),
-            ),
-            title: Text(title),
-            subtitle: Text(subTitle, maxLines: 3),
-            trailing: gd,
-            onTap: () {
-              // 清除未读消息
-              setState(() {
-                G.ac.clearUnread(msg);
-              });
+              title: Text(title),
+              subtitle: Text(subTitle, maxLines: 3),
+              trailing: gd,
+              onTap: () {
+                // 清除未读消息
+                setState(() {
+                  G.ac.clearUnread(msg);
+                });
 
-              // 打开会话
-              G.rt.showChatPage(msg);
-            },
-            onLongPress: () {
-              // 会话菜单
-            },
-          ));
+                // 打开会话
+                G.rt.showChatPage(msg);
+              },
+              onLongPress: () {
+                // 会话菜单
+              }));
 
           // 显示快速回复框
           if (G.ac.chatListShowReply.containsKey(msg.keyId())) {
