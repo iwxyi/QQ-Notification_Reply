@@ -65,6 +65,12 @@ class _ChatWidgetState extends State<ChatWidget>
         if (mounted) {
           setState(() {});
         }
+      } else if (event.event == Event.messageRecall &&
+          widget.chatObj.isObj(event.data)) {
+        print('message recall, refresh state');
+        if (mounted) {
+          setState(() {});
+        }
       }
     });
 

@@ -375,6 +375,9 @@ class CqhttpService {
     int operatorId = obj['operator_id']; // 操作者ID（发送者或者群管理员）
 
     print('群消息撤回：[$groupId] $messageId($userId)');
+    MsgBean msg = new MsgBean(
+        groupId: groupId, messageId: messageId, senderId: operatorId);
+    _markRecalled(msg);
   }
 
   void _parseFriendRecall(final obj) {}
@@ -422,6 +425,18 @@ class CqhttpService {
       'params': {'group_id': groupId, 'message': message},
       'echo': 'send_group_msg'
     });
+  }
+
+  void _markRecalled(MsgBean msg) {
+    if (ac.allMessages.containsKey(msg.keyId())) {
+      int index = ac.allMessages[msg.keyId()]
+          .lastIndexWhere((element) => element.messageId == msg.messageId);
+      if (index > -1) {
+        // 设置为撤回
+        ac.allMessages[msg.keyId()][index].recalled = true;
+      }
+      ac.eventBus.fire(EventFn(Event.messageRecall, msg));
+    }
   }
 
   /// 发送消息到界面

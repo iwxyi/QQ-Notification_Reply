@@ -128,19 +128,28 @@ class _MessageViewState extends State<MessageView> {
       bubbleContent = _buildRichContentWidget(msg);
     }
 
+    // 显示圆角、间距、背景气泡
+    Widget container = Container(
+      child: bubbleContent,
+      padding: bubblePadding,
+      margin: bubbleMargin, // 上限间距
+      decoration: new BoxDecoration(
+        color: G.st.msgBubbleColor,
+        borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
+      ),
+    );
+
+    // 撤回的消息变成半透明
+    if (msg.recalled) {
+      container = Opacity(opacity: 0.3, child: container);
+    }
+
+    // 手势操作
     return GestureDetector(
         key: anchorKey,
-        child: Container(
-          child: bubbleContent,
-          padding: bubblePadding,
-          margin: bubbleMargin, // 上限间距
-          decoration: new BoxDecoration(
-            color: G.st.msgBubbleColor,
-            borderRadius:
-                BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
-          ),
-        ),
+        child: container,
         onLongPressStart: (details) {
+          // 消息长按菜单
           _showMenu(context, details);
         });
   }
@@ -196,7 +205,7 @@ class _MessageViewState extends State<MessageView> {
     Iterable<RegExpMatch> matches = re.allMatches(originText);
     if (matches.length == 0) {
       // 纯文本
-      return _buildSimpleTextWidget(msg, originText);
+      return _buildPureTextWidget(msg, originText);
     }
 
     // 是富文本了
@@ -466,20 +475,25 @@ class _MessageViewState extends State<MessageView> {
   /// 用来统一字体、颜色等
   InlineSpan _buildPureTextSpan(String text) {
     // 替换实体
-    text = text
+    return TextSpan(
+        text: replaceHtmlCode(text),
+        style: TextStyle(fontSize: G.st.msgFontSize));
+  }
+
+  /// 构建一个最简单的纯文本消息框
+  Widget _buildPureTextWidget(MsgBean msg, String text) {
+    return new Text(
+      replaceHtmlCode(text),
+      style: TextStyle(color: Colors.black, fontSize: G.st.msgFontSize),
+    );
+  }
+
+  String replaceHtmlCode(String text) {
+    return text
         .replaceAll("&#44;", ",")
         .replaceAll("&amp;", ";")
         .replaceAll("&#91;", "[")
         .replaceAll("&#93;", "]");
-    return TextSpan(text: text, style: TextStyle(fontSize: G.st.msgFontSize));
-  }
-
-  /// 构建一个最简单的纯文本消息框
-  Widget _buildSimpleTextWidget(MsgBean msg, String text) {
-    return new Text(
-      text,
-      style: TextStyle(color: Colors.black, fontSize: G.st.msgFontSize),
-    );
   }
 
   /// 构建一个纯图片消息框
@@ -665,13 +679,20 @@ class _MessageViewState extends State<MessageView> {
     ];
 
     int insertPos = 2; // 自己的要插入的位置
-    if (msg.senderId == G.ac.qqId) {
-      items.insert(
-          insertPos,
-          PopupMenuItem(
-            value: 'recall',
-            child: Text('撤回'),
-          ));
+    if (msg.recalled) {
+      // 已经撤回，显示状态
+      items.insert(insertPos++,
+          PopupMenuItem(value: 'recall', child: Text('已撤回'), enabled: false));
+    } else {
+      if (msg.senderId == G.ac.qqId) {
+        // 自己的消息，可以撤回
+        items.insert(
+            insertPos++,
+            PopupMenuItem(
+              value: 'recall',
+              child: Text('撤回'),
+            ));
+      }
     }
 
     return items;
@@ -688,6 +709,7 @@ class _MessageViewState extends State<MessageView> {
     } else if (value == 'repeat') {
       widget.sendMessageCallback(msg.message);
     } else if (value == 'cq') {
+      _showCopyTextDialog('CQ码', msg.message);
     } else if (value == 'delete') {
       widget.deleteMessageCallback(msg);
     } else if (value == 'recall') {
@@ -697,5 +719,37 @@ class _MessageViewState extends State<MessageView> {
         'echo': 'msg_recall_friend:${msg.friendId}_${msg.messageId}',
       });
     }
+  }
+
+  _showCopyTextDialog(String title, String body) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(body),
+          actions: <Widget>[
+            TextButton(
+              child: Text('确定'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('复制'),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: msg.message));
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+          elevation: 0,
+          semanticLabel: '哈哈哈哈',
+          // 设置成 圆角
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        );
+      },
+    );
   }
 }
