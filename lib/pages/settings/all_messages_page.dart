@@ -27,7 +27,7 @@ class _AllMessageListWidgetState extends State<AllMessageListWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('所有历史'),
+        title: Text('日志历史'),
         centerTitle: true,
       ),
       body: Column(

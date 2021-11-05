@@ -177,6 +177,10 @@ class CqhttpService {
       if (noticeType == 'group_upload') {
         // 群文件上传
         _parseGroupUpload(obj);
+      } else if (noticeType == 'group_increase') {
+        _parseGroupIncrease(obj);
+      } else if (noticeType == 'group_decrease') {
+        _parseGroupDecrease(obj);
       } else if (noticeType == 'offline_file') {
         // 私聊文件上传
         _parseOfflineFile(obj);
@@ -194,6 +198,13 @@ class CqhttpService {
         _parseGroupBan(obj);
       } else {
         print('未处理类型的通知：' + obj.toString());
+      }
+    } else if (postType == 'request') {
+      String requestType = obj['request_type'];
+      if (requestType == 'friend') {
+        _parseRequestFriend(obj);
+      } else {
+        print('未处理类型的请求：' + obj.toString());
       }
     } else if (postType == 'message_sent') {
       // 自己发的消息
@@ -319,7 +330,7 @@ class CqhttpService {
         friendId: friendId,
         timestamp: DateTime.now().millisecondsSinceEpoch);
 
-    print('收到私聊消息：' + msg.username() + " : " + message);
+    print('收到私聊消息：${msg.username()} : $message');
 
     _notifyOuter(msg);
   }
@@ -348,12 +359,7 @@ class CqhttpService {
         ? ac.groupList[groupId].name
         : groupId.toString();
 
-    print('收到群消息：' +
-        ac.groupList[groupId].name +
-        " - " +
-        nickname +
-        " : " +
-        message);
+    print('收到群消息：$groupName - $nickname  : $message');
 
     MsgBean msg = MsgBean(
         subType: subType,
@@ -374,9 +380,53 @@ class CqhttpService {
     _notifyOuter(msg);
   }
 
-  void _parseGroupUpload(final obj) {}
+  void _parseGroupUpload(final obj) {
+    int groupId = obj['group_id'];
+    int userId = obj['user_id'];
 
-  void _parseOfflineFile(final obj) {}
+    var file = obj['file'];
+    String fileId = file['id'];
+    String fileName = file['name'];
+    int fileSize = file['size'];
+
+    String groupName = ac.groupList.containsKey(groupId)
+        ? ac.groupList[groupId].name
+        : groupId.toString();
+    String nickname = ac.getGroupMemberName(userId, groupId);
+
+    print('收到群文件：$groupName - $nickname  : $fileName');
+    MsgBean msg = new MsgBean(
+        groupId: groupId,
+        groupName: groupName,
+        senderId: userId,
+        nickname: nickname,
+        fileId: fileId,
+        fileName: fileName,
+        fileSize: fileSize,
+        timestamp: DateTime.now().millisecondsSinceEpoch);
+    _notifyOuter(msg);
+  }
+
+  void _parseOfflineFile(final obj) {
+    int userId = obj['user_id'];
+
+    var file = obj['file'];
+    String fileName = file['name'];
+    int fileSize = file['size'];
+    String fileUrl = file['url'];
+
+    String nickname = ac.getGroupMemberName(userId, null);
+
+    print('收到离线文件：$nickname  : $fileName');
+    MsgBean msg = new MsgBean(
+        senderId: userId,
+        nickname: nickname,
+        fileName: fileName,
+        fileSize: fileSize,
+        fileUrl: fileUrl,
+        timestamp: DateTime.now().millisecondsSinceEpoch);
+    _notifyOuter(msg);
+  }
 
   void _parseMessageSent(final obj) {}
 
@@ -404,9 +454,16 @@ class CqhttpService {
     _markRecalled(msg);
   }
 
+  void _parseGroupIncrease(final obj) {}
+
+  void _parseGroupDecrease(final obj) {}
+
   void _parseGroupCard(final obj) {}
 
   void _parseGroupBan(final obj) {}
+
+  /// 加好友请求
+  void _parseRequestFriend(final obj) {}
 
   void refreshFriend() {}
 
@@ -528,34 +585,55 @@ class CqhttpService {
   /// 替换所有CQ标签
   String getMessageDisplay(MsgBean msg) {
     String text = msg.message;
-
-    text = text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
-    text = text.replaceAll(
-        RegExp(r"\[CQ:reply,.+?\](\[CQ:at,qq=\d+?\])?"), '[回复]');
-    text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
-    text = text.replaceAllMapped(RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) {
-      var id = int.parse(match[1]);
-      String username = ac.getGroupMemberName(id, msg.groupId);
-      if (username != null) return '@' + username;
-      // 未获取到昵称
-      if (msg.isGroup()) {
-        // 获取群成员
-        refreshGroupMembers(msg.groupId, userId: id);
-      }
-      return '@' + match[1];
-    });
-    text = text.replaceAllMapped(
-        RegExp(r'^\[CQ:json,data=.+?"prompt":"(.+?)".*?\]'),
-        (match) => '[${match[1]}]');
-    text = text.replaceAllMapped(RegExp(r"\[CQ:([^,]+),.+?\]"), (match) {
-      if (CQCodeMap.containsKey(match[1])) {
-        return "[${CQCodeMap[match[1]]}]";
-      }
-      return match[1];
-    });
-    text = text.replaceAllMapped(
-        RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '[${match[1]}]');
-    text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');
+    switch (msg.action) {
+      case ActionType.Message:
+        {
+          text =
+              text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
+          text = text.replaceAll(
+              RegExp(r"\[CQ:reply,.+?\](\[CQ:at,qq=\d+?\])?"), '[回复]');
+          text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
+          text = text.replaceAllMapped(RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) {
+            var id = int.parse(match[1]);
+            String username = ac.getGroupMemberName(id, msg.groupId);
+            if (username != null) return '@' + username;
+            // 未获取到昵称
+            if (msg.isGroup()) {
+              // 获取群成员
+              refreshGroupMembers(msg.groupId, userId: id);
+            }
+            return '@' + match[1];
+          });
+          text = text.replaceAllMapped(
+              RegExp(r'^\[CQ:json,data=.+?"prompt":"(.+?)".*?\]'),
+              (match) => '[${match[1]}]');
+          text = text.replaceAllMapped(RegExp(r"\[CQ:([^,]+),.+?\]"), (match) {
+            if (CQCodeMap.containsKey(match[1])) {
+              return "[${CQCodeMap[match[1]]}]";
+            }
+            return match[1];
+          });
+          text = text.replaceAllMapped(
+              RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '[${match[1]}]');
+          text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');
+        }
+        break;
+      case ActionType.JoinAction:
+        {
+          text = '${msg.username()} 加入本群';
+        }
+        break;
+      case ActionType.ExitAction:
+        {
+          text = '${msg.username()} 退出本群';
+        }
+        break;
+      case ActionType.SystemLog:
+        {
+          text = '${msg.simpleString()}';
+        }
+        break;
+    }
 
     return text;
   }

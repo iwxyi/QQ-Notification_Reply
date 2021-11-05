@@ -90,11 +90,10 @@ class UserAccount {
           return groupList[groupId].members[userId].username();
         }
       }
-    } else {
-      // 艾特私聊
-      if (friendList.containsKey(userId)) {
-        return friendList[userId].username();
-      }
+    }
+    // 艾特私聊或者群成员没有
+    if (friendList.containsKey(userId)) {
+      return friendList[userId].username();
     }
     return null;
   }
