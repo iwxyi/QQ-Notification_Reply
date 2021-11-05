@@ -10,7 +10,8 @@ enum Event {
   friendList,
   groupList,
   messageRaw, // 获取到消息本身
-  refreshState
+  refreshState, // 刷新界面
+  groupMember // 群成员
 }
 
 class EventFn {

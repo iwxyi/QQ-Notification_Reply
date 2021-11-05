@@ -61,6 +61,10 @@ class _ChatWidgetState extends State<ChatWidget>
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
       if (event.event == Event.messageRaw) {
         _messageReceived(event.data);
+      } else if (event.event == Event.groupMember) {
+        if (mounted) {
+          setState(() {});
+        }
       }
     });
 

@@ -180,6 +180,18 @@ class CqhttpService {
       } else if (noticeType == 'offline_file') {
         // 私聊文件上传
         _parseOfflineFile(obj);
+      } else if (noticeType == 'group_recall') {
+        // 撤销群消息
+        _parseGroupRecall(obj);
+      } else if (noticeType == 'friend_recall') {
+        // 撤销私聊消息
+        _parseFriendRecall(obj);
+      } else if (noticeType == 'group_card') {
+        // 修改群名片
+        _parseGroupCard(obj);
+      } else if (noticeType == 'group_ban') {
+        // 群禁言
+        _parseGroupBan(obj);
       } else {
         print('未处理类型的通知：' + obj.toString());
       }
@@ -259,6 +271,7 @@ class CqhttpService {
           ac.groupList[groupId].members[userId] =
               new FriendInfo(userId, nickname, card);
         });
+        ac.eventBus.fire(EventFn(Event.groupMember, {'group_id': groupId}));
       } else {
         print('无法识别的群成员echo: ' + echo);
       }
@@ -354,6 +367,21 @@ class CqhttpService {
   void _parseOfflineFile(final obj) {}
 
   void _parseMessageSent(final obj) {}
+
+  void _parseGroupRecall(final obj) {
+    int groupId = obj['group_id'];
+    int messageId = obj['message_id'];
+    int userId = obj['user_id']; // 发送者ID
+    int operatorId = obj['operator_id']; // 操作者ID（发送者或者群管理员）
+
+    print('群消息撤回：[$groupId] $messageId($userId)');
+  }
+
+  void _parseFriendRecall(final obj) {}
+
+  void _parseGroupCard(final obj) {}
+
+  void _parseGroupBan(final obj) {}
 
   void refreshFriend() {}
 

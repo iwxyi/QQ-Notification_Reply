@@ -435,6 +435,10 @@ class _MessageViewState extends State<MessageView> {
         MsgBean replyMsg = G.ac.allMessages[msg.keyId()].elementAt(index);
         String username =
             G.ac.getGroupMemberName(replyMsg.senderId, replyMsg.groupId);
+        if (username == null || username.isEmpty) {
+          username = replyMsg.senderId.toString();
+          G.cs.refreshGroupMembers(replyMsg.groupId);
+        }
         if (G.st.showRecursionReply) {
           // 显示递归回复，即回复里面可以再显示回复的内容
           // 回复越深，颜色越深
@@ -545,7 +549,7 @@ class _MessageViewState extends State<MessageView> {
                       scale: scale,
                     ),
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height / 2,
+                      maxHeight: MediaQuery.of(context).size.height / 3,
                     ),
                   ); // 显示图片
                 case LoadState.failed:

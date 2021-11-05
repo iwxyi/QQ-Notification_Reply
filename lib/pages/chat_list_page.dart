@@ -32,6 +32,10 @@ class _ChatListPageState extends State<ChatListPage>
           // 这里报错了，但实际上也是能用
           setState(() {});
         }
+      } else if (event.event == Event.groupMember) {
+        if (mounted) {
+          setState(() {});
+        }
       }
     });
 
