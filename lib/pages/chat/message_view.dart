@@ -85,7 +85,7 @@ class _MessageViewState extends State<MessageView> {
       // 24*2 + 12 + 12 = 72
       return SizedBox(width: 72, height: 48);
     }
-    
+
     String headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=${msg.senderId}&s=100&t=";
     Widget container = new Container(
         margin: const EdgeInsets.only(left: 12.0, right: 12.0),
@@ -124,14 +124,17 @@ class _MessageViewState extends State<MessageView> {
 
     String text = msg.message;
     Match match;
-    RegExp imageRE = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+?)?\]$');
-    if ((match = imageRE.firstMatch(text)) != null) {
+    if (msg.isMessage() &&
+        !msg.isFile() &&
+        (match = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+?)?\]$')
+                .firstMatch(text)) !=
+            null) {
       // 如果是图片
       String url = match.group(1);
       bubbleContent = _buildImageWidget(url);
       bubblePadding = EdgeInsets.only();
     } else {
-      // 纯文本或者富文本
+      // 动作、文件、纯文本或者富文本
       bubbleContent = _buildRichContentWidget(msg);
     }
 
@@ -163,7 +166,7 @@ class _MessageViewState extends State<MessageView> {
 
   /// 构建富文本消息框的入口
   Widget _buildRichContentWidget(MsgBean msg, {String useMessage}) {
-    String message = useMessage ?? msg.message;
+    String message = useMessage ?? msg.message ?? G.cs.getMessageDisplay(msg);
 
     // 是回复的消息，要单独提取
     Widget replyWidget;
@@ -178,9 +181,9 @@ class _MessageViewState extends State<MessageView> {
     }
 
     // 判断是卡片还是纯文本
-    if (message.contains("[CQ:json,")) {
+    /*if (message.contains("[CQ:json,")) {
       return _buildJsonCardWidget(msg);
-    }
+    }*/
 
     Widget contentWidget = _buildRichTextSpans(msg, message);
     if (replyWidget != null) {

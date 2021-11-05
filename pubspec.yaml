@@ -40,7 +40,10 @@ dependencies:
   date_format: ^1.0.9
   image_picker: ^0.7.2+1
   image_picker_for_web: ^2.0.0
-  awesome_notifications: any
+  # awesome_notifications: any
+  awesome_notifications :
+    git:
+      url: https://github.com/rafaelsetragni/awesome_notifications.git
 
 dev_dependencies:
   flutter_test:

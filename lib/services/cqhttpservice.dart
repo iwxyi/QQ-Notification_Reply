@@ -584,10 +584,12 @@ class CqhttpService {
   /// 简易版数据展示
   /// 替换所有CQ标签
   String getMessageDisplay(MsgBean msg) {
-    String text = msg.message;
+    String text = msg.message ?? '';
     switch (msg.action) {
       case ActionType.Message:
-        {
+        if (msg.isFile()) {
+          text = '[${msg.fileName}]';
+        } else {
           text =
               text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
           text = text.replaceAll(
@@ -620,12 +622,12 @@ class CqhttpService {
         break;
       case ActionType.JoinAction:
         {
-          text = '${msg.username()} 加入本群';
+          text = '[${msg.username()} 加入本群]';
         }
         break;
       case ActionType.ExitAction:
         {
-          text = '${msg.username()} 退出本群';
+          text = '[${msg.username()} 退出本群]';
         }
         break;
       case ActionType.SystemLog:
