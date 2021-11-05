@@ -450,8 +450,13 @@ class CqhttpService {
     int time = DateTime.now().millisecondsSinceEpoch;
     ac.messageTimes[msg.keyId()] = time;
     if (msg.senderId == ac.qqId) {
+      // 自己发的，清空未读
       ac.unreadMessageCount.remove(msg.keyId());
+    } else if (rt.currentChatPage != null &&
+        rt.currentChatPage.chatObj.isObj(msg)) {
+      // 正在显示这个聊天界面，则不进行操作
     } else {
+      // 添加未读
       ac.unreadMessageCount[msg.keyId()] =
           (ac.unreadMessageCount.containsKey(msg.keyId())
                   ? ac.unreadMessageCount[msg.keyId()]
