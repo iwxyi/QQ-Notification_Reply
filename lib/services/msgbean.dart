@@ -32,6 +32,7 @@ class MsgBean {
   String imageId; // 显示唯一图片（经常不一定有）
   String display; // 显示的纯文本
   int timestamp; // 毫秒级时间戳
+  bool recalled; // 是否已撤回
 
   MsgBean(
       {this.senderId,

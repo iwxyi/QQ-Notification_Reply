@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -138,7 +139,7 @@ class _MessageViewState extends State<MessageView> {
           ),
         ),
         onLongPressStart: (details) {
-          _showMessageMenu(context, details);
+          _showMenu(context, details);
         });
   }
 
@@ -595,26 +596,7 @@ class _MessageViewState extends State<MessageView> {
     );
   }
 
-  PopupMenuButton _popMenu() {
-    return PopupMenuButton(
-      itemBuilder: (context) => _getPopupMenu(context),
-      onSelected: (value) {
-        print('onSelected');
-        _selectValueChange(value);
-      },
-      onCanceled: () {
-        print('onCanceled');
-        // bgColor = Colors.white;
-        setState(() {});
-      },
-    );
-  }
-
-  _selectValueChange(String value) {
-    setState(() {});
-  }
-
-  void _showMessageMenu(BuildContext context, LongPressStartDetails detail) {
+  void _showMenu(BuildContext context, LongPressStartDetails detail) {
     // RenderBox renderBox = anchorKey.currentContext.findRenderObject();
     // var offset = renderBox.localToGlobal(Offset(0.0, renderBox.size.height));
     final RelativeRect position = RelativeRect.fromLTRB(
@@ -622,7 +604,7 @@ class _MessageViewState extends State<MessageView> {
         detail.globalPosition.dy, // offset.dy取控件高度做弹出y坐标（这样弹出就不会遮挡文本）
         detail.globalPosition.dx,
         detail.globalPosition.dy);
-    var pop = _popMenu();
+    var pop = _buildPopupMenu();
     showMenu(
       context: context,
       items: pop.itemBuilder(context),
@@ -637,7 +619,22 @@ class _MessageViewState extends State<MessageView> {
     });
   }
 
-  _getPopupMenu(BuildContext context) {
+  PopupMenuButton _buildPopupMenu() {
+    return PopupMenuButton(
+      itemBuilder: (context) => _buildMenuItems(context),
+      onSelected: (value) {
+        print('onSelected');
+        _menuSelected(value);
+      },
+      onCanceled: () {
+        print('onCanceled');
+        // bgColor = Colors.white;
+        setState(() {});
+      },
+    );
+  }
+
+  _buildMenuItems(BuildContext context) {
     List<PopupMenuEntry> items = [
       PopupMenuItem(
         value: 'copy',
@@ -658,10 +655,11 @@ class _MessageViewState extends State<MessageView> {
       PopupMenuItem(
         value: 'delete',
         child: Text('删除'),
+        enabled: false,
       ),
     ];
 
-    int insertPos = 3; // 自己的要插入的位置
+    int insertPos = 2; // 自己的要插入的位置
     if (msg.senderId == G.ac.qqId) {
       items.insert(
           insertPos,
@@ -672,5 +670,27 @@ class _MessageViewState extends State<MessageView> {
     }
 
     return items;
+  }
+
+  /// 选中项
+  /// value 就是每个 item 的 value
+  _menuSelected(String value) {
+    print('message menu selected: $value');
+    if (value == 'copy') {
+      Clipboard.setData(ClipboardData(text: G.cs.getMessageDisplay(msg)));
+    } else if (value == 'reply') {
+      widget.addMessageCallback('[CQ:reply,id=${msg.messageId}]');
+    } else if (value == 'repeat') {
+      widget.sendMessageCallback(msg.message);
+    } else if (value == 'cq') {
+    } else if (value == 'delete') {
+      // TODO: 删除消息
+    } else if (value == 'recall') {
+      G.cs.send({
+        'action': 'delete_msg',
+        'params': {'message_id': msg.messageId},
+        'echo': 'msg_recall_friend:${msg.friendId}_${msg.messageId}',
+      });
+    }
   }
 }

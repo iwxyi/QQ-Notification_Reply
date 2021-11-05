@@ -34,8 +34,8 @@ class UserSettings extends MySettings {
   Color msgLinkColor = Colors.blue; // 链接的颜色
   double replyFontSize = 14; // 回复字体的大小
   Color msgBubbleColor = Color(0xFFEEEEEE); // 消息气泡颜色
-  Color replyBubbleColor = Color(0xFFDDDDDD); // 回复气泡颜色
-  Color replyFontColor = Color(0x10000000); // 回复消息颜色
+  Color replyBubbleColor = Color(0x10000000); // 回复气泡颜色
+  Color replyFontColor = Color(0xFF222222); // 回复消息颜色
 
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
     // readFromFile(); // super会调用，原来这是虚继承
