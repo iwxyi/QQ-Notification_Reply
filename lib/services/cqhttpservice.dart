@@ -275,6 +275,18 @@ class CqhttpService {
       } else {
         print('无法识别的群成员echo: ' + echo);
       }
+    } else if (echo.startsWith('msg_recall_group')) {
+      // 群消息，就不处理了
+    } else if (echo.startsWith('msg_recall_friend')) {
+      RegExp re = RegExp(r'^msg_recall_friend:(\d+)_(-?\d+)$');
+      Match match;
+      if ((match = re.firstMatch(echo)) != null) {
+        int friendId = int.parse(match.group(1));
+        int messageId = int.parse(match.group(2));
+        MsgBean msg = new MsgBean(
+            senderId: ac.qqId, friendId: friendId, messageId: messageId);
+        _markRecalled(msg);
+      }
     } else {
       print('未处理类型的echo: ' + echo);
     }
@@ -380,7 +392,17 @@ class CqhttpService {
     _markRecalled(msg);
   }
 
-  void _parseFriendRecall(final obj) {}
+  /// 这是私聊的好友消息撤回
+  /// 自己撤回的接收不到，只能监听撤回自己消息的回调
+  void _parseFriendRecall(final obj) {
+    int messageId = obj['message_id'];
+    int userId = obj['user_id']; // 好友ID
+
+    print('私聊消息撤回：$messageId($userId)');
+    MsgBean msg =
+        new MsgBean(messageId: messageId, senderId: userId, friendId: userId);
+    _markRecalled(msg);
+  }
 
   void _parseGroupCard(final obj) {}
 
