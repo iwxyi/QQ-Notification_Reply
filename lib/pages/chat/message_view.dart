@@ -20,12 +20,14 @@ class MessageView extends StatefulWidget {
   final jumpMessageCallback;
   final addMessageCallback;
   final sendMessageCallback;
+  final deleteMessageCallback;
 
   MessageView(this.msg, this.isNext, Key key,
       {this.loadFinishedCallback,
       this.jumpMessageCallback,
       this.addMessageCallback,
-      this.sendMessageCallback})
+      this.sendMessageCallback,
+      this.deleteMessageCallback})
       : super(key: key);
 
   @override
@@ -655,7 +657,6 @@ class _MessageViewState extends State<MessageView> {
       PopupMenuItem(
         value: 'delete',
         child: Text('删除'),
-        enabled: false,
       ),
     ];
 
@@ -679,12 +680,12 @@ class _MessageViewState extends State<MessageView> {
     if (value == 'copy') {
       Clipboard.setData(ClipboardData(text: G.cs.getMessageDisplay(msg)));
     } else if (value == 'reply') {
-      widget.addMessageCallback('[CQ:reply,id=${msg.messageId}]');
+      widget.addMessageCallback('[CQ:reply,id=${msg.messageId}] ');
     } else if (value == 'repeat') {
       widget.sendMessageCallback(msg.message);
     } else if (value == 'cq') {
     } else if (value == 'delete') {
-      // TODO: 删除消息
+      widget.deleteMessageCallback(msg);
     } else if (value == 'recall') {
       G.cs.send({
         'action': 'delete_msg',

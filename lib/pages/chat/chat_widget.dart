@@ -163,15 +163,33 @@ class _ChatWidgetState extends State<ChatWidget>
                   return element.messageId == messageId;
                 });
                 if (index > -1) {
-                  // 滚动到index
-
+                  // TODO: 滚动到index
                 }
               },
               addMessageCallback: (String text) {
                 // 添加消息到发送框
+                _textController.text = _textController.text + text;
+                FocusScope.of(context).requestFocus(_editorFocus);
               },
               sendMessageCallback: (String text) {
                 // 直接发送消息
+                MsgBean msg = _messages[index];
+                if (msg.isPrivate()) {
+                  G.cs.sendPrivateMessage(msg.friendId, text);
+                } else if (msg.isGroup()) {
+                  G.cs.sendGroupMessage(msg.groupId, text);
+                } else {
+                  print('error: 未知的发送对象');
+                }
+              },
+              deleteMessageCallback: (MsgBean msg) {
+                // 本地删除消息
+                setState(() {
+                  _messages.removeWhere(
+                      (element) => element.messageId == msg.messageId);
+                  G.ac.allMessages[msg.keyId()].removeWhere(
+                      (element) => element.messageId == msg.messageId);
+                });
               },
             ),
             itemCount: _messages.length,
