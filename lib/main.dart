@@ -30,31 +30,31 @@ void main() {
           NotificationChannel(
               channelKey: 'app_notification',
               channelName: '程序通知',
-              channelDescription: '程序通知',
+              channelDescription: '程序消息',
               defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white),
           NotificationChannel(
               channelKey: 'notices',
               channelName: '交互通知',
-              channelDescription: '交互通知',
+              channelDescription: '交互消息',
               defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white),
           NotificationChannel(
               channelKey: 'private_chats',
               channelName: '私聊通知',
-              channelDescription: '好友私聊通知',
+              channelDescription: '好友私聊消息',
               defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white),
           NotificationChannel(
               channelKey: 'normal_group_chats',
               channelName: '普通群组通知',
-              channelDescription: '普通群组通知',
+              channelDescription: '普通群组消息',
               defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white),
           NotificationChannel(
               channelKey: 'important_group_chats',
               channelName: '重要群组通知',
-              channelDescription: '重要群组通知',
+              channelDescription: '标位重要的群组消息、@与回复自己的消息',
               defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white),
         ]);

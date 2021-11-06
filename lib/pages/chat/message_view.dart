@@ -124,6 +124,7 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建消息控件
+  /// 最外层的直接方法
   Widget _buildMessageContainer() {
     EdgeInsets bubblePadding = EdgeInsets.all(8.0); // 消息内部间距
     EdgeInsets bubbleMargin = EdgeInsets.only(top: 3.0, bottom: 3.0);
@@ -167,7 +168,8 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建富文本消息框的入口
-  Widget _buildRichContentWidget(MsgBean msg, {String useMessage}) {
+  Widget _buildRichContentWidget(MsgBean msg,
+      {String useMessage, int recursion = 0}) {
     String message = useMessage ?? msg.message ?? G.cs.getMessageDisplay(msg);
 
     // 是回复的消息，要单独提取
@@ -178,7 +180,8 @@ class _MessageViewState extends State<MessageView> {
       if (match != null) {
         message = message.replaceAll(match.group(0), ""); // 去掉回复的代码
         int messageId = int.parse(match.group(1)); // 回复ID
-        replyWidget = _buildReplyRichWidget(msg, messageId);
+        replyWidget =
+            _buildReplyRichWidget(msg, messageId, recursion: recursion + 1);
       }
     }
 
@@ -187,7 +190,8 @@ class _MessageViewState extends State<MessageView> {
       return _buildJsonCardWidget(msg);
     }*/
 
-    Widget contentWidget = _buildRichTextSpans(msg, message);
+    Widget contentWidget =
+        _buildRichTextSpans(msg, message, recursion: recursion);
     if (replyWidget != null) {
       // 设置回复的颜色
       replyWidget = Container(
@@ -210,7 +214,8 @@ class _MessageViewState extends State<MessageView> {
 
   /// 构建纯内容的span
   /// 不包含回复、JSON等单独大格式
-  Widget _buildRichTextSpans(MsgBean msg, String originText) {
+  Widget _buildRichTextSpans(MsgBean msg, String originText,
+      {int recursion = 0}) {
     List<InlineSpan> spans = [];
     RegExp re =
         new RegExp(r"\[CQ:(\w+),?([^\]]*)\]|https?://\S+|\d{5,}|\w+@[\w\.]+");
@@ -261,7 +266,8 @@ class _MessageViewState extends State<MessageView> {
           RegExp imageRE = RegExp(r'^file=.+?,url=([^,]+)$');
           if ((mat = imageRE.firstMatch(params)) != null) {
             String url = mat[1];
-            span = new WidgetSpan(child: _buildImageWidget(url));
+            span = new WidgetSpan(
+                child: _buildImageWidget(url, recursion: recursion));
           }
         } else if (cqCode == 'bag') {
           span = new WidgetSpan(child: Image.asset("assets/icons/redbag.png"));
@@ -360,7 +366,7 @@ class _MessageViewState extends State<MessageView> {
                 child: _buildImageWidget(preview, onTap: () {
               print('launch url: $jumpUrl');
               launch(jumpUrl);
-            }));
+            }, recursion: recursion));
             insertFirst = true;
           }
 
@@ -446,7 +452,8 @@ class _MessageViewState extends State<MessageView> {
   /// 构建回复框控件
   /// 本质上还是调用富文本构建的方法
   /// 在外面再设置底色用以区分
-  Widget _buildReplyRichWidget(MsgBean msg, int messageId) {
+  Widget _buildReplyRichWidget(MsgBean msg, int messageId,
+      {int recursion = 0}) {
     if (G.ac.allMessages.containsKey(msg.keyId())) {
       int index = G.ac.allMessages[msg.keyId()].lastIndexWhere((element) {
         return element.messageId == messageId;
@@ -464,14 +471,15 @@ class _MessageViewState extends State<MessageView> {
           // 显示递归回复，即回复里面可以再显示回复的内容
           // 回复越深，颜色越深
           return _buildRichContentWidget(replyMsg,
-              useMessage: username + ': ' + replyMsg.message);
+              useMessage: username + ': ' + replyMsg.message,
+              recursion: recursion + 1);
         } else {
           // 只显示最近的回复，回复中的回复将以“[回复]@user”的形式显示
           String rs = replyMsg.message;
           rs = rs.replaceAll(
               RegExp(r"\[CQ:reply,.+?\]\s*(\[CQ:at,qq=\d+?\])?"), '[回复]');
-          return _buildRichTextSpans(
-              replyMsg, username + ': ' + rs);
+          return _buildRichTextSpans(replyMsg, username + ': ' + rs,
+              recursion: recursion + 1);
         }
       }
     }
@@ -512,105 +520,111 @@ class _MessageViewState extends State<MessageView> {
   }
 
   /// 构建一个纯图片消息框
-  Widget _buildImageWidget(String url, {var onTap}) {
-    return GestureDetector(
-      child: Hero(
-          tag: url,
-          child: ExtendedImage.network(
-            url,
-            fit: BoxFit.contain,
-            cache: true,
-            shape: BoxShape.rectangle,
-            borderRadius: BorderRadius.all(Radius.circular(5.0)),
-            scale: 2,
-            mode: ExtendedImageMode.gesture,
-            initGestureConfigHandler: (state) {
-              return GestureConfig(
-                minScale: 0.9,
-                animationMinScale: 0.7,
-                maxScale: 3.0,
-                animationMaxScale: 3.5,
-                speed: 1.0,
-                inertialSpeed: 100.0,
-                initialScale: 1.0,
-                inPageView: false,
-                initialAlignment: InitialAlignment.center,
-              );
-            },
-            loadStateChanged: (ExtendedImageState state) {
-              state.extendedImageInfo;
-              switch (state.extendedImageLoadState) {
-                case LoadState.loading:
-                  return Image.asset(
-                    "assets/images/loading.gif",
-                    fit: BoxFit.fill,
-                    scale: 2,
-                  );
+  Widget _buildImageWidget(String url, {var onTap, int recursion = 0}) {
+    Widget image = ExtendedImage.network(
+      url,
+      fit: BoxFit.contain,
+      cache: true,
+      shape: BoxShape.rectangle,
+      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+      scale: 2,
+      mode: ExtendedImageMode.gesture,
+      initGestureConfigHandler: (state) {
+        return GestureConfig(
+          minScale: 0.9,
+          animationMinScale: 0.7,
+          maxScale: 3.0,
+          animationMaxScale: 3.5,
+          speed: 1.0,
+          inertialSpeed: 100.0,
+          initialScale: 1.0,
+          inPageView: false,
+          initialAlignment: InitialAlignment.center,
+        );
+      },
+      loadStateChanged: (ExtendedImageState state) {
+        state.extendedImageInfo;
+        switch (state.extendedImageLoadState) {
+          case LoadState.loading:
+            return Image.asset(
+              "assets/images/loading.gif",
+              fit: BoxFit.fill,
+              scale: 2,
+            );
 
-                ///if you don't want override completed widget
-                ///please return null or state.completedWidget
-                //return null;
-                //return state.completedWidget;
-                case LoadState.completed:
-                  if (!hasCompleted && widget.loadFinishedCallback != null) {
-                    hasCompleted = true;
-                    widget.loadFinishedCallback();
-                  }
+          ///if you don't want override completed widget
+          ///please return null or state.completedWidget
+          //return null;
+          //return state.completedWidget;
+          case LoadState.completed:
+            if (!hasCompleted && widget.loadFinishedCallback != null) {
+              hasCompleted = true;
+              widget.loadFinishedCallback();
+            }
 
-                  // 自适应缩放
-                  double scale = 4;
-                  var image = state.extendedImageInfo?.image;
-                  if (image != null) {
-                    int minHW = min(image.width, image.height);
-                    if (minHW < 64) {
-                      scale = 1;
-                    } else if (minHW < 128) {
-                      scale = 1.5;
-                    } else if (minHW < 256) {
-                      scale = 2;
-                    }
-                  }
-
-                  return Container(
-                    child: ExtendedRawImage(
-                      image: image,
-                      fit: BoxFit.contain,
-                      scale: scale,
-                    ),
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height / 3,
-                    ),
-                  ); // 显示图片
-                case LoadState.failed:
-                  return GestureDetector(
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: <Widget>[
-                        Image.asset(
-                          "assets/images/failed.jpg",
-                          fit: BoxFit.fill,
-                        ),
-                        Positioned(
-                          bottom: 0.0,
-                          left: 0.0,
-                          right: 0.0,
-                          child: Text(
-                            "加载失败，点击重试",
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      ],
-                    ),
-                    onTap: onTap ??
-                        () {
-                          state.reLoadImage();
-                        },
-                  );
-                  break;
+            // 自适应缩放
+            double scale = 4;
+            var image = state.extendedImageInfo?.image;
+            if (image != null) {
+              int minHW = min(image.width, image.height);
+              if (minHW < 64) {
+                scale = 1;
+              } else if (minHW < 128) {
+                scale = 1.5;
+              } else if (minHW < 256) {
+                scale = 2;
               }
-              return null;
-            },
-          )),
+            }
+
+            return Container(
+              child: ExtendedRawImage(
+                image: image,
+                fit: BoxFit.contain,
+                scale: scale,
+              ),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height / 3,
+              ),
+            ); // 显示图片
+          case LoadState.failed:
+            return GestureDetector(
+              child: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  Image.asset(
+                    "assets/images/failed.jpg",
+                    fit: BoxFit.fill,
+                  ),
+                  Positioned(
+                    bottom: 0.0,
+                    left: 0.0,
+                    right: 0.0,
+                    child: Text(
+                      "加载失败，点击重试",
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                ],
+              ),
+              onTap: onTap ??
+                  () {
+                    state.reLoadImage();
+                  },
+            );
+            break;
+        }
+        return null;
+      },
+    );
+
+    // 如果不是递归，则使用hero
+    if (recursion == 0) {
+      image = Hero(tag: url, child: image);
+    }
+
+    // 添加手势操作
+    return GestureDetector(
+      child: image,
       onTap: onTap ??
           () {
             // 查看图片
