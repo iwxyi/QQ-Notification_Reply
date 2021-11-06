@@ -12,7 +12,8 @@ class NotificationSettingsWidget extends StatefulWidget {
   State<StatefulWidget> createState() => _NotificationSettingsWidgetState();
 }
 
-class _NotificationSettingsWidgetState extends State<NotificationSettingsWidget> {
+class _NotificationSettingsWidgetState
+    extends State<NotificationSettingsWidget> {
   @override
   void initState() {
     super.initState();
@@ -43,7 +44,24 @@ class _NotificationSettingsWidgetState extends State<NotificationSettingsWidget>
               children: <Widget>[
                 ListTile(
                   leading: Icon(
-                    Icons.all_inclusive,
+                    Icons.group,
+                    color: Colors.blue,
+                  ),
+                  title: Text('开启通知的群组'),
+                  trailing: Icon(Icons.arrow_right),
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return GroupSelectWidget();
+                    })).then((value) {
+                      // 可能登录了，刷新一下界面
+                      setState(() {});
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.chat,
                     color: Colors.blue,
                   ),
                   title: Text('禁用会话功能'),
@@ -68,18 +86,26 @@ class _NotificationSettingsWidgetState extends State<NotificationSettingsWidget>
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.group,
-                    color: Colors.red,
+                    Icons.center_focus_strong,
+                    color: Colors.blue,
                   ),
-                  title: Text('开启通知的群组'),
-                  trailing: Icon(Icons.arrow_right),
+                  title: Text('群消息智能聚焦'),
+                  subtitle: Text('发送以问号结尾或者@别人的消息后，提升群组至“重要”，直到下一次进入会话'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.groupSmartFocus = !G.st.groupSmartFocus;
+                        G.st.setConfig(
+                            'notification/groupSmartFocus', G.st.groupSmartFocus);
+                      });
+                    },
+                    value: G.st.groupSmartFocus,
+                  ),
                   onTap: () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      return GroupSelectWidget();
-                    })).then((value) {
-                      // 可能登录了，刷新一下界面
-                      setState(() {});
+                    setState(() {
+                      G.st.groupSmartFocus = !G.st.groupSmartFocus;
+                      G.st.setConfig(
+                          'notification/groupSmartFocus', G.st.groupSmartFocus);
                     });
                   },
                 ),
@@ -100,7 +126,7 @@ class _NotificationSettingsWidgetState extends State<NotificationSettingsWidget>
               children: <Widget>[
                 ListTile(
                   leading: Icon(
-                    Icons.all_inclusive,
+                    Icons.golf_course,
                     color: Colors.blue,
                   ),
                   title: Text('点击通知跳转QQ'),
@@ -140,7 +166,7 @@ class _NotificationSettingsWidgetState extends State<NotificationSettingsWidget>
               children: <Widget>[
                 ListTile(
                   leading: Icon(
-                    Icons.all_inclusive,
+                    Icons.text_fields_sharp,
                     color: Colors.blue,
                   ),
                   title: Text('测试通知'),

@@ -38,10 +38,10 @@ dependencies:
   image_picker_saver: any
   share: ^2.0.4
   date_format: ^1.0.9
-  # awesome_notifications: any
-  awesome_notifications :
-    git:
-      url: https://github.com/rafaelsetragni/awesome_notifications.git
+  awesome_notifications: any
+#  awesome_notifications :
+#    git:
+#      url: https://github.com/rafaelsetragni/awesome_notifications.git
   dio: any
   flutter_picker: ^1.0.11
 

@@ -165,9 +165,11 @@ class _ChatListPageState extends State<ChatListPage>
                   children: tailWidgets,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.end),
-              onTap: () {
-                showReplyInChatList(msg);
-              });
+              onTap: G.st.enableChatListReply
+                  ? () {
+                      showReplyInChatList(msg);
+                    }
+                  : null);
 
           // 消息内容
           List<Widget> bodyWidgets = [];
@@ -232,8 +234,8 @@ class _ChatListPageState extends State<ChatListPage>
                 // 投影
                 child: Column(children: bodyWidgets),
                 shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.all(Radius.circular(10.0)), //设定 Card 的倒角大小
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    //设定 Card 的倒角大小
                     /* borderRadius: BorderRadius.only(
                   //设定 Card 的每个角的倒角大小
                   topLeft: Radius.circular(20.0),
@@ -243,7 +245,8 @@ class _ChatListPageState extends State<ChatListPage>
                     side: showingChat
                         ? BorderSide(
                             color: Theme.of(context).primaryColor, width: 1)
-                        : BorderSide.none), // 设置边框
+                        : BorderSide.none),
+                // 设置边框
                 clipBehavior:
                     Clip.antiAlias, //对Widget截取的行为，比如这里 Clip.antiAlias 指抗锯齿
               ),

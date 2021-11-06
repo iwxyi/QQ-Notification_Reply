@@ -17,7 +17,7 @@ class GroupInfo {
   int groupId;
   String name;
   Map<int, FriendInfo> members;
-  int refreshMemberTime = 0; // 刷新成员的时间，避免死循环
+  
   Set<int> ignoredMembers; // 需要这些群成员时不进行刷新
 
   GroupInfo(this.groupId, this.name) {
@@ -41,6 +41,7 @@ class UserAccount {
 //  Map<int, List<Message>> unreadMessages = {}; // 未读消息（通知）
   Map<int, int> unreadMessageCount = {}; // 未读消息数量
   Map<int, bool> chatListShowReply = {}; // 聊天记录显示回复框
+  Set<int> smartFocusGroups = {}; // 智能聚焦的群组
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
@@ -51,7 +52,7 @@ class UserAccount {
   static Map<int, int> notificationIdMap = {};
 
   // 多线程Flag
-  Map<int, bool> gettingGroupMembers = {};
+  Set<int> gettingGroupMembers = {};
 
   // QQ号增加至11位，与QQ群分开
   static int getNotificationId(MsgBean msg) {

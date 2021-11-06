@@ -214,7 +214,8 @@ class _ChatWidgetState extends State<ChatWidget>
         ),
         SizedBox(height: 8),
         // 输入框
-        widget.innerMode ? _buildTextEditor() : _buildLineEditor()
+        widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
+        SizedBox(height: 8),
       ],
     );
   }

@@ -32,6 +32,45 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
+              '会话列表',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ),
+          Card(
+            color: Colors.white,
+            elevation: 4.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.reply_all,
+                    color: Colors.blue,
+                  ),
+                  title: Text('快速回复'),
+                  subtitle: Text('会话列表中点击右边的时间显示快速回复框'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatListReply = !G.st.enableChatListReply;
+                        G.st.setConfig('display/chatListReply',
+                            G.st.enableChatListReply);
+                      });
+                    },
+                    value: G.st.enableChatListReply,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatListReply = !G.st.enableChatListReply;
+                      G.st.setConfig('display/chatListReply',
+                          G.st.enableChatListReply);
+                    });
+                  },
+                ),],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
               '聊天',
               style: TextStyle(color: Colors.grey.shade700),
             ),
@@ -52,8 +91,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     onChanged: (bool val) {
                       setState(() {
                         G.st.showRecursionReply = !G.st.showRecursionReply;
-                        G.st.setConfig(
-                            'display/showRecursionReply', G.st.showRecursionReply);
+                        G.st.setConfig('display/showRecursionReply',
+                            G.st.showRecursionReply);
                       });
                     },
                     value: G.st.showRecursionReply,
@@ -61,48 +100,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   onTap: () {
                     setState(() {
                       G.st.showRecursionReply = !G.st.showRecursionReply;
-                      G.st.setConfig(
-                          'display/showRecursionReply', G.st.showRecursionReply);
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              '回调',
-              style: TextStyle(color: Colors.grey.shade700),
-            ),
-          ),
-          Card(
-            color: Colors.white,
-            elevation: 4.0,
-            child: Column(
-              children: <Widget>[
-                ListTile(
-                  leading: Icon(
-                    Icons.all_inclusive,
-                    color: Colors.blue,
-                  ),
-                  title: Text('点击通知跳转QQ'),
-                  subtitle: Text('进入QQ会话还是本程序的会话'),
-                  trailing: Checkbox(
-                    onChanged: (bool val) {
-                      setState(() {
-                        G.st.notificationLaunchQQ = !G.st.notificationLaunchQQ;
-                        G.st.setConfig(
-                            'notification/launchQQ', G.st.notificationLaunchQQ);
-                      });
-                    },
-                    value: G.st.notificationLaunchQQ,
-                  ),
-                  onTap: () {
-                    setState(() {
-                      G.st.notificationLaunchQQ = !G.st.notificationLaunchQQ;
-                      G.st.setConfig(
-                          'notification/launchQQ', G.st.notificationLaunchQQ);
+                      G.st.setConfig('display/showRecursionReply',
+                          G.st.showRecursionReply);
                     });
                   },
                 ),
@@ -113,5 +112,4 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
       ),
     );
   }
-
 }

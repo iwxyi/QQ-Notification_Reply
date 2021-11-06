@@ -25,6 +25,7 @@ class CqhttpService {
   num _reconnectCount = 0; // 重连次数，并且影响每次重连的时间间隔
   Timer _reconnectTimer;
 
+  // ignore: non_constant_identifier_names
   Map<String, String> CQCodeMap = {
     'face': '表情',
     'image': '图片',
@@ -113,7 +114,7 @@ class CqhttpService {
     print('ws发送数据：' + text);
     channel.sink.add(text);
   }
-  
+
   /// 群组或者私聊通用的发送消息
   /// msg 发送对象
   void sendMsg(MsgBean chatObj, String text) {
@@ -138,8 +139,8 @@ class CqhttpService {
       return;
     }
 
-    _reconnectTimer =
-        new Timer.periodic(Duration(seconds: _reconnectCount * _reconnectCount), (timer) {
+    _reconnectTimer = new Timer.periodic(
+        Duration(seconds: _reconnectCount * _reconnectCount), (timer) {
       print(log('重连检测$_reconnectCount：' + (isConnected() ? '已连接' : '尝试重连...')));
       // 已经连接上了
       if (isConnected()) {
@@ -235,7 +236,7 @@ class CqhttpService {
     getFriendList();
     getGroupList();
     ac.eventBus.fire(EventFn(Event.loginSuccess, {}));
-    
+
     _reconnectCount = 0; // 登录完成才重置重连次数
   }
 
@@ -483,7 +484,7 @@ class CqhttpService {
   void refreshGroups() {}
 
   void refreshGroupMembers(int groupId, {int userId}) {
-    if (ac.gettingGroupMembers.containsKey(groupId)) {
+    if (ac.gettingGroupMembers.contains(groupId)) {
       // 有其他线程获取了
       return;
     }
@@ -495,9 +496,8 @@ class CqhttpService {
         return;
       }
       ac.groupList[groupId].ignoredMembers.add(userId);
-      print('-------添加忽略用户中 $userId');
     }
-    ac.gettingGroupMembers[groupId] = true;
+    ac.gettingGroupMembers.add(groupId);
     send({
       'action': 'get_group_member_list',
       'params': {'group_id': groupId},
