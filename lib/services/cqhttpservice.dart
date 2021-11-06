@@ -117,9 +117,30 @@ class CqhttpService {
 
   /// 群组或者私聊通用的发送消息
   /// msg 发送对象
+  /// 都是自己手动发送的
   void sendMsg(MsgBean chatObj, String text) {
     if (chatObj.isGroup()) {
       sendGroupMessage(chatObj.groupId, text);
+
+      // 群消息智能聚焦
+      if (st.groupSmartFocus) {
+        if (text.endsWith('?') || text.endsWith('？')) {
+          ac.groupList[chatObj.groupId]?.focusAsk = true;
+          print('智能聚焦.疑问?');
+        }
+        Iterable<RegExpMatch> matches = RegExp(r'\[CQ:at,qq=(\d+)\]').allMatches(text);
+        if (matches.length > 0) {
+          if (ac.groupList[chatObj.groupId].focusAt == null) {
+            ac.groupList[chatObj.groupId].focusAt = {};
+          }
+          for (int i = 0; i < matches.length; i++) {
+            RegExpMatch match = matches.elementAt(i);
+            int id = int.parse(match.group(1));
+            ac.groupList[chatObj.groupId].focusAt.add(id);
+            print('智能聚焦.@$id');
+          }
+        }
+      }
     } else if (chatObj.isPrivate()) {
       sendPrivateMessage(chatObj.friendId, text);
     } else {

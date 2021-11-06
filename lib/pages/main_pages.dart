@@ -123,6 +123,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         }
       }
 
+      if (G.st.groupSmartFocus && msg.isGroup()) {
+        GroupInfo group = G.ac.groupList[msg.groupId];
+        group.focusAsk = false;
+        group.focusAt = null;
+      }
+
       // 当前页面直接替换
       if (G.rt.currentChatPage != null) {
         // 判断旧页面
@@ -555,11 +561,25 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           String text = msg.message ?? '';
           bool contains = false;
           if (text.contains('[CQ:at,qq=${G.ac.qqId}]')) {
-            // @自己
+            // @自己、回复
             contains = true;
-          } else if (G.st.notificationAtAll && text.contains('[CQ:at,qq=all]')) {
+          } else if (G.st.notificationAtAll &&
+              text.contains('[CQ:at,qq=all]')) {
             // @全体
             contains = true;
+          } else if (G.st.groupSmartFocus) {
+            GroupInfo group = G.ac.groupList[msg.groupId];
+            if (group != null) {
+              if (group.focusAsk) {
+                // 疑问聚焦
+                contains = true;
+                print('群消息.疑问聚焦');
+              } else if (group.focusAt != null &&
+                  group.focusAt.contains(msg.senderId)) {
+                contains = true;
+                print('群消息.艾特聚焦');
+              }
+            }
           }
           if (contains) {
             channelKey = 'important_group_chats';

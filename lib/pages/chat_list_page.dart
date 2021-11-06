@@ -202,7 +202,8 @@ class _ChatListPageState extends State<ChatListPage>
               }));
 
           // 显示快速回复框
-          if (G.ac.chatListShowReply.containsKey(msg.keyId())) {
+          if (G.st.enableChatListReply &&
+              G.ac.chatListShowReply.containsKey(msg.keyId())) {
             bodyWidgets.add(new Container(
               child: new TextField(
                 onSubmitted: (String text) {

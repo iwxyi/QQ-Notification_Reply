@@ -19,6 +19,8 @@ class GroupInfo {
   Map<int, FriendInfo> members;
   
   Set<int> ignoredMembers; // 需要这些群成员时不进行刷新
+  bool focusAsk = false; // 提问聚焦
+  Set<int> focusAt; // 艾特聚焦
 
   GroupInfo(this.groupId, this.name) {
     this.members = {};
@@ -41,7 +43,7 @@ class UserAccount {
 //  Map<int, List<Message>> unreadMessages = {}; // 未读消息（通知）
   Map<int, int> unreadMessageCount = {}; // 未读消息数量
   Map<int, bool> chatListShowReply = {}; // 聊天记录显示回复框
-  Set<int> smartFocusGroups = {}; // 智能聚焦的群组
+  // Set<int> smartFocusGroups = {}; // 智能聚焦的群组
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
