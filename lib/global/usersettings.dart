@@ -41,6 +41,38 @@ class UserSettings extends MySettings {
     // readFromFile(); // super会调用，原来这是虚继承
   }
 
+  /// 读取配置文件
+  @override
+  void readFromFile() {
+    host = getStr('account/host', '');
+    token = getStr('account/token', '');
+    enableSelfChats = getBool('function/selfChats', true);
+    notificationLaunchQQ = getBool('notification/launchQQ', false);
+    showRecursionReply = getBool('display/showRecursionReply', true);
+
+    // 读取启用的群组数组
+    String ens = getStr('notification/enabledGroups', '');
+    if (ens.isNotEmpty) {
+      List<String> sl = ens.split(';');
+      sl.forEach((idString) {
+        try {
+          enabledGroups.add(int.parse(idString));
+        } catch (e) {}
+      });
+    }
+
+    // 读取重要的群组数组
+    ens = getStr('notification/importantGroups', '');
+    if (ens.isNotEmpty) {
+      List<String> sl = ens.split(';');
+      sl.forEach((idString) {
+        try {
+          importantGroups.add(int.parse(idString));
+        } catch (e) {}
+      });
+    }
+  }
+
   int getFriendImportance(int id) {
     if (friendImportance.containsKey(id)) {
       return friendImportance[id];
@@ -64,6 +96,7 @@ class UserSettings extends MySettings {
     print(groupImportance.toString());
   }
 
+  /// 点击开关后，切换群组状态
   void switchEnabledGroup(int id) {
     // 如果 id == 0，则只是单纯的保存全部
     if (id != 0) {
@@ -79,6 +112,7 @@ class UserSettings extends MySettings {
     setConfig('notification/enabledGroups', text);
   }
 
+  /// 点击开关后，切换群组状态
   void switchImportantGroup(int id) {
     // 如果 id == 0，则只是单纯的保存全部
     if (id != 0) {
@@ -92,36 +126,5 @@ class UserSettings extends MySettings {
     // 保存
     String text = importantGroups.join(';');
     setConfig('notification/importantGroups', text);
-  }
-
-  /// 读取配置文件
-  @override
-  void readFromFile() {
-    host = getStr('account/host', '');
-    token = getStr('account/token', '');
-    enableSelfChats = getBool('function/selfChats', true);
-    notificationLaunchQQ = getBool('notification/launchQQ', false);
-
-    // 读取启用的数组
-    String ens = getStr('notification/enabledGroups', '');
-    if (ens.isNotEmpty) {
-      List<String> sl = ens.split(';');
-      sl.forEach((idString) {
-        try {
-          enabledGroups.add(int.parse(idString));
-        } catch (e) {}
-      });
-    }
-
-    // 读取重要的数组
-    ens = getStr('notification/importantGroups', '');
-    if (ens.isNotEmpty) {
-      List<String> sl = ens.split(';');
-      sl.forEach((idString) {
-        try {
-          importantGroups.add(int.parse(idString));
-        } catch (e) {}
-      });
-    }
   }
 }

@@ -69,7 +69,7 @@ class _MessageViewState extends State<MessageView> {
       hWidgets = [_buildHeaderView(), vWidget, SizedBox(width: 72, height: 48)];
     }
 
-    return new Container(
+    Widget container = new Container(
       child: new Row(
           mainAxisAlignment:
               isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -77,6 +77,13 @@ class _MessageViewState extends State<MessageView> {
           children: hWidgets),
       padding: EdgeInsets.only(top: isNext ? 0 : 8),
     );
+
+    // 撤回的消息变成半透明
+    if (msg.recalled) {
+      container = Opacity(opacity: 0.3, child: container);
+    }
+
+    return container;
   }
 
   /// 构建头像控件
@@ -122,7 +129,7 @@ class _MessageViewState extends State<MessageView> {
     EdgeInsets bubbleMargin = EdgeInsets.only(top: 3.0, bottom: 3.0);
     Widget bubbleContent;
 
-    String text = msg.message;
+    String text = msg.message ?? '';
     Match match;
     if (msg.isMessage() &&
         !msg.isFile() &&
@@ -148,11 +155,6 @@ class _MessageViewState extends State<MessageView> {
         borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
       ),
     );
-
-    // 撤回的消息变成半透明
-    if (msg.recalled) {
-      container = Opacity(opacity: 0.3, child: container);
-    }
 
     // 手势操作
     return GestureDetector(
@@ -465,8 +467,11 @@ class _MessageViewState extends State<MessageView> {
               useMessage: username + ': ' + replyMsg.message);
         } else {
           // 只显示最近的回复，回复中的回复将以“[回复]@user”的形式显示
+          String rs = replyMsg.message;
+          rs = rs.replaceAll(
+              RegExp(r"\[CQ:reply,.+?\]\s*(\[CQ:at,qq=\d+?\])?"), '[回复]');
           return _buildRichTextSpans(
-              replyMsg, username + ': ' + replyMsg.message);
+              replyMsg, username + ': ' + rs);
         }
       }
     }

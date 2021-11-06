@@ -155,7 +155,9 @@ class _ChatWidgetState extends State<ChatWidget>
               _messages[index],
               index <= 0
                   ? false
-                  : _messages[index - 1].senderId == _messages[index].senderId,
+                  : _messages[index - 1].senderId ==
+                          _messages[index].senderId &&
+                      !_messages[index - 1].recalled,
               ValueKey(_messages[index].messageId),
               loadFinishedCallback: () {
                 // 图片加载完毕，会影响大小

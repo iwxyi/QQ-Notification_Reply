@@ -7,12 +7,12 @@ import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/settings/group_select_widget.dart';
 
-class NotificationWidget extends StatefulWidget {
+class NotificationSettingsWidget extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => _NotificationWidgetState();
+  State<StatefulWidget> createState() => _NotificationSettingsWidgetState();
 }
 
-class _NotificationWidgetState extends State<NotificationWidget> {
+class _NotificationSettingsWidgetState extends State<NotificationSettingsWidget> {
   @override
   void initState() {
     super.initState();

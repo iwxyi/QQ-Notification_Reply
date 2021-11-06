@@ -4,15 +4,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/pages/settings/all_messages_page.dart';
+import 'package:qqnotificationreply/pages/settings/display_settings_widget.dart';
 import 'package:qqnotificationreply/pages/settings/login_widget.dart';
-import 'package:qqnotificationreply/pages/settings/notification_widget.dart';
+import 'package:qqnotificationreply/pages/settings/notification_settings_widget.dart';
 
-class AccountWidget extends StatefulWidget {
+class MySettingsWidget extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => _AccountWidgetState();
+  State<StatefulWidget> createState() => _MySettingsWidgetState();
 }
 
-class _AccountWidgetState extends State<AccountWidget>
+class _MySettingsWidgetState extends State<MySettingsWidget>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
@@ -88,37 +89,6 @@ class _AccountWidgetState extends State<AccountWidget>
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.sync,
-                    color: Colors.red,
-                  ),
-                  title: Text(
-                    '心跳时间：' +
-                        (G.cs.lastHeartTime == 0
-                            ? '无'
-                            : ((DateTime.now().millisecondsSinceEpoch -
-                                            G.cs.lastHeartTime) ~/
-                                        1000)
-                                    .toString() +
-                                '秒前'),
-                  ),
-                )
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              '列表',
-              style: TextStyle(color: Colors.grey.shade700),
-            ),
-          ),
-          Card(
-            color: Colors.white,
-            elevation: 4.0,
-            child: Column(
-              children: <Widget>[
-                ListTile(
-                  leading: Icon(
                     Icons.contact_phone,
                     color: Colors.blue,
                   ),
@@ -132,24 +102,6 @@ class _AccountWidgetState extends State<AccountWidget>
                   ),
                   title: Text('群组数量：' + G.ac.groupList.length.toString()),
                   onTap: () => G.cs.getGroupList(),
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.history,
-                    color: Colors.blue,
-                  ),
-                  title: Text(
-                      '日志记录：' + G.ac.allLogs.length.toString()),
-                  trailing: Icon(Icons.arrow_right),
-                  onTap: () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      return AllMessageListWidget();
-                    })).then((value) {
-                      // 可能登录了，刷新一下界面
-                      setState(() {});
-                    });
-                  },
                 ),
               ],
             ),
@@ -180,8 +132,78 @@ class _AccountWidgetState extends State<AccountWidget>
                         appBar: AppBar(
                           title: Text('通知设置'),
                         ),
-                        body: NotificationWidget(),
+                        body: NotificationSettingsWidget(),
                       );
+                    })).then((value) {
+                      // 可能登录了，刷新一下界面
+                      setState(() {});
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.settings_display,
+                    color: Colors.blue,
+                  ),
+                  title: Text('显示设置'),
+                  trailing: Icon(Icons.arrow_right),
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return Scaffold(
+                        appBar: AppBar(
+                          title: Text('显示设置'),
+                        ),
+                        body: DisplaySettingsWidget(),
+                      );
+                    })).then((value) {
+                      // 可能登录了，刷新一下界面
+                      setState(() {});
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              '调试',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ),
+          Card(
+            color: Colors.white,
+            elevation: 4.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.sync,
+                    color: Colors.red,
+                  ),
+                  title: Text(
+                    '心跳时间：' +
+                        (G.cs.lastHeartTime == 0
+                            ? '无'
+                            : ((DateTime.now().millisecondsSinceEpoch -
+                                            G.cs.lastHeartTime) ~/
+                                        1000)
+                                    .toString() +
+                                '秒前'),
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.history,
+                    color: Colors.blue,
+                  ),
+                  title: Text('日志记录：' + G.ac.allLogs.length.toString()),
+                  trailing: Icon(Icons.arrow_right),
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return AllMessageListWidget();
                     })).then((value) {
                       // 可能登录了，刷新一下界面
                       setState(() {});

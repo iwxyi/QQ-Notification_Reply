@@ -28,8 +28,14 @@ void main() {
         'resource://drawable/notification_icon',
         [
           NotificationChannel(
+              channelKey: 'app_notification',
+              channelName: '程序通知',
+              channelDescription: '程序通知',
+              defaultColor: Color(0xFF9D50DD),
+              ledColor: Colors.white),
+          NotificationChannel(
               channelKey: 'notices',
-              channelName: '通知',
+              channelName: '交互通知',
               channelDescription: '交互通知',
               defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white),

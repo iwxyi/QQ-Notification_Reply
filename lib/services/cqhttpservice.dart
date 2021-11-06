@@ -100,7 +100,6 @@ class CqhttpService {
     });
 
     // 关闭定时连接
-    _reconnectCount = 0;
     if (_reconnectTimer != null) {
       _reconnectTimer.cancel();
       _reconnectTimer = null;
@@ -128,7 +127,7 @@ class CqhttpService {
     }
 
     _reconnectTimer =
-        new Timer.periodic(Duration(seconds: _reconnectCount * 2), (timer) {
+        new Timer.periodic(Duration(seconds: _reconnectCount * _reconnectCount), (timer) {
       print(log('重连检测$_reconnectCount：' + (isConnected() ? '已连接' : '尝试重连...')));
       // 已经连接上了
       if (isConnected()) {
@@ -224,6 +223,8 @@ class CqhttpService {
     getFriendList();
     getGroupList();
     ac.eventBus.fire(EventFn(Event.loginSuccess, {}));
+    
+    _reconnectCount = 0; // 登录完成才重置重连次数
   }
 
   void _parseEchoMessage(final obj) {
@@ -590,10 +591,10 @@ class CqhttpService {
         if (msg.isFile()) {
           text = '[${msg.fileName}]';
         } else {
+          text = text.replaceAll(
+              RegExp(r"\[CQ:reply,.+?\]\s*(\[CQ:at,qq=\d+?\])?"), '[回复]');
           text =
               text.replaceAll(RegExp(r"\[CQ:image,type=flash,.+?\]"), '[闪照]');
-          text = text.replaceAll(
-              RegExp(r"\[CQ:reply,.+?\](\[CQ:at,qq=\d+?\])?"), '[回复]');
           text = text.replaceAll(RegExp(r"\[CQ:at,qq=all\]"), '@全体成员');
           text = text.replaceAllMapped(RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) {
             var id = int.parse(match[1]);
