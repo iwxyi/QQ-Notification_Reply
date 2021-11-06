@@ -5,13 +5,16 @@ import 'package:qqnotificationreply/global/g.dart';
 class LoginWidget extends StatelessWidget {
   String host = G.st.host;
   String token = G.st.token;
+  String server = G.st.server;
 
   TextEditingController _hostController;
   TextEditingController _tokenController;
+  TextEditingController _serverController;
 
   LoginWidget() {
     _hostController = new TextEditingController(text: host);
     _tokenController = new TextEditingController(text: token);
+    _serverController = new TextEditingController(text: server);
   }
 
   @override
@@ -26,23 +29,12 @@ class LoginWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Container(
-                height: 80,
-                width: 80,
                 margin: EdgeInsets.only(top: 50),
                 alignment: Alignment.center,
                 child: Image(
                     image: AssetImage("assets/icons/cat_chat.png"),
                     width: 100.0),
-              ),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 0),
-                child: Text(
-                  'QQ通知',
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 20,
-                  ),
-                ),
+                constraints: BoxConstraints(maxHeight: 80, maxWidth: 80),
               ),
               Container(
                 margin: EdgeInsets.symmetric(
@@ -78,6 +70,22 @@ class LoginWidget extends StatelessWidget {
                 ),
               ),
               Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 30,
+                ),
+                child: TextField(
+                  controller: _serverController,
+                  decoration: InputDecoration(
+                    hintText: '后台服务地址 (可空)',
+                    labelText: 'server',
+                  ),
+                  onChanged: (String text) {
+                    server = text;
+                  },
+                ),
+              ),
+              Container(
                 width: double.infinity,
                 margin: EdgeInsets.symmetric(
                   vertical: 8,
@@ -102,6 +110,8 @@ class LoginWidget extends StatelessWidget {
                           // 连接失败
                         }
                       });
+                      G.st.server = server;
+                      G.st.setConfig('account/server', server);
                     }
                   },
                 ),

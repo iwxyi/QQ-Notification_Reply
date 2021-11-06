@@ -113,6 +113,18 @@ class CqhttpService {
     print('ws发送数据：' + text);
     channel.sink.add(text);
   }
+  
+  /// 群组或者私聊通用的发送消息
+  /// msg 发送对象
+  void sendMsg(MsgBean chatObj, String text) {
+    if (chatObj.isGroup()) {
+      sendGroupMessage(chatObj.groupId, text);
+    } else if (chatObj.isPrivate()) {
+      sendPrivateMessage(chatObj.friendId, text);
+    } else {
+      print('无法判断的发送对象');
+    }
+  }
 
   void reconnect(String host, String token) {
     _reconnectCount++;

@@ -1,10 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:image_picker_saver/image_picker_saver.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -180,7 +184,7 @@ class _ChatWidgetState extends State<ChatWidget>
               },
               addMessageCallback: (String text) {
                 // 添加消息到发送框
-                _textController.text = _textController.text + text;
+                _insertMessage(text);
                 FocusScope.of(context).requestFocus(_editorFocus);
               },
               sendMessageCallback: (String text) {
@@ -362,37 +366,83 @@ class _ChatWidgetState extends State<ChatWidget>
     FocusScope.of(context).requestFocus(_editorFocus); // 继续保持焦点
 
     print('发送消息：' + text);
-    if (widget.chatObj.isPrivate()) {
-      // 发送私聊消息
-      G.cs.sendPrivateMessage(widget.chatObj.friendId, text);
-    } else if (widget.chatObj.isGroup()) {
-      // 发送群组消息
-      G.cs.sendGroupMessage(widget.chatObj.groupId, text);
+    G.cs.sendMsg(widget.chatObj, text);
+  }
+
+  void _insertMessage(String text) {
+    int start = _textController.selection.start;
+    int end = _textController.selection.end;
+    if (start == -1 && end == -1) {
+      // 没有任何位置，直接添加到末尾
+      _textController.text = _textController.text + text;
+    } else {
+      int pos = end;
+      String full = _textController.text;
+      if (start > -1 && end > -1) {
+        // 有选中，先删除选中
+        if (start > end) {
+          int tmp = start;
+          start = end;
+          end = tmp;
+        }
+        pos = start;
+        full =
+            full.substring(0, start) + text + full.substring(end, full.length);
+      } else {
+        if (pos < 0) {
+          pos = start;
+        }
+        full = full.substring(0, pos) + text + full.substring(pos, full.length);
+      }
+      _textController.text = full;
+      _textController.selection =
+          TextSelection.fromPosition(TextPosition(offset: pos + text.length));
     }
   }
 
   /// 获取图片
-  /// @param index 0本地图库，1拍照
-  Future getImage(bool camera) async {
-    PickedFile selectedFile;
-    bool supportCamera = true; // 有些平台不支持相机，这个得想办法获取
-    if (!supportCamera) {
-      // selectedFile=await ImagePicker.platform.pickImage(source: ImageSource.gallery);
-      selectedFile = await ImagePicker().getImage(source: ImageSource.gallery);
-    } else {
-      if (!camera)
-        selectedFile =
-            await ImagePicker().getImage(source: ImageSource.gallery);
-      else
-        selectedFile = await ImagePicker().getImage(source: ImageSource.camera);
-      // imageFile = File(selectedFile.path);
+  /// @param immediate 是否立刻上传
+  Future getImage(bool immediate) async {
+    var image = await ImagePickerSaver.pickImage(source: ImageSource.gallery);
+    if (image == null) {
+      // 取消选择图片
+      return;
+    }
+    _uploadImage(image, immediate);
+  }
+
+  void _uploadImage(File image, bool send) async {
+    if (G.st.server == null || G.st.server.isEmpty) {
+      Fluttertoast.showToast(
+          msg: "未设置后台服务主机",
+          gravity: ToastGravity.CENTER,
+          textColor: Colors.grey);
+      return;
     }
 
-    if (selectedFile != null) {
-      // TODO: 上传文件
-      // uploadFile(selectedFile);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('等待开发')));
+    String path = image.path;
+    var name = path.substring(path.lastIndexOf("/") + 1, path.length);
+    var suffix = name.substring(name.lastIndexOf(".") + 1, name.length);
+    FormData formData = new FormData.fromMap({
+      "upfile": await MultipartFile.fromFile(path,
+          filename: name, contentType: MediaType.parse("image/$suffix"))
+    });
+
+    Dio dio = new Dio();
+    var response = await dio.post<String>("${G.st.server}/file_upload.php",
+        data: formData);
+    if (response.statusCode == 200) {
+      Fluttertoast.showToast(
+          msg: "图片上传成功", gravity: ToastGravity.CENTER, textColor: Colors.grey);
+
+      var data = json.decode(response.data);
+      String hash = data['hash'];
+      String text = "[CQ:image,file=${G.st.server}/files/$hash]";
+      if (send) {
+        G.cs.sendMsg(widget.chatObj, text);
+      } else {
+        _insertMessage(text);
+      }
     }
   }
 

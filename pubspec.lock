@@ -52,13 +52,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.15.0"
-  cross_file:
-    dependency: transitive
-    description:
-      name: cross_file
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.3.2"
   crypto:
     dependency: transitive
     description:
@@ -80,6 +73,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.9"
+  dio:
+    dependency: "direct main"
+    description:
+      name: dio
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "4.0.1"
   event_bus:
     dependency: "direct main"
     description:
@@ -141,13 +141,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_plugin_android_lifecycle:
-    dependency: transitive
+  flutter_picker:
+    dependency: "direct main"
     description:
-      name: flutter_plugin_android_lifecycle
+      name: flutter_picker
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.4"
+    version: "1.1.5"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -186,27 +186,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.0.0"
-  image_picker:
-    dependency: "direct main"
-    description:
-      name: image_picker
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.7.5+4"
-  image_picker_for_web:
-    dependency: "direct main"
-    description:
-      name: image_picker_for_web
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.1.4"
-  image_picker_platform_interface:
-    dependency: transitive
-    description:
-      name: image_picker_platform_interface
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.4.1"
   image_picker_saver:
     dependency: "direct main"
     description:

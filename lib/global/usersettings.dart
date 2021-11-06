@@ -11,6 +11,7 @@ class UserSettings extends MySettings {
   // 网络参数
   String host; // 主机地址
   String token; // 连接秘钥
+  String server; // 后台服务地址
 
   // 消息选项
   List<int> enabledGroups = []; // 开启通知的群组
@@ -46,6 +47,7 @@ class UserSettings extends MySettings {
   void readFromFile() {
     host = getStr('account/host', '');
     token = getStr('account/token', '');
+    server = getStr('account/server', '');
     enableSelfChats = getBool('function/selfChats', true);
     notificationLaunchQQ = getBool('notification/launchQQ', false);
     showRecursionReply = getBool('display/showRecursionReply', true);
