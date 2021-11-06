@@ -99,6 +99,8 @@ class MsgBean {
   bool isFile() => fileId != null && fileId.isNotEmpty;
   
   bool isMessage() => action == ActionType.Message;
+  
+  bool isPureMessage() => isMessage() && message != null;
 
   bool isObj(MsgBean msg) {
     if (groupId != null && groupId != 0) {

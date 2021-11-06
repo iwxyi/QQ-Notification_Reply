@@ -550,7 +550,25 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         channelKey = 'important_group_chats';
       } else {
         // 普通群组消息
-        channelKey = 'normal_group_chats';
+        if (msg.isPureMessage()) {
+          // 有没有 @我 或者 回复我 的消息
+          String text = msg.message ?? '';
+          bool contains = false;
+          if (text.contains('[CQ:at,qq=${G.ac.qqId}]')) {
+            // @自己
+            contains = true;
+          } else if (G.st.notificationAtAll && text.contains('[CQ:at,qq=all]')) {
+            // @全体
+            contains = true;
+          }
+          if (contains) {
+            channelKey = 'important_group_chats';
+          } else {
+            channelKey = 'normal_group_chats';
+          }
+        } else {
+          channelKey = 'normal_group_chats';
+        }
       }
     }
 

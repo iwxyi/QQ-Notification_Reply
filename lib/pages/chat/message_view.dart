@@ -132,8 +132,7 @@ class _MessageViewState extends State<MessageView> {
 
     String text = msg.message ?? '';
     Match match;
-    if (msg.isMessage() &&
-        !msg.isFile() &&
+    if (msg.isPureMessage() &&
         (match = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+?)?\]$')
                 .firstMatch(text)) !=
             null) {

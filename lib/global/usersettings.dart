@@ -21,13 +21,16 @@ class UserSettings extends MySettings {
 
   // 功能选项
   bool enableSelfChats = true; // 启用本身的聊天功能
-  bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
   bool enableChatListHistories = true; // 聊天列表多条未读消息
   bool enableChatListReply = true; // 聊天列表点击未读按钮快速回复
   bool enableHeader = true; // 显示头像（稍微增加性能）
   int keepMsgHistoryCount = 100; // 保留多少消息记录
   int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
   bool showRecursionReply = true; // 回复中允许再显示回复
+
+  // 通知选项
+  bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
+  bool notificationAtAll = false; // @全体成员 与 @自己 同一级
 
   // 界面显示
   double msgBubbleRadius = 5; // 气泡圆角
