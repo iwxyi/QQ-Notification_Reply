@@ -46,8 +46,8 @@ class _ChatWidgetState extends State<ChatWidget>
   bool _showGoToBottomButton = false; // 是否显示返回底部按钮
   num _hasNewMsg = 0; // 是否有新消息
 
-  List<MsgBean> _messages = [];
-  Map<int, bool> hasToBottom = {};
+  List<MsgBean> _messages = []; // 显示的msg列表，不显示全
+  Map<int, bool> hasToBottom = {}; // 指定图片是否已经申请跳bottom
 
   @override
   void initState() {
@@ -146,6 +146,7 @@ class _ChatWidgetState extends State<ChatWidget>
       children: <Widget>[
         // 消息列表
         new Flexible(
+            child: Scrollbar(
           child: new ListView.separated(
             separatorBuilder: (BuildContext context, int index) {
               return Divider(
@@ -211,7 +212,7 @@ class _ChatWidgetState extends State<ChatWidget>
             itemCount: _messages.length,
             controller: _scrollController,
           ),
-        ),
+        )),
         SizedBox(height: 8),
         // 输入框
         widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
@@ -300,7 +301,6 @@ class _ChatWidgetState extends State<ChatWidget>
               ),
               // 输入框
               Container(
-                constraints: BoxConstraints(maxHeight: 105, minHeight: 75),
                 child: new TextField(
                   controller: _textController,
                   decoration: new InputDecoration.collapsed(
@@ -376,6 +376,8 @@ class _ChatWidgetState extends State<ChatWidget>
     if (start == -1 && end == -1) {
       // 没有任何位置，直接添加到末尾
       _textController.text = _textController.text + text;
+      _textController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _textController.text.length + text.length));
     } else {
       int pos = end;
       String full = _textController.text;
