@@ -314,7 +314,7 @@ class _MessageViewState extends State<MessageView> {
           // JSON卡片
           params = params
               .replaceAll("&#44;", ",")
-              .replaceAll("&amp;", ";")
+              .replaceAll("&amp;", "&")
               .replaceAll("&#91;", "[")
               .replaceAll("&#93;", "]");
 
@@ -513,7 +513,7 @@ class _MessageViewState extends State<MessageView> {
   String replaceHtmlCode(String text) {
     return text
         .replaceAll("&#44;", ",")
-        .replaceAll("&amp;", ";")
+        .replaceAll("&amp;", "&")
         .replaceAll("&#91;", "[")
         .replaceAll("&#93;", "]");
   }
@@ -572,6 +572,11 @@ class _MessageViewState extends State<MessageView> {
                 scale = 1.5;
               } else if (minHW < 256) {
                 scale = 2;
+              }
+
+              // 回复中的图片更小一级
+              if (minHW > 32 && recursion > 0) {
+                scale *= 2;
               }
             }
 
