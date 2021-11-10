@@ -128,7 +128,8 @@ class CqhttpService {
           ac.groupList[chatObj.groupId]?.focusAsk = true;
           print('智能聚焦.疑问?');
         }
-        Iterable<RegExpMatch> matches = RegExp(r'\[CQ:at,qq=(\d+)\]').allMatches(text);
+        Iterable<RegExpMatch> matches =
+            RegExp(r'\[CQ:at,qq=(\d+)\]').allMatches(text);
         if (matches.length > 0) {
           if (ac.groupList[chatObj.groupId].focusAt == null) {
             ac.groupList[chatObj.groupId].focusAt = {};
@@ -577,7 +578,15 @@ class CqhttpService {
     // 保留每个对象的消息记录
     if (!ac.allMessages.containsKey(msg.keyId())) {
       ac.allMessages[msg.keyId()] = [];
+    } else {
+      // 去除重复消息，可能是bug，有时候会发两遍一样的消息
+      bool repeat = false;
+      ac.allMessages[msg.keyId()].forEach((element) {
+        if (element.messageId == msg.messageId) repeat = true;
+      });
+      if (repeat) return;
     }
+
     ac.allMessages[msg.keyId()].add(msg);
     if (ac.allMessages[msg.keyId()].length > st.keepMsgHistoryCount) {
       ac.allMessages[msg.keyId()].removeAt(0);
@@ -643,6 +652,8 @@ class CqhttpService {
           text = text.replaceAllMapped(
               RegExp(r'^\[CQ:json,data=.+?"prompt":"(.+?)".*?\]'),
               (match) => '[${match[1]}]');
+          text = text.replaceAllMapped(RegExp(r'\[CQ:redbag,title=(.+?)\]'),
+              (match) => '[红包: ${match[1]}]');
           text = text.replaceAllMapped(RegExp(r"\[CQ:([^,]+),.+?\]"), (match) {
             if (CQCodeMap.containsKey(match[1])) {
               return "[${CQCodeMap[match[1]]}]";

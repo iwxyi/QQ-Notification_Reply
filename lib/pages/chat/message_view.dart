@@ -268,8 +268,17 @@ class _MessageViewState extends State<MessageView> {
             span = new WidgetSpan(
                 child: _buildImageWidget(url, recursion: recursion));
           }
-        } else if (cqCode == 'bag') {
-          span = new WidgetSpan(child: Image.asset("assets/icons/redbag.png"));
+        } else if (cqCode == 'redbag') {
+          RegExp rgRE = RegExp(r'^title=(.+)$');
+          if ((mat = rgRE.firstMatch(params)) != null) {
+            String title = mat[1];
+            span =
+                new WidgetSpan(child: Image.asset("assets/icons/redbag.png", scale: 2,));
+            spanAfter = new TextSpan(text: "[$title]");
+          } else {
+            span =
+                new WidgetSpan(child: Image.asset("assets/icons/redbag.png"));
+          }
         } else if (cqCode == 'at') {
           RegExp re = RegExp(r'^qq=(\w+)$');
           if ((mat = re.firstMatch(params)) != null) {
@@ -742,7 +751,12 @@ class _MessageViewState extends State<MessageView> {
     } else if (value == 'repeat') {
       widget.sendMessageCallback(msg.message);
     } else if (value == 'cq') {
-      _showCopyTextDialog('CQ码', msg.message);
+      _showCopyTextDialog(
+          'CQ码',
+          'id: ' +
+              msg.messageId.toString() +
+              '\n--------------------\n' +
+              msg.message);
     } else if (value == 'delete') {
       widget.deleteMessageCallback(msg);
     } else if (value == 'recall') {

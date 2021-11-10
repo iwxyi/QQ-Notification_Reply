@@ -375,7 +375,7 @@ class _ChatWidgetState extends State<ChatWidget>
       // 没有任何位置，直接添加到末尾
       _textController.text = _textController.text + text;
       _textController.selection = TextSelection.fromPosition(
-          TextPosition(offset: _textController.text.length + text.length));
+          TextPosition(offset: _textController.text.length));
     } else {
       int pos = end;
       String full = _textController.text;
