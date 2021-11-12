@@ -85,19 +85,20 @@ class _ChatWidgetState extends State<ChatWidget>
         new ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
     _scrollController.addListener(() {
       // 是否保持底部（有新消息、图标加载完毕等事件）
-      _keepScrollBottom = (_scrollController.offset >=
-          _scrollController.position.maxScrollExtent - 50);
+      _keepScrollBottom = (_scrollController.offset <= 50);
 
       // 滚动时判断是否需要“回到底部”悬浮按钮
       bool _prevShow = _showGoToBottomButton;
-      _showGoToBottomButton = (_scrollController.offset <
-          _scrollController.position.maxScrollExtent - 500);
+      _showGoToBottomButton = (_scrollController.offset >
+          _scrollController.position.minScrollExtent + 500);
       if (_prevShow != _showGoToBottomButton) {
         setState(() {});
       }
 
       // 顶部加载历史消息
-      if (_scrollController.offset <= 0 && !_blankHistory) {
+      if (_scrollController.offset >=
+              _scrollController.position.maxScrollExtent &&
+          !_blankHistory) {
         _loadMsgHistory();
       }
     });
@@ -116,7 +117,13 @@ class _ChatWidgetState extends State<ChatWidget>
     _messages = [];
     if (G.ac.allMessages.containsKey(msg.keyId())) {
       List<MsgBean> list = G.ac.allMessages[msg.keyId()];
-      _messages = list.sublist(max(0, list.length - G.st.loadMsgHistoryCount));
+      // _messages = list.sublist(max(0, list.length - G.st.loadMsgHistoryCount));
+      // 逆序
+      _messages.clear();
+      int start = max(0, list.length - G.st.loadMsgHistoryCount);
+      for (int i = list.length - 1; i >= start; --i) {
+        _messages.add(list[i]);
+      }
     }
 
     // 默认滚动到底部
@@ -124,18 +131,19 @@ class _ChatWidgetState extends State<ChatWidget>
     _blankHistory = false;
     _showGoToBottomButton = false;
     _hasNewMsg = 0;
-    _scrollToBottom(false);
+    _scrollToLatest(false);
     _textController.text = "";
   }
 
-  void _scrollToBottom(bool ani) {
+  /// 跳转到最新的位置
+  void _scrollToLatest(bool ani) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (ani) {
-        _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+        _scrollController.animateTo(_scrollController.position.minScrollExtent,
             duration: Duration(milliseconds: 400),
             curve: Curves.fastLinearToSlowEaseIn);
       } else {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        _scrollController.jumpTo(_scrollController.position.minScrollExtent);
       }
       _hasNewMsg = 0;
     });
@@ -155,12 +163,13 @@ class _ChatWidgetState extends State<ChatWidget>
                 indent: 0,
               );
             },
+            reverse: true,
             // padding: new EdgeInsets.all(8.0),
             itemBuilder: (context, int index) => MessageView(
               _messages[index],
-              index <= 0
+              index >= _messages.length - 1
                   ? false
-                  : _messages[index - 1].senderId == _messages[index].senderId,
+                  : _messages[index + 1].senderId == _messages[index].senderId,
               ValueKey(_messages[index].messageId),
               loadFinishedCallback: () {
                 // 图片加载完毕，会影响大小
@@ -168,7 +177,7 @@ class _ChatWidgetState extends State<ChatWidget>
                   if (!hasToBottom.containsKey(_messages[index].messageId)) {
                     // 重复判断，避免不知道哪来的多次complete
                     hasToBottom[_messages[index].messageId] = true;
-                    _scrollToBottom(true);
+                    _scrollToLatest(true);
                   }
                 }
               },
@@ -235,7 +244,7 @@ class _ChatWidgetState extends State<ChatWidget>
             ? FloatingActionButton(
                 child: Icon(Icons.arrow_downward),
                 onPressed: () {
-                  _scrollToBottom(true);
+                  _scrollToLatest(true);
                 },
               )
             : null,
@@ -334,7 +343,7 @@ class _ChatWidgetState extends State<ChatWidget>
     if (!msg.isObj(widget.chatObj)) {
       return;
     }
-    _messages.add(msg);
+    _messages.insert(0, msg);
     if (!_keepScrollBottom) {
       _hasNewMsg++;
     }
@@ -346,7 +355,7 @@ class _ChatWidgetState extends State<ChatWidget>
     // 刷新界面
     setState(() {});
     if (_keepScrollBottom) {
-      _scrollToBottom(true);
+      _scrollToLatest(true);
     }
   }
 
@@ -448,20 +457,23 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   void _loadMsgHistory() {
+    // 没有这个对象的消息记录，但应该不会，是出错了
     if (!G.ac.allMessages.containsKey(widget.chatObj.keyId())) {
+      print('warning: 未找到该聊天对象的消息记录列表');
       _blankHistory = true;
       return;
     }
 
     // 获取需要加载的位置
     List<MsgBean> list = G.ac.allMessages[widget.chatObj.keyId()];
-    int endIndex = list.length, startIndex = 0; // 最后一个需要加载的位置+1（不包括）
+    int endIndex = list.length; // 最后一个需要加载的位置+1（不包括）
+    int startIndex = 0;
     if (_messages != null && _messages.length > 0) {
-      // 判断第一条消息的位置
-      int messageId = _messages[0].messageId;
+      // 判断最老消息的位置
+      int messageId = _messages.last.messageId;
       while (endIndex-- > 0 && list[endIndex].messageId != messageId) {}
       if (endIndex <= 0) {
-        print('没有历史消息');
+        print('没有历史消息，${list.length}>=${_messages.length}');
         _blankHistory = true;
         return;
       }
@@ -472,20 +484,17 @@ class _ChatWidgetState extends State<ChatWidget>
 
     // 进行加载操作
     var deltaBottom = _scrollController.position.extentAfter; // 距离底部的位置
-    print('margin_bottom:' +
-        deltaBottom.toString() +
-        "   " +
-        (_keepScrollBottom ? "true" : "false"));
+    print('加载历史记录，margin_bottom:$deltaBottom, $_keepScrollBottom');
     setState(() {
       for (int i = endIndex - 1; i >= startIndex; i--) {
-        _messages.insert(0, list[i]);
+        _messages.add(list[i]);
       }
     });
     // 恢复底部位置
-    SchedulerBinding.instance.addPostFrameCallback((_) {
+    /* SchedulerBinding.instance.addPostFrameCallback((_) {
       _scrollController
           .jumpTo(_scrollController.position.maxScrollExtent - deltaBottom);
-    });
+    }); */
   }
 }
 

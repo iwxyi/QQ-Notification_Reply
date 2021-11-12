@@ -25,7 +25,7 @@ class UserSettings extends MySettings {
   bool enableChatListReply = true; // 聊天列表点击未读按钮快速回复
   bool enableHeader = true; // 显示头像（稍微增加性能）
   int keepMsgHistoryCount = 100; // 保留多少消息记录
-  int loadMsgHistoryCount = 50; // 默认加载多少条消息记录
+  int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
   bool showRecursionReply = true; // 回复中允许再显示回复
 
   // 通知选项
