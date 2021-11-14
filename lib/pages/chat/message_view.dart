@@ -21,13 +21,15 @@ class MessageView extends StatefulWidget {
   final addMessageCallback;
   final sendMessageCallback;
   final deleteMessageCallback;
+  final unfocusEditorCallback;
 
   MessageView(this.msg, this.isNext, Key key,
       {this.loadFinishedCallback,
       this.jumpMessageCallback,
       this.addMessageCallback,
       this.sendMessageCallback,
-      this.deleteMessageCallback})
+      this.deleteMessageCallback,
+      this.unfocusEditorCallback})
       : super(key: key);
 
   @override
@@ -272,8 +274,11 @@ class _MessageViewState extends State<MessageView> {
           RegExp rgRE = RegExp(r'^title=(.+)$');
           if ((mat = rgRE.firstMatch(params)) != null) {
             String title = mat[1];
-            span =
-                new WidgetSpan(child: Image.asset("assets/icons/redbag.png", scale: 2,));
+            span = new WidgetSpan(
+                child: Image.asset(
+              "assets/icons/redbag.png",
+              scale: 2,
+            ));
             spanAfter = new TextSpan(text: "[$title]");
           } else {
             span =
@@ -640,6 +645,9 @@ class _MessageViewState extends State<MessageView> {
       child: image,
       onTap: onTap ??
           () {
+            if (widget.unfocusEditorCallback != null) {
+              widget.unfocusEditorCallback();
+            }
             // 查看图片
             /* Navigator.of(context).push(MaterialPageRoute(builder: (context) {
               return new SlidePage(url: url);
@@ -667,6 +675,9 @@ class _MessageViewState extends State<MessageView> {
         detail.globalPosition.dx,
         detail.globalPosition.dy);
     var pop = _buildPopupMenu();
+    if (widget.unfocusEditorCallback != null) {
+      widget.unfocusEditorCallback();
+    }
     showMenu(
       context: context,
       items: pop.itemBuilder(context),
