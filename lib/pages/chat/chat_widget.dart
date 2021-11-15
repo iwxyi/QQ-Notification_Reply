@@ -154,7 +154,7 @@ class _ChatWidgetState extends State<ChatWidget>
       children: <Widget>[
         // 消息列表
         new Flexible(
-            child: Scrollbar(
+          // child: Scrollbar(
           child: new ListView.separated(
             separatorBuilder: (BuildContext context, int index) {
               return Divider(
@@ -215,11 +215,15 @@ class _ChatWidgetState extends State<ChatWidget>
                       (element) => element.messageId == msg.messageId);
                 });
               },
+              unfocusEditorCallback: () {
+                _removeEditorFocus();
+              },
             ),
             itemCount: _messages.length,
             controller: _scrollController,
           ),
-        )),
+          //), // Scrollbar
+        ),
         SizedBox(height: 8),
         // 输入框
         widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
@@ -409,7 +413,11 @@ class _ChatWidgetState extends State<ChatWidget>
           TextSelection.fromPosition(TextPosition(offset: pos + text.length));
     }
   }
-
+  
+  void _removeEditorFocus() {
+    _editorFocus.unfocus();
+  }
+  
   /// 获取图片
   /// @param immediate 是否立刻上传
   Future getImage(bool immediate) async {
