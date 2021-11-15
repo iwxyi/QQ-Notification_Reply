@@ -43,7 +43,10 @@ class _VideoWidgetState extends State<VideoWidget> {
       builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
         if (snapshot.data == null) {
           return Center(
-            child: Text("加载中"),
+            child: CircularProgressIndicator(
+              backgroundColor: Colors.grey[200],
+              valueColor: AlwaysStoppedAnimation(Colors.blue),
+            ),
           );
         }
         return playerWidget;
