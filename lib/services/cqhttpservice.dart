@@ -31,6 +31,7 @@ class CqhttpService {
     'image': '图片',
     'video': '视频',
     'reply': '回复',
+    'record': '语音',
     'forward': '转发',
     'redbag': '红包'
   };
@@ -654,12 +655,14 @@ class CqhttpService {
               (match) => '[${match[1]}]');
           text = text.replaceAllMapped(RegExp(r'\[CQ:redbag,title=(.+?)\]'),
               (match) => '[红包: ${match[1]}]');
+          // 中文名字
           text = text.replaceAllMapped(RegExp(r"\[CQ:([^,]+),.+?\]"), (match) {
             if (CQCodeMap.containsKey(match[1])) {
               return "[${CQCodeMap[match[1]]}]";
             }
-            return match[1];
+            return '[${match[1]}]';
           });
+          // 其他类型
           text = text.replaceAllMapped(
               RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '[${match[1]}]');
           text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');

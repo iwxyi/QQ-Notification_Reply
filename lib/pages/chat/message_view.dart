@@ -327,8 +327,7 @@ class _MessageViewState extends State<MessageView> {
           }
         } else if (cqCode == 'video') {
           // 视频播放
-          RegExp re =
-              RegExp(r'^\[CQ:video,file=(.+?)(?:\.video)?,url=(.+)\]$');
+          RegExp re = RegExp(r'^\[CQ:video,file=(.+?)(?:\.video)?,url=(.+)\]$');
           if ((mat = re.firstMatch(mAll)) != null) {
             String url = mat.group(2);
             url = url.replaceAll('&amp;', '&');
@@ -351,6 +350,8 @@ class _MessageViewState extends State<MessageView> {
             // 意外的视频格式
             span = new TextSpan(text: '[视频]');
           }
+        } else if (cqCode == 'record') {
+          span = new TextSpan(text: '[语音]');
         } else if (cqCode == 'json') {
           // JSON卡片
           params = params
