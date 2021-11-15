@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/widgets/video_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/slide_images_page.dart';
@@ -323,6 +324,32 @@ class _MessageViewState extends State<MessageView> {
                   style: TextStyle(
                       fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
             }
+          }
+        } else if (cqCode == 'video') {
+          // 视频播放
+          RegExp re =
+              RegExp(r'^\[CQ:video,file=(.+?)(?:\.video)?,url=(.+)\]$');
+          if ((mat = re.firstMatch(mAll)) != null) {
+            String url = mat.group(2);
+            url = url.replaceAll('&amp;', '&');
+            span = new TextSpan(
+                text: "[视频]",
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    print('播放视频：$url');
+                    if (widget.unfocusEditorCallback != null) {
+                      widget.unfocusEditorCallback();
+                    }
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return new VideoWidget(url: url);
+                    }));
+                  },
+                style: TextStyle(
+                    fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+          } else {
+            // 意外的视频格式
+            span = new TextSpan(text: '[视频]');
           }
         } else if (cqCode == 'json') {
           // JSON卡片
