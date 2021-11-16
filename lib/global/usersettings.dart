@@ -34,6 +34,7 @@ class UserSettings extends MySettings {
   bool groupSmartFocus = false; // 群消息智能聚焦
 
   // 界面显示
+  bool inputEnterSend = false;
   double msgBubbleRadius = 5; // 气泡圆角
   double msgFontSize = 16; // 聊天界面字体大小
   Color msgLinkColor = Colors.blue; // 链接的颜色
@@ -53,11 +54,15 @@ class UserSettings extends MySettings {
     host = getStr('account/host', '');
     token = getStr('account/token', '');
     server = getStr('account/server', '');
-    enableSelfChats = getBool('function/selfChats', true);
-    enableChatListReply = getBool('function/chatListReply', true);
-    notificationLaunchQQ = getBool('notification/launchQQ', false);
-    groupSmartFocus = getBool('notification/groupSmartFocus', false);
-    showRecursionReply = getBool('display/showRecursionReply', true);
+    enableSelfChats = getBool('function/selfChats', enableSelfChats);
+    enableChatListReply =
+        getBool('function/chatListReply', enableChatListReply);
+    notificationLaunchQQ =
+        getBool('notification/launchQQ', notificationLaunchQQ);
+    groupSmartFocus = getBool('notification/groupSmartFocus', groupSmartFocus);
+    showRecursionReply =
+        getBool('display/showRecursionReply', showRecursionReply);
+    inputEnterSend = getBool('display/inputEnterSend', inputEnterSend);
 
     // 读取启用的群组数组
     String ens = getStr('notification/enabledGroups', '');

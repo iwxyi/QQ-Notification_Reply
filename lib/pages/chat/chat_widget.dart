@@ -344,46 +344,64 @@ class _ChatWidgetState extends State<ChatWidget>
   /// 构造多行输入框（横屏）
   Widget _buildTextEditor() {
     return new CtrlEnterWidget(
-      child: new Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: new Column(
-            children: <Widget>[
-              // 分割线
-              Divider(
-                color: Color(0xFFCCCCCC),
-                height: 1.0,
-                indent: 8,
-              ),
-              // 输入框
-              Container(
-                child: new TextField(
-                  controller: _textController,
-                  decoration: new InputDecoration.collapsed(
-                    // 取消奇怪的padding
-                    hintText: '发送消息',
-                  ),
-                  focusNode: _editorFocus,
-                  onSubmitted: _sendMessage, // TODO: CtrlEnter发送
+        child: new Container(
+            margin: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: new Column(
+              children: <Widget>[
+                // 分割线
+                Divider(
+                  color: Color(0xFFCCCCCC),
+                  height: 1.0,
+                  indent: 8,
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              ),
-              // 发送按钮
-              new Container(
-                margin: new EdgeInsets.symmetric(horizontal: 4.0),
-                child: new IconButton(
-                    icon: new Icon(
-                      Icons.send,
-                      color: Colors.blue,
+                // 输入框
+                Container(
+                  child: new TextField(
+                    controller: _textController,
+                    decoration: new InputDecoration.collapsed(
+                      // 取消奇怪的padding
+                      hintText: '发送消息',
                     ),
-                    onPressed: () => _sendMessage(_textController.text)),
-              )
-            ],
-            crossAxisAlignment: CrossAxisAlignment.end,
-          )),
-      onCtrlEnterCallback: () {
-        _sendMessage(_textController.text);
-      },
-    );
+                    focusNode: _editorFocus,
+                    onSubmitted: _sendMessage,
+                    minLines: G.st.inputEnterSend ? 1 : 2,
+                    maxLines: G.st.inputEnterSend ? 1 : 5,
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                ),
+                // 发送按钮
+                new Container(
+                  margin: new EdgeInsets.symmetric(horizontal: 8.0),
+                  child: new Row(
+                    children: [
+                      new IconButton(
+                          icon: new Icon(
+                            Icons.image,
+                            color: Colors.blue,
+                          ),
+                          onPressed: () => getImage(false)),
+                      Expanded(
+                          child: new SizedBox(
+                        width: 100,
+                      )),
+                      new IconButton(
+                          icon: new Icon(
+                            Icons.send,
+                            color: Colors.blue,
+                          ),
+                          onPressed: () => _sendMessage(_textController.text))
+                    ],
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                  ),
+                )
+              ],
+            )),
+        onCtrlEnterCallback: () {
+          _sendMessage(_textController.text);
+        },
+        onAltSCallback: () {
+          _sendMessage(_textController.text);
+        });
   }
 
   /// 收到消息
@@ -505,6 +523,9 @@ class _ChatWidgetState extends State<ChatWidget>
       } else {
         _insertMessage(text);
       }
+    } else {
+      Fluttertoast.showToast(
+          msg: "图片上传失败", gravity: ToastGravity.CENTER, textColor: Colors.grey);
     }
   }
 
@@ -557,23 +578,38 @@ final ctrlEnterKeySet = LogicalKeySet(
   LogicalKeyboardKey.arrowUp,
 );
 
+final altSKeySet = LogicalKeySet(
+  Platform.isMacOS
+      ? LogicalKeyboardKey.meta
+      : LogicalKeyboardKey.control, // Windows:control, MacOS:meta
+  LogicalKeyboardKey.arrowUp,
+);
+
 class CtrlEnterIntent extends Intent {}
+
+class AltSIntent extends Intent {}
 
 class CtrlEnterWidget extends StatelessWidget {
   final Widget child;
   final VoidCallback onCtrlEnterCallback;
+  final VoidCallback onAltSCallback;
 
   const CtrlEnterWidget(
-      {Key key, @required this.child, @required this.onCtrlEnterCallback})
+      {Key key,
+      @required this.child,
+      @required this.onCtrlEnterCallback,
+      @required this.onAltSCallback})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FocusableActionDetector(child: child, autofocus: true, shortcuts: {
       ctrlEnterKeySet: CtrlEnterIntent(),
+      altSKeySet: AltSIntent()
     }, actions: {
       CtrlEnterIntent:
           CallbackAction(onInvoke: (e) => onCtrlEnterCallback?.call()),
+      AltSIntent: CallbackAction(onInvoke: (e) => onAltSCallback?.call()),
     });
   }
 }

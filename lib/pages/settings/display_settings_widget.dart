@@ -1,11 +1,5 @@
-import 'dart:math';
-
-import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
-import 'package:qqnotificationreply/global/useraccount.dart';
-import 'package:qqnotificationreply/pages/settings/group_select_widget.dart';
 
 class DisplaySettingsWidget extends StatefulWidget {
   @override
@@ -52,8 +46,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     onChanged: (bool val) {
                       setState(() {
                         G.st.enableChatListReply = !G.st.enableChatListReply;
-                        G.st.setConfig('display/chatListReply',
-                            G.st.enableChatListReply);
+                        G.st.setConfig(
+                            'display/chatListReply', G.st.enableChatListReply);
                       });
                     },
                     value: G.st.enableChatListReply,
@@ -61,11 +55,12 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   onTap: () {
                     setState(() {
                       G.st.enableChatListReply = !G.st.enableChatListReply;
-                      G.st.setConfig('display/chatListReply',
-                          G.st.enableChatListReply);
+                      G.st.setConfig(
+                          'display/chatListReply', G.st.enableChatListReply);
                     });
                   },
-                ),],
+                ),
+              ],
             ),
           ),
           Padding(
@@ -102,6 +97,31 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                       G.st.showRecursionReply = !G.st.showRecursionReply;
                       G.st.setConfig('display/showRecursionReply',
                           G.st.showRecursionReply);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.keyboard_return,
+                    color: Colors.blue,
+                  ),
+                  title: Text('回车发送'),
+                  subtitle: Text('横屏模式中回车还是Ctrl+回车发送'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.inputEnterSend = !G.st.inputEnterSend;
+                        G.st.setConfig(
+                            'display/inputEnterSend', G.st.inputEnterSend);
+                      });
+                    },
+                    value: G.st.inputEnterSend,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.inputEnterSend = !G.st.inputEnterSend;
+                      G.st.setConfig(
+                          'display/inputEnterSend', G.st.inputEnterSend);
                     });
                   },
                 ),
