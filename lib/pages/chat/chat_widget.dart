@@ -16,11 +16,14 @@ import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.d
 
 import 'message_view.dart';
 
+enum ChatMenuItems { Info, EnableNotification }
+
 // ignore: must_be_immutable
 class ChatWidget extends StatefulWidget {
   MsgBean chatObj;
   var setObject;
   bool innerMode;
+  var buildChatMenu;
 
   ChatWidget(this.chatObj, {this.innerMode = false});
 
@@ -59,6 +62,10 @@ class _ChatWidgetState extends State<ChatWidget>
       setState(() {
         _initMessages();
       });
+    };
+
+    widget.buildChatMenu = () {
+      return buildMenu();
     };
 
     // 注册监听器，订阅 eventBus
@@ -242,6 +249,7 @@ class _ChatWidgetState extends State<ChatWidget>
       return Scaffold(
         appBar: AppBar(
           title: new Text(widget.chatObj.title()),
+          actions: [buildMenu()],
         ),
         body: _buildBody(context),
         floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
@@ -256,6 +264,42 @@ class _ChatWidgetState extends State<ChatWidget>
             FloatingActionButtonLocation.miniEndFloat, 0, -56),
       );
     }
+  }
+
+  PopupMenuButton buildMenu() {
+    List<PopupMenuEntry<ChatMenuItems>> menus = [];
+    menus.add(PopupMenuItem<ChatMenuItems>(
+      value: ChatMenuItems.Info,
+      child: Text(widget.chatObj.isPrivate() ? '用户资料' : '群组资料'),
+      enabled: false,
+    ));
+
+    if (widget.chatObj.isGroup()) {
+      String t =
+          G.st.enabledGroups.contains(widget.chatObj.groupId) ? '关闭通知' : '开启通知';
+      menus.add(PopupMenuItem<ChatMenuItems>(
+        value: ChatMenuItems.EnableNotification,
+        child: Text(t, key: ValueKey(t)),
+      ));
+    }
+
+    return PopupMenuButton<ChatMenuItems>(
+      icon: Icon(Icons.more_vert, color: Colors.black),
+      tooltip: '菜单',
+      itemBuilder: (BuildContext context) => menus,
+      onSelected: (ChatMenuItems result) {
+        switch (result) {
+          case ChatMenuItems.Info:
+            break;
+          case ChatMenuItems.EnableNotification:
+            setState(() {
+              print('开关通知：${widget.chatObj.groupId}');
+              G.st.switchEnabledGroup(widget.chatObj.groupId);
+            });
+            break;
+        }
+      },
+    );
   }
 
   /// 构造单行输入框
@@ -413,11 +457,11 @@ class _ChatWidgetState extends State<ChatWidget>
           TextSelection.fromPosition(TextPosition(offset: pos + text.length));
     }
   }
-  
+
   void _removeEditorFocus() {
     _editorFocus.unfocus();
   }
-  
+
   /// 获取图片
   /// @param immediate 是否立刻上传
   Future getImage(bool immediate) async {

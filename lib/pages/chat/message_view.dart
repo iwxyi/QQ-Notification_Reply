@@ -159,7 +159,9 @@ class _MessageViewState extends State<MessageView> {
       padding: bubblePadding,
       margin: bubbleMargin, // 上限间距
       decoration: new BoxDecoration(
-        color: G.st.msgBubbleColor,
+        color: msg.senderId != G.ac.qqId
+            ? G.st.msgBubbleColor
+            : G.st.msgBubbleColor2,
         borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
       ),
     );
@@ -438,7 +440,8 @@ class _MessageViewState extends State<MessageView> {
           }
           jumpUrl = jumpUrl.replaceAll("\\", "");
           preview = preview.replaceAll("\\", "");
-          if (!preview.contains('://')) preview = 'http://' + preview;
+          if (preview.isNotEmpty && !preview.contains('://'))
+            preview = 'http://' + preview;
 
           TapGestureRecognizer tap;
           if (jumpUrl.isNotEmpty) {
@@ -888,9 +891,11 @@ class _MessageViewState extends State<MessageView> {
 
   @override
   void deactivate() async {
-    int result = await audioPlayer.release();
-    if (result != 1) {
-      print('release audio failed');
+    if (audioPlayer != null) {
+      int result = await audioPlayer.release();
+      if (result != 1) {
+        print('release audio failed');
+      }
     }
     super.deactivate();
   }

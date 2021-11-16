@@ -356,6 +356,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     Widget child = mainContainer;
 
+    // 横屏显示菜单
     if (isHoriz) {
       // 副标题的容器
       String title = G.rt.currentChatPage != null
@@ -395,8 +396,17 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
               constraints: BoxConstraints(minHeight: kToolbarHeight),
               alignment: Alignment.center,
               child: G.rt.currentChatPage == null ? Text('') : titleCard));
+
+      List<Widget> rowWidgets = [mainContainer, subContainer];
+
+      if (G.rt.currentChatPage != null &&
+          G.rt.currentChatPage.buildChatMenu != null) {
+        Widget menu = G.rt.currentChatPage.buildChatMenu();
+        rowWidgets.add(menu);
+      }
+
       child = Row(
-        children: [mainContainer, subContainer],
+        children: rowWidgets,
       );
     }
 
