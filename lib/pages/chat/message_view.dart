@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,10 @@ class _MessageViewState extends State<MessageView> {
   final MsgBean msg;
   bool hasCompleted = false;
   GlobalKey anchorKey = GlobalKey();
+
+  // 媒体播放
+  AudioPlayer audioPlayer;
+  String currentAudio = '';
 
   _MessageViewState(this.msg, this.isNext);
 
@@ -351,7 +356,48 @@ class _MessageViewState extends State<MessageView> {
             span = new TextSpan(text: '[视频]');
           }
         } else if (cqCode == 'record') {
-          span = new TextSpan(text: '[语音]');
+          // 语音播放
+          RegExp re = RegExp(
+              r'^\[CQ:record,file=(.+?)(?:\.(?:si?lk|amr))?,url=(.*)\]$');
+          if ((mat = re.firstMatch(mAll)) != null) {
+            String url = mat.group(2);
+            url = url.replaceAll('&amp;', '&');
+            span = new TextSpan(
+                text: "[语音]",
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    print('播放/暂停语音：$url');
+                    if (audioPlayer == null) {
+                      // 初始化音频播放
+                      audioPlayer = AudioPlayer();
+                      audioPlayer.onPlayerCompletion.listen((event) {
+                        print('audio complete');
+                        currentAudio = null;
+                      });
+                    }
+                    if (currentAudio != null && currentAudio == url) {
+                      // 是当前媒体：暂停/继续
+                      if (audioPlayer.state == PlayerState.PAUSED) {
+                        audioPlayer.resume().then((value) => print('语音.继续 失败'));
+                      } else if (audioPlayer.state == PlayerState.PLAYING) {
+                        audioPlayer.pause().then((value) => print('语音.暂停 失败'));
+                      } else {
+                        audioPlayer
+                            .play(url)
+                            .then((value) => print('语音.重新开始 失败'));
+                      }
+                    } else {
+                      // 不是当前媒体，或没在播放：从头开始播放
+                      currentAudio = url;
+                      audioPlayer.play(url).then((value) => print('语音.播放 失败'));
+                    }
+                  },
+                style: TextStyle(
+                    fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+          } else {
+            // 意外的语音格式
+            span = new TextSpan(text: '[语音]');
+          }
         } else if (cqCode == 'json') {
           // JSON卡片
           params = params
@@ -837,5 +883,14 @@ class _MessageViewState extends State<MessageView> {
         );
       },
     );
+  }
+
+  @override
+  void deactivate() async {
+    int result = await audioPlayer.release();
+    if (result != 1) {
+      print('release audio failed');
+    }
+    super.deactivate();
   }
 }

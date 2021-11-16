@@ -46,6 +46,7 @@ dependencies:
   flutter_picker: ^1.0.11
   chewie: any
   video_player: any
+  audioplayers: any
 
 dev_dependencies:
   flutter_test:
