@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -164,6 +165,25 @@ class _ChatWidgetState extends State<ChatWidget>
           // child: Scrollbar(
           child: new ListView.separated(
             separatorBuilder: (BuildContext context, int index) {
+              if (index < _messages.length - 1) {
+                int ts0 = _messages[index].timestamp;
+                int ts1 = _messages[index + 1].timestamp;
+                int delta = ts0 - ts1;
+                int maxDelta = 60 * 1000;
+                // int maxDelta = 0;
+                if (delta > maxDelta) {
+                  // 超过一分钟，显示时间
+                  DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
+                  String str = formatDate(dt, ['HH', ':', 'nn']);
+                  return new Row(
+                    children: [
+                      new Text(str, style: TextStyle(color: Colors.grey))
+                    ],
+                    mainAxisAlignment: MainAxisAlignment.center,
+                  );
+                }
+              }
+
               return Divider(
                 color: Colors.transparent,
                 height: 0.0,
