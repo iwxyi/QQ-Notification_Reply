@@ -28,7 +28,7 @@ dependencies:
   shared_preferences: ^0.5.1
   path_provider: any
   permission_handler: ^8.1.1
-  web_socket_channel: ^2.1.0
+  web_socket_channel: any
   event_bus: ^1.1.1
 #  flutter_local_notifications: ^6.0.0
   fluttertoast: ^8.0.7
@@ -46,7 +46,7 @@ dependencies:
   flutter_picker: ^1.0.11
   chewie: any
   video_player: any
-  audioplayers: any
+  audioplayers: ^0.20.1
 
 dev_dependencies:
   flutter_test:

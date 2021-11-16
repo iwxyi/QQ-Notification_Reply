@@ -388,8 +388,8 @@ class _MessageViewState extends State<MessageView> {
                       }
                     } else {
                       // 不是当前媒体，或没在播放：从头开始播放
-                      currentAudio = url;
                       audioPlayer.play(url).then((value) => print('语音.播放 失败'));
+                      currentAudio = url;
                     }
                   },
                 style: TextStyle(
@@ -888,9 +888,11 @@ class _MessageViewState extends State<MessageView> {
 
   @override
   void deactivate() async {
-    int result = await audioPlayer.release();
-    if (result != 1) {
-      print('release audio failed');
+    if (audioPlayer != null) {
+      int result = await audioPlayer.release();
+      if (result != 1) {
+        print('release audio failed');
+      }
     }
     super.deactivate();
   }
