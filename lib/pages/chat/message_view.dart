@@ -416,7 +416,7 @@ class _MessageViewState extends State<MessageView> {
           // 获取网址参数
           String jumpUrl = "";
           String preview = "";
-          re = RegExp(r'"(jumpUrl|qqdocurl|preview)":\s*"(.+?)"');
+          re = RegExp(r'"(jumpUrl|qqdocurl|preview|icon)":\s*"(.+?)"');
           Iterable<RegExpMatch> mates = re.allMatches(params);
           for (int j = 0; j < mates.length; j++) {
             RegExpMatch match = mates.elementAt(j);
@@ -438,6 +438,7 @@ class _MessageViewState extends State<MessageView> {
           }
           jumpUrl = jumpUrl.replaceAll("\\", "");
           preview = preview.replaceAll("\\", "");
+          if (!preview.contains('://')) preview = 'http://' + preview;
 
           TapGestureRecognizer tap;
           if (jumpUrl.isNotEmpty) {
@@ -448,21 +449,21 @@ class _MessageViewState extends State<MessageView> {
               };
           }
 
-          if (preview.isNotEmpty) {
-            span = new WidgetSpan(
-                child: _buildImageWidget(preview, onTap: () {
-              print('launch url: $jumpUrl');
-              launch(jumpUrl);
-            }, recursion: recursion));
-            insertFirst = true;
-          }
-
-          spans.clear(); // 清空，JSON应该是不带有其他消息的
-          spans.add(new TextSpan(
+          span = new TextSpan(
               text: prompt ?? "[json]",
               recognizer: tap,
               style: TextStyle(
-                  fontSize: G.st.msgFontSize, color: G.st.msgLinkColor)));
+                  fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+
+          spans.clear(); // 清空，JSON应该是不带有其他消息的
+          if (preview.isNotEmpty) {
+            spans.add(new WidgetSpan(
+                child: _buildImageWidget(preview, onTap: () {
+              print('launch url: $jumpUrl');
+              launch(jumpUrl);
+            }, recursion: recursion)));
+            insertFirst = true;
+          }
         } else {
           // 进行替换未处理的CQ码
           if (G.cs.CQCodeMap.containsKey(cqCode)) {
