@@ -672,6 +672,11 @@ class _MessageViewState extends State<MessageView> {
               }
             }
 
+            double maxHeight = MediaQuery.of(context).size.height / 3;
+            if (recursion > 0) {
+              maxHeight /= 2;
+            }
+
             return Container(
               child: ExtendedRawImage(
                 image: image,
@@ -679,7 +684,7 @@ class _MessageViewState extends State<MessageView> {
                 scale: scale,
               ),
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height / 3,
+                maxHeight: maxHeight,
               ),
             ); // 显示图片
           case LoadState.failed:

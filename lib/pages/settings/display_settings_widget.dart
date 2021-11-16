@@ -106,7 +106,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     color: Colors.blue,
                   ),
                   title: Text('回车发送'),
-                  subtitle: Text('横屏模式中回车还是Ctrl+回车发送'),
+                  subtitle: Text('横屏模式中使用单行回车还是多行Ctrl+回车发送'),
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {

@@ -375,21 +375,19 @@ class _ChatWidgetState extends State<ChatWidget>
                   child: new Row(
                     children: [
                       new IconButton(
-                          icon: new Icon(
-                            Icons.image,
-                            color: Colors.blue,
-                          ),
-                          onPressed: () => getImage(false)),
-                      Expanded(
-                          child: new SizedBox(
-                        width: 100,
-                      )),
+                          icon: new Icon(Icons.image),
+                          onPressed: () => getImage(false),
+                          color: Theme.of(context).primaryColor),
                       new IconButton(
-                          icon: new Icon(
-                            Icons.send,
-                            color: Colors.blue,
-                          ),
-                          onPressed: () => _sendMessage(_textController.text))
+                        icon: new Icon(Icons.face),
+                        onPressed: () {},
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      Expanded(child: new SizedBox(width: 100)),
+                      new IconButton(
+                          icon: new Icon(Icons.send),
+                          onPressed: () => _sendMessage(_textController.text),
+                          color: Theme.of(context).primaryColor)
                     ],
                     crossAxisAlignment: CrossAxisAlignment.end,
                   ),
