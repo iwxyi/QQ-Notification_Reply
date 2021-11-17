@@ -38,20 +38,23 @@ class _VideoWidgetState extends State<VideoWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          title: Text('视频播放'),
+        ),
         body: FutureBuilder(
-      future: initVideo(),
-      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-        if (snapshot.data == null) {
-          return Center(
-            child: CircularProgressIndicator(
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation(Colors.blue),
-            ),
-          );
-        }
-        return playerWidget;
-      },
-    ));
+          future: initVideo(),
+          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+            if (snapshot.data == null) {
+              return Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation(Colors.blue),
+                ),
+              );
+            }
+            return playerWidget;
+          },
+        ));
   }
 
   @override

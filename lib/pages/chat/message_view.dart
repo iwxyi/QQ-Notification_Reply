@@ -390,8 +390,8 @@ class _MessageViewState extends State<MessageView> {
                       }
                     } else {
                       // 不是当前媒体，或没在播放：从头开始播放
-                      currentAudio = url;
                       audioPlayer.play(url).then((value) => print('语音.播放 失败'));
+                      currentAudio = url;
                     }
                   },
                 style: TextStyle(
