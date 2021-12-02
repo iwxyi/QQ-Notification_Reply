@@ -19,9 +19,10 @@ class FGInfo {
 
 class _SearchPageState extends State<SearchPage> {
   TextEditingController editingController = TextEditingController();
-  List<FGInfo> items = [];
-  String filterKey = '';
-  List<FGInfo> showItemList = [];
+  List<FGInfo> items = []; // 所有内容
+  String filterKey = ''; // 过滤的关键字
+  List<FGInfo> showItemList = []; // 显示的内容
+  List<int> searchHistories = [];
 
   @override
   void initState() {
@@ -46,12 +47,14 @@ class _SearchPageState extends State<SearchPage> {
       return b.time.compareTo(a.time);
     });
 
-    // 初始化显示
-    for (int i = 0; i < items.length; i++) {
-      if (items[i].time > 0) {
-        showItemList.add(items[i]);
+    // 初始化搜索记录
+    searchHistories = G.st.getIntList('recent/search');
+    items.forEach((element) {
+      if (searchHistories.contains(element.id)) {
+        showItemList.add(element);
       }
-    }
+    });
+
     super.initState();
   }
 
@@ -95,7 +98,6 @@ class _SearchPageState extends State<SearchPage> {
                   return ListTile(
                     title: Text('${info.name} (${info.id})'),
                     onTap: () {
-                      Navigator.pop(context);
                       MsgBean msg;
                       if (info.isGroup) {
                         msg = MsgBean(groupId: info.id, groupName: info.name);
@@ -105,6 +107,12 @@ class _SearchPageState extends State<SearchPage> {
                             friendId: info.id,
                             nickname: info.name);
                       }
+
+                      searchHistories.remove(msg);
+                      searchHistories.insert(0, msg.keyId());
+                      G.st.setList('recent/search', searchHistories);
+
+                      Navigator.pop(context);
                       G.rt.showChatPage(msg);
                     },
                   );
