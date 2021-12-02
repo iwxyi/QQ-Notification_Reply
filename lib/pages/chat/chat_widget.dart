@@ -338,6 +338,7 @@ class _ChatWidgetState extends State<ChatWidget>
               setState(() {
                 G.st.setLocalNickname(keyId, controller.text);
                 Navigator.pop(context);
+                G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
               });
             };
 
