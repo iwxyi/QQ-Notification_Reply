@@ -169,7 +169,7 @@ class _ChatWidgetState extends State<ChatWidget>
                 int ts0 = _messages[index].timestamp;
                 int ts1 = _messages[index + 1].timestamp;
                 int delta = ts0 - ts1;
-                int maxDelta = 60 * 1000;
+                int maxDelta = 120 * 1000;
                 // int maxDelta = 0;
                 if (delta > maxDelta) {
                   // 超过一分钟，显示时间

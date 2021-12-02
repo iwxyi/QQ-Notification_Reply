@@ -47,7 +47,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                       setState(() {
                         G.st.enableChatListReply = !G.st.enableChatListReply;
                         G.st.setConfig(
-                            'display/chatListReply', G.st.enableChatListReply);
+                            'function/chatListReply', G.st.enableChatListReply);
                       });
                     },
                     value: G.st.enableChatListReply,
@@ -56,7 +56,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     setState(() {
                       G.st.enableChatListReply = !G.st.enableChatListReply;
                       G.st.setConfig(
-                          'display/chatListReply', G.st.enableChatListReply);
+                          'function/chatListReply', G.st.enableChatListReply);
                     });
                   },
                 ),
