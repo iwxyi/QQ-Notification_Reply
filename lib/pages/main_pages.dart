@@ -356,7 +356,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (isHoriz) {
       // 副标题的容器
       String title = G.rt.currentChatPage != null
-          ? G.rt.currentChatPage.chatObj.title()
+          ? G.st.getLocalNickname(G.rt.currentChatPage.chatObj.keyId(),
+              G.rt.currentChatPage.chatObj.title())
           : '';
 
       /* // 卡片标题
@@ -604,7 +605,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         channelKey: channelKey,
         groupKey: msg.keyId().toString(),
         summary: msg.title(),
-        title: msg.username(),
+        title: G.st.getLocalNickname(msg.keyId(), msg.username()),
         body: G.cs.getMessageDisplay(msg),
         notificationLayout: NotificationLayout.Messaging,
         displayOnForeground: false,

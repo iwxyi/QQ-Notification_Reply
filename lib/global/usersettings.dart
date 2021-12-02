@@ -6,6 +6,7 @@ class UserSettings extends MySettings {
   static int NormalImportant = 0; // ignore: non_constant_identifier_names
   static int LittleImportant = 1; // ignore: non_constant_identifier_names
   static int VeryImportant = 2; // ignore: non_constant_identifier_names
+  static String strSplit = "-_-_-_-";
 
   // 网络参数
   String host; // 主机地址
@@ -42,6 +43,8 @@ class UserSettings extends MySettings {
   Color msgBubbleColor2 = Color(0xFFE6E6FA); // 自己的消息气泡颜色
   Color replyBubbleColor = Color(0x10000000); // 回复气泡颜色
   Color replyFontColor = Color(0xFF222222); // 回复消息颜色
+
+  Map<int, String> localNickname = {};
 
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
     // readFromFile(); // super会调用，原来这是虚继承
@@ -84,6 +87,19 @@ class UserSettings extends MySettings {
         } catch (e) {}
       });
     }
+
+    // 读取本地名字
+    List<String> sl = getStringList('display/localNickname', strSplit);
+    sl.forEach((idNameString) {
+      Match match;
+      if ((match = RegExp(r'^(\d+):(.+)$').firstMatch(idNameString)) == null) {
+        return;
+      }
+
+      int id = int.parse(match[1]);
+      String name = match[2];
+      localNickname[id] = name;
+    });
   }
 
   int getFriendImportance(int id) {
@@ -139,5 +155,26 @@ class UserSettings extends MySettings {
     // 保存
     String text = importantGroups.join(';');
     setConfig('notification/importantGroups', text);
+  }
+
+  void setLocalNickname(int id, String name) {
+    if (name.trim().isEmpty) {
+      localNickname.remove(id);
+    } else {
+      localNickname[id] = name;
+    }
+
+    List<String> ss = [];
+    localNickname.forEach((key, value) {
+      ss.add(key.toString() + ":" + value);
+    });
+    setList('display/localNickname', ss, split: strSplit);
+  }
+
+  String getLocalNickname(int id, String def) {
+    if (localNickname.containsKey(id)) {
+      return localNickname[id];
+    }
+    return def;
   }
 }

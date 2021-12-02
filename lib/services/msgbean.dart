@@ -86,6 +86,8 @@ class MsgBean {
 
   int keyId() => groupId != null && groupId != 0 ? -groupId : friendId;
 
+  int senderKeyId() => senderId;
+
   static int privateKeyId(int id) => id;
 
   static int groupKeyId(int id) => -id;

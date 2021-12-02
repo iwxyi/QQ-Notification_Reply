@@ -69,12 +69,15 @@ class _ChatListPageState extends State<ChatListPage>
           String subTitle;
           String headerUrl;
           if (msg.isGroup()) {
-            title = msg.groupName;
-            subTitle = msg.username() + ": " + G.cs.getMessageDisplay(msg);
+            title = G.st.getLocalNickname(msg.keyId(), msg.groupName);
+            subTitle =
+                G.st.getLocalNickname(msg.senderKeyId(), msg.username()) +
+                    ": " +
+                    G.cs.getMessageDisplay(msg);
             headerUrl =
                 "http://p.qlogo.cn/gh/${msg.groupId}/${msg.groupId}/100";
           } else {
-            title = msg.username();
+            title = G.st.getLocalNickname(msg.keyId(), msg.username());
             subTitle = G.cs.getMessageDisplay(msg);
             headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=${msg.friendId}&s=100&t=";
           }

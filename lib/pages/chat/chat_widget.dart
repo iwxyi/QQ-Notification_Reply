@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,7 @@ import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.d
 
 import 'message_view.dart';
 
-enum ChatMenuItems { Info, EnableNotification }
+enum ChatMenuItems { Info, EnableNotification, CustomName }
 
 // ignore: must_be_immutable
 class ChatWidget extends StatefulWidget {
@@ -268,7 +269,8 @@ class _ChatWidgetState extends State<ChatWidget>
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: new Text(widget.chatObj.title()),
+          title: new Text(G.st.getLocalNickname(
+              widget.chatObj.keyId(), widget.chatObj.title())),
           actions: [buildMenu()],
         ),
         body: _buildBody(context),
@@ -303,6 +305,11 @@ class _ChatWidgetState extends State<ChatWidget>
       ));
     }
 
+    menus.add(PopupMenuItem<ChatMenuItems>(
+      value: ChatMenuItems.CustomName,
+      child: Text('本地昵称'),
+    ));
+
     return PopupMenuButton<ChatMenuItems>(
       icon: Icon(Icons.more_vert, color: Colors.black),
       tooltip: '菜单',
@@ -316,6 +323,55 @@ class _ChatWidgetState extends State<ChatWidget>
               print('开关通知：${widget.chatObj.groupId}');
               G.st.switchEnabledGroup(widget.chatObj.groupId);
             });
+            break;
+          case ChatMenuItems.CustomName:
+            TextEditingController controller = TextEditingController();
+            int keyId = widget.chatObj.keyId();
+            String curName = G.st.getLocalNickname(keyId, '');
+            controller.text = curName;
+            if (curName.isNotEmpty) {
+              controller.selection =
+                  TextSelection(baseOffset: 0, extentOffset: curName.length);
+            }
+
+            var confirm = () {
+              setState(() {
+                G.st.setLocalNickname(keyId, controller.text);
+                Navigator.pop(context);
+              });
+            };
+
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('请输入本地昵称'),
+                    content: TextField(
+                      decoration: InputDecoration(
+                        hintText: '不影响真实昵称',
+                      ),
+                      controller: controller,
+                      autofocus: true,
+                      onSubmitted: (text) {
+                        confirm();
+                      },
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          confirm();
+                        },
+                        child: Text('确定'),
+                      ),
+                    ],
+                  );
+                });
             break;
         }
       },
