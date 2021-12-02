@@ -36,6 +36,10 @@ class _ChatListPageState extends State<ChatListPage>
         if (mounted) {
           setState(() {});
         }
+      } else if (event.event == Event.newChat) {
+        if (mounted) {
+          messageReceived(event.data);
+        }
       }
     });
 

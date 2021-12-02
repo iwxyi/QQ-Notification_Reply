@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -18,11 +19,12 @@ class FGInfo {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  TextEditingController editingController = TextEditingController();
   List<FGInfo> items = []; // 所有内容
   String filterKey = ''; // 过滤的关键字
   List<FGInfo> showItemList = []; // 显示的内容
   List<int> searchHistories = [];
+
+  TextEditingController editingController = TextEditingController();
 
   @override
   void initState() {
@@ -96,26 +98,52 @@ class _SearchPageState extends State<SearchPage> {
                 itemBuilder: (context, index) {
                   FGInfo info = showItemList[index];
                   return ListTile(
-                    title: Text('${info.name} (${info.id})'),
-                    onTap: () {
-                      MsgBean msg;
-                      if (info.isGroup) {
-                        msg = MsgBean(groupId: info.id, groupName: info.name);
-                      } else {
-                        msg = MsgBean(
-                            targetId: info.id,
-                            friendId: info.id,
-                            nickname: info.name);
-                      }
+                      title: Text('${info.name} (${info.id})'),
+                      onTap: () {
+                        // 封装为对象
+                        MsgBean msg;
+                        if (info.isGroup) {
+                          msg = MsgBean(groupId: info.id, groupName: info.name);
+                        } else {
+                          msg = MsgBean(
+                              targetId: info.id,
+                              friendId: info.id,
+                              nickname: info.name);
+                        }
 
-                      searchHistories.remove(msg);
-                      searchHistories.insert(0, msg.keyId());
-                      G.st.setList('recent/search', searchHistories);
+                        // 保存搜索记录
+                        searchHistories.remove(msg.keyId());
+                        searchHistories.insert(0, msg.keyId());
+                        G.st.setList('recent/search', searchHistories);
 
-                      Navigator.pop(context);
-                      G.rt.showChatPage(msg);
-                    },
-                  );
+                        // 在聊天界面上显示
+                        msg.timestamp = DateTime.now().millisecondsSinceEpoch;
+                        G.ac.messageTimes[msg.keyId()] = msg.timestamp;
+                        G.ac.eventBus.fire(EventFn(Event.newChat, msg));
+
+                        // 打开聊天框
+                        Navigator.pop(context);
+                        G.rt.showChatPage(msg);
+                      },
+                      onLongPress: () {
+                        // 封装为对象
+                        MsgBean msg;
+                        if (info.isGroup) {
+                          msg = MsgBean(groupId: info.id, groupName: info.name);
+                        } else {
+                          msg = MsgBean(
+                              targetId: info.id,
+                              friendId: info.id,
+                              nickname: info.name);
+                        }
+
+                        // 取消搜索记录
+                        setState(() {
+                          searchHistories.remove(msg.keyId());
+                          G.st.setList('recent/search', searchHistories);
+                          showItemList.remove(info);
+                        });
+                      });
                 },
               ),
             ),

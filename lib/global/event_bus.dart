@@ -12,7 +12,8 @@ enum Event {
   messageRaw, // 获取到消息本身
   refreshState, // 刷新界面
   groupMember, // 群成员
-  messageRecall
+  messageRecall,
+  newChat // 打开对话框
 }
 
 class EventFn {
