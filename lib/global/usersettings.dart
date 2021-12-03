@@ -99,7 +99,9 @@ class UserSettings extends MySettings {
     List<String> sl = getStringList('display/localNickname', strSplit);
     sl.forEach((idNameString) {
       Match match;
-      if ((match = RegExp(r'^(-?\d+):(.+)$').firstMatch(idNameString)) == null) {
+      if (idNameString.isEmpty ||
+          (match = RegExp(r'^(-?\d+):(.+)$').firstMatch(idNameString)) ==
+              null) {
         print('无法识别的本地昵称表达式：' + idNameString);
         return;
       }

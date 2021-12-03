@@ -381,17 +381,17 @@ class _MessageViewState extends State<MessageView> {
                     if (currentAudio != null && currentAudio == url) {
                       // 是当前媒体：暂停/继续
                       if (audioPlayer.state == PlayerState.PAUSED) {
-                        audioPlayer.resume().then((value) => print('语音.继续 失败'));
+                        audioPlayer.resume().then((value) => print('语音.继续 结束'));
                       } else if (audioPlayer.state == PlayerState.PLAYING) {
-                        audioPlayer.pause().then((value) => print('语音.暂停 失败'));
+                        audioPlayer.pause().then((value) => print('语音.暂停 结束'));
                       } else {
                         audioPlayer
                             .play(url)
-                            .then((value) => print('语音.重新开始 失败'));
+                            .then((value) => print('语音.重新开始 结束'));
                       }
                     } else {
                       // 不是当前媒体，或没在播放：从头开始播放
-                      audioPlayer.play(url).then((value) => print('语音.播放 失败'));
+                      audioPlayer.play(url).then((value) => print('语音.播放 结束'));
                       currentAudio = url;
                     }
                   },
