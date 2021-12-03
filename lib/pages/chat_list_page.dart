@@ -44,6 +44,8 @@ class _ChatListPageState extends State<ChatListPage>
       }
     });
 
+    fastReplyFocusNode = new FocusNode();
+
     super.initState();
   }
 
@@ -273,6 +275,7 @@ class _ChatListPageState extends State<ChatListPage>
             bodyWidgets.add(new Container(
               child: new TextField(
                 autofocus: true, // 不加的话每次setState都会失去焦点
+                // focusNode: fastReplyFocusNode,
                 controller: controller,
                 key: ValueKey(msg.keyId().toString() + "_reply"),
                 onSubmitted: (String text) {
@@ -281,16 +284,15 @@ class _ChatListPageState extends State<ChatListPage>
                   }
 
                   // 发送
-                  if (msg.isPrivate()) {
-                    G.cs.sendPrivateMessage(msg.friendId, text);
-                  } else if (msg.isGroup()) {
-                    G.cs.sendGroupMessage(msg.groupId, text);
-                  }
+                  G.cs.sendMsg(msg, text);
                   controller.text = '';
 
-                  // 自动隐藏
                   if (G.st.chatListReplySendHide) {
+                    // 自动隐藏
                     showReplyInChatList(msg);
+                  } else {
+                    // 继续聚焦（onSubmit会导致失去焦点）
+                    // FocusScope.of(context).requestFocus(fastReplyFocusNode);
                   }
                 },
                 decoration: new InputDecoration.collapsed(hintText: '快速回复'),

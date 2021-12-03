@@ -5,11 +5,10 @@ import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
 class SearchPage extends StatefulWidget {
-
   final selectCallback;
 
   const SearchPage({Key key, this.selectCallback}) : super(key: key);
-  
+
   @override
   _SearchPageState createState() => _SearchPageState();
 }
@@ -82,11 +81,11 @@ class _SearchPageState extends State<SearchPage> {
           autofocus: true,
           controller: editingController,
           decoration: InputDecoration(
-            labelText: 'Search',
-            hintText: 'Search',
+            labelText: '搜索',
+            hintText: '关键词',
             prefixIcon: Icon(Icons.search),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(24)),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
           ),
           onChanged: (value) {
@@ -99,6 +98,7 @@ class _SearchPageState extends State<SearchPage> {
             }
           },
         ),
+        SizedBox(height: 8),
         Expanded(
           child: ListView.builder(
             // 列表

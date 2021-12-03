@@ -120,6 +120,9 @@ class CqhttpService {
   /// msg 发送对象
   /// 都是自己手动发送的
   void sendMsg(MsgBean chatObj, String text) {
+    if (text == null) {
+      return;
+    }
     if (chatObj.isGroup()) {
       sendGroupMessage(chatObj.groupId, text);
 
@@ -271,8 +274,8 @@ class CqhttpService {
       ac.myId = data['user_id'];
       ac.myNickname = data['nickname'];
       print(log('登录账号：' + ac.myNickname + "  " + ac.myId.toString()));
-      ac.eventBus.fire(
-          EventFn(Event.loginInfo, {'qqId': ac.myId, 'nickname': ac.myNickname}));
+      ac.eventBus.fire(EventFn(
+          Event.loginInfo, {'qqId': ac.myId, 'nickname': ac.myNickname}));
     } else if (echo == 'get_friend_list') {
       // 好友列表
       ac.friendList.clear();
@@ -537,6 +540,9 @@ class CqhttpService {
   }
 
   void sendPrivateMessage(int userId, String message) {
+    if (message == null || message.isEmpty) {
+      return;
+    }
     send({
       'action': 'send_private_msg',
       'params': {'user_id': userId, 'message': message},
@@ -545,6 +551,9 @@ class CqhttpService {
   }
 
   void sendGroupMessage(int groupId, String message) {
+    if (message == null || message.isEmpty) {
+      return;
+    }
     send({
       'action': 'send_group_msg',
       'params': {'group_id': groupId, 'message': message},

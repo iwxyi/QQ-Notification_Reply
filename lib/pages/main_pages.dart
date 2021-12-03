@@ -494,6 +494,25 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
               },
             ),
           ),
+          SizedBox(height: 8),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: '搜索',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+              ),
+              readOnly: true,
+              onTap: () {
+                Navigator.pop(context);
+                openSearch();
+              },
+            ),
+          ),
+          SizedBox(height: 8),
           ListTile(
             leading: Icon(Icons.chat),
             title: new Text('会话'),
@@ -509,10 +528,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             leading: Icon(Icons.contacts),
             title: new Text('联系人'),
             onTap: () {
-              setState(() {
-                _selectedIndex = 1;
-                Navigator.pop(context);
-              });
+              Navigator.pop(context);
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return createScaffoldPage(context, new ContactsPage(), '联系人');
+                },
+              ));
             },
             selected: _selectedIndex == 1,
           ),
@@ -520,10 +541,13 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             leading: Icon(Icons.settings),
             title: new Text('设置'),
             onTap: () {
-              setState(() {
-                _selectedIndex = 2;
-                Navigator.pop(context);
-              });
+              Navigator.pop(context);
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return createScaffoldPage(
+                      context, new MySettingsWidget(), '设置');
+                },
+              ));
             },
             selected: _selectedIndex == 2,
           ),

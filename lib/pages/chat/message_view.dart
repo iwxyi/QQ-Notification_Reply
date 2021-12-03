@@ -819,7 +819,7 @@ class _MessageViewState extends State<MessageView> {
       ),
     ];
 
-    int insertPos = 3; // 自己的要插入的位置
+    int insertPos = 2; // 自己的要插入的位置
     if (msg.recalled) {
       // 已经撤回，显示状态
       items.insert(insertPos++,
