@@ -95,7 +95,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     // 读取配置
-    _selectedIndex = G.st.getInt('recent/navigation', 0);
+    // _selectedIndex = G.st.getInt('recent/navigation', 0);
+    _selectedIndex = 0;
 
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
