@@ -5,6 +5,11 @@ import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
 class SearchPage extends StatefulWidget {
+
+  final selectCallback;
+
+  const SearchPage({Key key, this.selectCallback}) : super(key: key);
+  
   @override
   _SearchPageState createState() => _SearchPageState();
 }
@@ -62,83 +67,89 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
   }
 
+  Widget _buildBody(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(0.0),
+          child: Text(
+            '',
+            style: TextStyle(color: Colors.grey.shade700),
+          ),
+        ),
+        TextField(
+          // 搜索框
+          autofocus: true,
+          controller: editingController,
+          decoration: InputDecoration(
+            labelText: 'Search',
+            hintText: 'Search',
+            prefixIcon: Icon(Icons.search),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(24)),
+            ),
+          ),
+          onChanged: (value) {
+            filterKey = value;
+            filterSearch(filterKey);
+          },
+          onSubmitted: (text) {
+            if (showItemList.length > 0) {
+              itemSelected(showItemList.first);
+            }
+          },
+        ),
+        Expanded(
+          child: ListView.builder(
+            // 列表
+            shrinkWrap: true,
+            itemCount: showItemList.length,
+            itemBuilder: (context, index) {
+              FGInfo info = showItemList[index];
+              return ListTile(
+                  title: Text('${info.name} (${info.id})'),
+                  onTap: () {
+                    itemSelected(info);
+                  },
+                  onLongPress: () {
+                    // 封装为对象
+                    MsgBean msg;
+                    if (info.isGroup) {
+                      msg = MsgBean(groupId: info.id, groupName: info.name);
+                    } else {
+                      msg = MsgBean(
+                          targetId: info.id,
+                          friendId: info.id,
+                          nickname: info.name);
+                    }
+
+                    // 取消搜索记录
+                    setState(() {
+                      searchHistories.remove(msg.keyId());
+                      G.st.setList('recent/search', searchHistories);
+                      showItemList.remove(info);
+                    });
+                  });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    /* return Scaffold(
         appBar: AppBar(
           title: Text('搜索'),
           centerTitle: true,
         ),
-        body: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(0.0),
-              child: Text(
-                '',
-                style: TextStyle(color: Colors.grey.shade700),
-              ),
-            ),
-            TextField(
-              // 搜索框
-              autofocus: true,
-              controller: editingController,
-              decoration: InputDecoration(
-                labelText: 'Search',
-                hintText: 'Search',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(24)),
-                ),
-              ),
-              onChanged: (value) {
-                filterKey = value;
-                filterSearch(filterKey);
-              },
-              onSubmitted: (text) {
-                if (showItemList.length > 0) {
-                  openChat(showItemList.first);
-                }
-              },
-            ),
-            Expanded(
-              child: ListView.builder(
-                // 列表
-                shrinkWrap: true,
-                itemCount: showItemList.length,
-                itemBuilder: (context, index) {
-                  FGInfo info = showItemList[index];
-                  return ListTile(
-                      title: Text('${info.name} (${info.id})'),
-                      onTap: () {
-                        openChat(info);
-                      },
-                      onLongPress: () {
-                        // 封装为对象
-                        MsgBean msg;
-                        if (info.isGroup) {
-                          msg = MsgBean(groupId: info.id, groupName: info.name);
-                        } else {
-                          msg = MsgBean(
-                              targetId: info.id,
-                              friendId: info.id,
-                              nickname: info.name);
-                        }
-
-                        // 取消搜索记录
-                        setState(() {
-                          searchHistories.remove(msg.keyId());
-                          G.st.setList('recent/search', searchHistories);
-                          showItemList.remove(info);
-                        });
-                      });
-                },
-              ),
-            ),
-          ],
-        ));
+        body: _buildBody(context)); */
+    // return _buildBody(context);
+    return Scaffold(body: _buildBody(context));
   }
 
-  void openChat(FGInfo info) {
+  void itemSelected(FGInfo info) {
     // 封装为对象
     MsgBean msg;
     if (info.isGroup) {
@@ -152,14 +163,11 @@ class _SearchPageState extends State<SearchPage> {
     searchHistories.insert(0, msg.keyId());
     G.st.setList('recent/search', searchHistories);
 
-    // 在聊天界面上显示
-    msg.timestamp = DateTime.now().millisecondsSinceEpoch;
-    G.ac.messageTimes[msg.keyId()] = msg.timestamp;
-    G.ac.eventBus.fire(EventFn(Event.newChat, msg));
-
-    // 打开聊天框
     Navigator.pop(context);
-    G.rt.showChatPage(msg);
+
+    if (widget.selectCallback != null) {
+      widget.selectCallback(msg);
+    }
   }
 
   filterSearch(String query) {

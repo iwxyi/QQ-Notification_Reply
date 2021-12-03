@@ -92,7 +92,9 @@ class _ChatListPageState extends State<ChatListPage>
             // 显示多条未读消息
             List<MsgBean> msgs = G.ac.allMessages[msg.keyId()];
             // 如果最后一条是自己发的，那么只显示自己的
-            if (msgs.length > 0 && msgs.last.senderId != G.ac.myId) {
+            if (msgs != null &&
+                msgs.length > 0 &&
+                msgs.last.senderId != G.ac.myId) {
               List<Widget> widgets = [];
               int maxCount = G.st.chatListHistoriesCount; // 最大显示几条消息
               int count = 0;

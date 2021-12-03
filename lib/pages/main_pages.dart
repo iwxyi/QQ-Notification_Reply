@@ -20,6 +20,7 @@ import 'chat_list_page.dart';
 import 'chat/chat_widget.dart';
 import 'contact/contacts_page.dart';
 import 'search_page.dart';
+import 'settings/login_widget.dart';
 import 'settings/my_app_bar.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
@@ -339,11 +340,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         ),
         tooltip: '搜索',
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) {
-              return new SearchPage();
-            },
-          ));
+          openSearch();
         },
       ));
 
@@ -360,7 +357,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
       ),
-      padding: EdgeInsets.only(left: 0, right: 18, top: statusBarHeight),
+      padding: EdgeInsets.only(left: 0, right: 0, top: statusBarHeight),
       constraints: BoxConstraints(
           maxWidth: isHoriz ? G.rt.chatListFixedWidth : double.infinity),
     );
@@ -486,7 +483,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
                     : AssetImage('icons/cat_chat.png'),
               ),
               //回调事件
-              onDetailsPressed: () {},
+              onDetailsPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) {
+                  return LoginWidget();
+                })).then((value) {
+                  // 可能登录了，刷新一下界面
+                  setState(() {});
+                });
+              },
             ),
           ),
           ListTile(
@@ -539,8 +544,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     return Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(context),
-      bottomNavigationBar:
-          G.rt.horizontal ? null : _buildBottomNavigationBar(context),
+      /* bottomNavigationBar:
+          G.rt.horizontal ? null : _buildBottomNavigationBar(context), */
       drawer: _buildDrawer(),
     );
     /* // 自定义滑块视图
@@ -838,5 +843,32 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       ),
       body: widget,
     );
+  }
+
+  void openSearch() {
+    /* Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return new SearchPage();
+      },
+    )); */
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: SearchPage(
+              selectCallback: (msg) {
+                // 在聊天界面上显示
+                msg.timestamp = DateTime.now().millisecondsSinceEpoch;
+                G.ac.messageTimes[msg.keyId()] = msg.timestamp;
+                G.ac.eventBus.fire(EventFn(Event.newChat, msg));
+
+                // 打开聊天框
+                G.rt.showChatPage(msg);
+              },
+            ),
+            contentPadding: EdgeInsets.all(5),
+          );
+        });
   }
 }
