@@ -225,7 +225,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     return PopupMenuButton<AppBarMenuItems>(
-      icon: Icon(Icons.more_vert, color: Colors.black),
+      icon: Icon(Icons.more_vert,
+          color: Theme.of(context).textTheme.bodyText2.color),
       tooltip: '菜单',
       itemBuilder: (BuildContext context) => menus,
       onSelected: (AppBarMenuItems result) {
@@ -271,9 +272,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (G.rt.horizontal) {
       // 横屏，分列
       btnWidget.add(IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.search,
-          color: Colors.black,
+          color: Theme.of(context).textTheme.bodyText2.color,
         ),
         tooltip: '搜索',
         onPressed: () {
@@ -287,9 +288,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     } else {
       // 竖屏，默认
       btnWidget.add(IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.search,
-          color: Colors.black,
+          color: Theme.of(context).textTheme.bodyText2.color,
         ),
         tooltip: '搜索',
         onPressed: () {
@@ -305,9 +306,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     return AppBar(
         brightness: Brightness.light,
-        title: const Text(
+        title: Text(
           'Message',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -319,10 +320,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     bool isHoriz = G.rt.horizontal;
 
     // 标题
-    widgets.add(const Text(
+    widgets.add(Text(
       'Message',
       style: TextStyle(
-          color: Colors.black, fontSize: 20, fontWeight: FontWeight.w600),
+          color: Theme.of(context).textTheme.bodyText2.color,
+          fontSize: 20,
+          fontWeight: FontWeight.w600),
     ));
 
     widgets.add(Expanded(child: new Text('')));
@@ -330,9 +333,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (!isHoriz) {
       // 搜索按钮
       widgets.add(IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.search,
-          color: Colors.black,
+          color: Theme.of(context).textTheme.bodyText2.color,
         ),
         tooltip: '搜索',
         onPressed: () {
@@ -343,10 +346,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           ));
         },
       ));
-    }
 
-    // 菜单
-    widgets.add(_buildMenu(context));
+      // 菜单
+      widgets.add(_buildMenu(context));
+    }
 
     // 主标题的容器
     double statusBarHeight =
@@ -357,7 +360,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
       ),
-      padding: EdgeInsets.only(left: 18, right: 18, top: statusBarHeight),
+      padding: EdgeInsets.only(left: 0, right: 18, top: statusBarHeight),
       constraints: BoxConstraints(
           maxWidth: isHoriz ? G.rt.chatListFixedWidth : double.infinity),
     );
@@ -379,7 +382,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             new Text(
               title,
               style: TextStyle(
-                  color: Colors.black,
+                  color: Theme.of(context).textTheme.bodyText2.color,
                   fontSize: 18,
                   fontWeight: FontWeight.w600),
             )
@@ -396,7 +399,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       Widget titleCard = new Text(
         title,
         style: TextStyle(
-            color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
+            color: Theme.of(context).textTheme.bodyText2.color,
+            fontSize: 20,
+            fontWeight: FontWeight.w500),
       );
 
       Widget subContainer = Expanded(
@@ -423,10 +428,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     return MyAppBar(
         Container(
           child: child,
+          height: kToolbarHeight, // 固定位状态栏高度
           /* decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
               Color(0xFFFAD956),
-              Colors.white,
+              Color(0xFFFAD956),
             ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
           ), */
         ),
@@ -471,6 +477,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       body: _buildBody(context),
       bottomNavigationBar:
           G.rt.horizontal ? null : _buildBottomNavigationBar(context),
+      drawer: Drawer(
+        child: Text('this is text'),
+      ),
     );
     /* // 自定义滑块视图
     return AppRetainWidget(

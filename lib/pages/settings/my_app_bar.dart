@@ -18,9 +18,20 @@ class _MyAppBarState extends State<MyAppBar> {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      flexibleSpace: Container(
+      /* flexibleSpace: Container( // 整个区域，包括leading等
         child: widget.child,
-      ),
+      ), */
+      title: widget.child,
+      leading: Builder(builder: (BuildContext context) {
+        // 自定义Drawer按钮
+        return IconButton(
+          icon: Icon(Icons.menu,
+              color: Theme.of(context).textTheme.bodyText2.color),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        );
+      }),
     );
   }
 }
