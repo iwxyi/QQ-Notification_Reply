@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 
 class DisplaySettingsWidget extends StatefulWidget {
@@ -48,6 +49,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                         G.st.enableChatListReply = !G.st.enableChatListReply;
                         G.st.setConfig(
                             'function/chatListReply', G.st.enableChatListReply);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                       });
                     },
                     value: G.st.enableChatListReply,
@@ -57,6 +59,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                       G.st.enableChatListReply = !G.st.enableChatListReply;
                       G.st.setConfig(
                           'function/chatListReply', G.st.enableChatListReply);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                     });
                   },
                 ),
@@ -70,9 +73,11 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
-                        G.st.chatListReplySendHide = !G.st.chatListReplySendHide;
-                        G.st.setConfig(
-                            'function/chatListReplySendHide', G.st.chatListReplySendHide);
+                        G.st.chatListReplySendHide =
+                            !G.st.chatListReplySendHide;
+                        G.st.setConfig('function/chatListReplySendHide',
+                            G.st.chatListReplySendHide);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                       });
                     },
                     value: G.st.chatListReplySendHide,
@@ -80,8 +85,9 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   onTap: () {
                     setState(() {
                       G.st.chatListReplySendHide = !G.st.chatListReplySendHide;
-                      G.st.setConfig(
-                          'function/chatListReplySendHide', G.st.chatListReplySendHide);
+                      G.st.setConfig('function/chatListReplySendHide',
+                          G.st.chatListReplySendHide);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                     });
                   },
                 ),
@@ -95,18 +101,22 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
-                        G.st.enableChatListHistories = !G.st.enableChatListHistories;
-                        G.st.setConfig(
-                            'function/chatListHistories', G.st.enableChatListHistories);
+                        G.st.enableChatListHistories =
+                            !G.st.enableChatListHistories;
+                        G.st.setConfig('function/chatListHistories',
+                            G.st.enableChatListHistories);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                       });
                     },
                     value: G.st.enableChatListHistories,
                   ),
                   onTap: () {
                     setState(() {
-                      G.st.enableChatListHistories = !G.st.enableChatListHistories;
-                      G.st.setConfig(
-                          'function/chatListHistories', G.st.enableChatListHistories);
+                      G.st.enableChatListHistories =
+                          !G.st.enableChatListHistories;
+                      G.st.setConfig('function/chatListHistories',
+                          G.st.enableChatListHistories);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                     });
                   },
                 ),
