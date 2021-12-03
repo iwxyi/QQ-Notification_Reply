@@ -10,12 +10,13 @@ class SearchPage extends StatefulWidget {
 }
 
 class FGInfo {
+  int keyId;
   int id;
   String name;
   int time;
   bool isGroup;
 
-  FGInfo(this.id, this.name, this.time, this.isGroup);
+  FGInfo(this.keyId, this.id, this.name, this.time, this.isGroup);
 }
 
 class _SearchPageState extends State<SearchPage> {
@@ -34,7 +35,7 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.privateKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(id, info.username(), time, false));
+      items.add(new FGInfo(keyId, id, info.username(), time, false));
     });
 
     // 初始化群组内容
@@ -43,7 +44,7 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.groupKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(id, info.name, time, true));
+      items.add(new FGInfo(keyId, id, info.name, time, true));
     });
     items.sort((FGInfo a, FGInfo b) {
       return b.time.compareTo(a.time);
@@ -51,8 +52,9 @@ class _SearchPageState extends State<SearchPage> {
 
     // 初始化搜索记录
     searchHistories = G.st.getIntList('recent/search');
+    print(searchHistories);
     items.forEach((element) {
-      if (searchHistories.contains(element.id)) {
+      if (searchHistories.contains(element.keyId)) {
         showItemList.add(element);
       }
     });
@@ -77,6 +79,8 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
             TextField(
+              // 搜索框
+              autofocus: true,
               controller: editingController,
               decoration: InputDecoration(
                 labelText: 'Search',
@@ -90,9 +94,15 @@ class _SearchPageState extends State<SearchPage> {
                 filterKey = value;
                 filterSearch(filterKey);
               },
+              onSubmitted: (text) {
+                if (showItemList.length > 0) {
+                  openChat(showItemList.first);
+                }
+              },
             ),
             Expanded(
               child: ListView.builder(
+                // 列表
                 shrinkWrap: true,
                 itemCount: showItemList.length,
                 itemBuilder: (context, index) {
@@ -100,30 +110,7 @@ class _SearchPageState extends State<SearchPage> {
                   return ListTile(
                       title: Text('${info.name} (${info.id})'),
                       onTap: () {
-                        // 封装为对象
-                        MsgBean msg;
-                        if (info.isGroup) {
-                          msg = MsgBean(groupId: info.id, groupName: info.name);
-                        } else {
-                          msg = MsgBean(
-                              targetId: info.id,
-                              friendId: info.id,
-                              nickname: info.name);
-                        }
-
-                        // 保存搜索记录
-                        searchHistories.remove(msg.keyId());
-                        searchHistories.insert(0, msg.keyId());
-                        G.st.setList('recent/search', searchHistories);
-
-                        // 在聊天界面上显示
-                        msg.timestamp = DateTime.now().millisecondsSinceEpoch;
-                        G.ac.messageTimes[msg.keyId()] = msg.timestamp;
-                        G.ac.eventBus.fire(EventFn(Event.newChat, msg));
-
-                        // 打开聊天框
-                        Navigator.pop(context);
-                        G.rt.showChatPage(msg);
+                        openChat(info);
                       },
                       onLongPress: () {
                         // 封装为对象
@@ -149,6 +136,30 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ],
         ));
+  }
+
+  void openChat(FGInfo info) {
+    // 封装为对象
+    MsgBean msg;
+    if (info.isGroup) {
+      msg = MsgBean(groupId: info.id, groupName: info.name);
+    } else {
+      msg = MsgBean(targetId: info.id, friendId: info.id, nickname: info.name);
+    }
+
+    // 保存搜索记录
+    searchHistories.remove(msg.keyId());
+    searchHistories.insert(0, msg.keyId());
+    G.st.setList('recent/search', searchHistories);
+
+    // 在聊天界面上显示
+    msg.timestamp = DateTime.now().millisecondsSinceEpoch;
+    G.ac.messageTimes[msg.keyId()] = msg.timestamp;
+    G.ac.eventBus.fire(EventFn(Event.newChat, msg));
+
+    // 打开聊天框
+    Navigator.pop(context);
+    G.rt.showChatPage(msg);
   }
 
   filterSearch(String query) {

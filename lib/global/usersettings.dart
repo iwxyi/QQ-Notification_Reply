@@ -23,6 +23,7 @@ class UserSettings extends MySettings {
   bool enableSelfChats = true; // 启用本身的聊天功能
   bool enableChatListHistories = true; // 聊天列表多条未读消息
   bool enableChatListReply = false; // 聊天列表点击未读按钮快速回复
+  bool chatListReplySendHide = true; // 快速回复后自动隐藏
   bool enableHeader = true; // 显示头像（稍微消耗性能）
   int keepMsgHistoryCount = 100; // 保留多少消息记录
   int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
@@ -59,6 +60,9 @@ class UserSettings extends MySettings {
     enableSelfChats = getBool('function/selfChats', enableSelfChats);
     enableChatListReply =
         getBool('function/chatListReply', enableChatListReply);
+    enableSelfChats = getBool('function/selfChats', enableSelfChats);
+    chatListReplySendHide =
+        getBool('function/chatListReplySendHide', chatListReplySendHide);
     notificationLaunchQQ =
         getBool('notification/launchQQ', notificationLaunchQQ);
     groupSmartFocus = getBool('notification/groupSmartFocus', groupSmartFocus);

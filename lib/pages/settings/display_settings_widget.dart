@@ -60,6 +60,31 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.reply_all_sharp,
+                    color: Colors.blue,
+                  ),
+                  title: Text('发送后隐藏'),
+                  subtitle: Text('通过快速回复发送消息后自动隐藏'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.chatListReplySendHide = !G.st.chatListReplySendHide;
+                        G.st.setConfig(
+                            'function/chatListReplySendHide', G.st.chatListReplySendHide);
+                      });
+                    },
+                    value: G.st.chatListReplySendHide,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.chatListReplySendHide = !G.st.chatListReplySendHide;
+                      G.st.setConfig(
+                          'function/chatListReplySendHide', G.st.chatListReplySendHide);
+                    });
+                  },
+                ),
               ],
             ),
           ),

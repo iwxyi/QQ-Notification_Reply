@@ -20,6 +20,7 @@ class _ChatListPageState extends State<ChatListPage>
 
   var eventBusFn;
   FocusNode fastReplyFocusNode;
+  Map<int, TextEditingController> replyControllers = {};
 
   @override
   void initState() {
@@ -89,7 +90,7 @@ class _ChatListPageState extends State<ChatListPage>
           DateTime dt = DateTime.fromMillisecondsSinceEpoch(msg.timestamp);
           int delta = currentTimestamp - msg.timestamp;
           if (delta > 3600 * 24 * 1000) {
-            // 超过24小时
+            // 超过24小时，显示日月
             timeStr = formatDate(dt, ['mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
           } else if (delta < 15000) {
             // 15秒内
@@ -213,13 +214,33 @@ class _ChatListPageState extends State<ChatListPage>
           // 显示快速回复框
           if (G.st.enableChatListReply &&
               G.ac.chatListShowReply.containsKey(msg.keyId())) {
+            if (!replyControllers.containsKey(msg.keyId())) {
+              print('create reply controller when null');
+              replyControllers[msg.keyId()] = TextEditingController();
+            }
+            TextEditingController controller = replyControllers[msg.keyId()];
+            print('initinitnitnit:' + controller.text);
             bodyWidgets.add(new Container(
               child: new TextField(
+                autofocus: true, // 不加的话每次setState都会失去焦点
+                controller: controller,
+                key: ValueKey(msg.keyId().toString() + "_reply"),
                 onSubmitted: (String text) {
+                  if (text.isEmpty) {
+                    return;
+                  }
+
+                  // 发送
                   if (msg.isPrivate()) {
                     G.cs.sendPrivateMessage(msg.friendId, text);
                   } else if (msg.isGroup()) {
                     G.cs.sendGroupMessage(msg.groupId, text);
+                  }
+                  controller.text = '';
+
+                  // 自动隐藏
+                  if (G.st.chatListReplySendHide) {
+                    showReplyInChatList(msg);
                   }
                 },
                 decoration: new InputDecoration.collapsed(hintText: '快速回复'),
@@ -302,7 +323,9 @@ class _ChatListPageState extends State<ChatListPage>
     setState(() {
       if (G.ac.chatListShowReply.containsKey(msg.keyId())) {
         G.ac.chatListShowReply.remove(msg.keyId());
+        replyControllers.remove(msg.keyId());
       } else {
+        replyControllers[msg.keyId()] = TextEditingController();
         G.ac.chatListShowReply[msg.keyId()] = true;
       }
     });

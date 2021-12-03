@@ -332,7 +332,8 @@ class _ChatWidgetState extends State<ChatWidget>
           case ChatMenuItems.CustomName:
             TextEditingController controller = TextEditingController();
             int keyId = widget.chatObj.keyId();
-            String curName = G.st.getLocalNickname(keyId, '');
+            String curName =
+                G.st.getLocalNickname(keyId, widget.chatObj.title());
             controller.text = curName;
             if (curName.isNotEmpty) {
               controller.selection =

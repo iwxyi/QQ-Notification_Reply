@@ -95,9 +95,12 @@ class LoginWidget extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    '连接服务器',
-                    style: TextStyle(color: Colors.white),
+                  child: Container(
+                    margin: EdgeInsets.all(12),
+                    child: Text(
+                      '连接服务器',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                   color: Colors.redAccent,
                   onPressed: () {

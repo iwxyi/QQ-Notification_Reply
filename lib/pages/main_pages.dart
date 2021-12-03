@@ -135,8 +135,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       if (G.rt.currentChatPage != null) {
         // 判断旧页面
         if (G.rt.horizontal != G.rt.currentChatPage.innerMode) {
-          // 如果状态不一致，还是得先删除
+          // 如果状态不一致，得删除
+          MsgBean obj = G.rt.currentChatPage.chatObj;
           G.rt.currentChatPage = null;
+
+          // 如果是横屏，则重新创建
+          if (G.rt.horizontal == true) {
+            G.rt.showChatPage(obj);
+          }
         } else {
           setState(() {
             G.rt.currentChatPage.setObject(msg);
