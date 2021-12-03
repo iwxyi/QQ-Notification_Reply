@@ -880,16 +880,19 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         context: context,
         builder: (context) {
           return AlertDialog(
-            content: SearchPage(
-              selectCallback: (msg) {
-                // 在聊天界面上显示
-                msg.timestamp = DateTime.now().millisecondsSinceEpoch;
-                G.ac.messageTimes[msg.keyId()] = msg.timestamp;
-                G.ac.eventBus.fire(EventFn(Event.newChat, msg));
+            content: Container(
+              constraints: BoxConstraints(minWidth: 350, maxHeight: 500),
+              child: SearchPage(
+                selectCallback: (msg) {
+                  // 在聊天界面上显示
+                  msg.timestamp = DateTime.now().millisecondsSinceEpoch;
+                  G.ac.messageTimes[msg.keyId()] = msg.timestamp;
+                  G.ac.eventBus.fire(EventFn(Event.newChat, msg));
 
-                // 打开聊天框
-                G.rt.showChatPage(msg);
-              },
+                  // 打开聊天框
+                  G.rt.showChatPage(msg);
+                },
+              ),
             ),
             contentPadding: EdgeInsets.all(5),
           );

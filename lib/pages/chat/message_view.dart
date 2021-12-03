@@ -852,10 +852,13 @@ class _MessageViewState extends State<MessageView> {
           context: context,
           builder: (context) {
             return AlertDialog(
-              content: SearchPage(
-                selectCallback: (m) {
-                  G.cs.sendMsg(m, msg.message);
-                },
+              content: Container(
+                constraints: BoxConstraints(minWidth: 350, maxHeight: 500),
+                child: SearchPage(
+                  selectCallback: (m) {
+                    G.cs.sendMsg(m, msg.message);
+                  },
+                ),
               ),
               contentPadding: EdgeInsets.all(5),
             );
