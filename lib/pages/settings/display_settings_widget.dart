@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 
 class DisplaySettingsWidget extends StatefulWidget {
@@ -47,7 +48,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                       setState(() {
                         G.st.enableChatListReply = !G.st.enableChatListReply;
                         G.st.setConfig(
-                            'display/chatListReply', G.st.enableChatListReply);
+                            'function/chatListReply', G.st.enableChatListReply);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                       });
                     },
                     value: G.st.enableChatListReply,
@@ -56,7 +58,65 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     setState(() {
                       G.st.enableChatListReply = !G.st.enableChatListReply;
                       G.st.setConfig(
-                          'display/chatListReply', G.st.enableChatListReply);
+                          'function/chatListReply', G.st.enableChatListReply);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.hide_source,
+                    color: Colors.blue,
+                  ),
+                  title: Text('发送后隐藏'),
+                  subtitle: Text('通过快速回复发送消息后自动隐藏'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.chatListReplySendHide =
+                            !G.st.chatListReplySendHide;
+                        G.st.setConfig('function/chatListReplySendHide',
+                            G.st.chatListReplySendHide);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.chatListReplySendHide,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.chatListReplySendHide = !G.st.chatListReplySendHide;
+                      G.st.setConfig('function/chatListReplySendHide',
+                          G.st.chatListReplySendHide);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('多条历史'),
+                  subtitle: Text('会话列表显示多条未读记录'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatListHistories =
+                            !G.st.enableChatListHistories;
+                        G.st.setConfig('function/chatListHistories',
+                            G.st.enableChatListHistories);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatListHistories,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatListHistories =
+                          !G.st.enableChatListHistories;
+                      G.st.setConfig('function/chatListHistories',
+                          G.st.enableChatListHistories);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                     });
                   },
                 ),

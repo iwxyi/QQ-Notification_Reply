@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/utils/mysettings.dart';
 
@@ -7,6 +6,7 @@ class UserSettings extends MySettings {
   static int NormalImportant = 0; // ignore: non_constant_identifier_names
   static int LittleImportant = 1; // ignore: non_constant_identifier_names
   static int VeryImportant = 2; // ignore: non_constant_identifier_names
+  static String strSplit = "-_-_-_-";
 
   // 网络参数
   String host; // 主机地址
@@ -21,9 +21,11 @@ class UserSettings extends MySettings {
 
   // 功能选项
   bool enableSelfChats = true; // 启用本身的聊天功能
-  bool enableChatListHistories = true; // 聊天列表多条未读消息
-  bool enableChatListReply = true; // 聊天列表点击未读按钮快速回复
-  bool enableHeader = true; // 显示头像（稍微增加性能）
+  bool enableChatListHistories = true; // 会话列表多条未读消息
+  int chatListHistoriesCount = 3; // 显示多少未读消息
+  bool enableChatListReply = false; // 会话列表点击未读按钮快速回复
+  bool chatListReplySendHide = true; // 快速回复后自动隐藏
+  bool enableHeader = true; // 显示头像（稍微消耗性能）
   int keepMsgHistoryCount = 100; // 保留多少消息记录
   int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
   bool showRecursionReply = true; // 回复中允许再显示回复
@@ -44,6 +46,8 @@ class UserSettings extends MySettings {
   Color replyBubbleColor = Color(0x10000000); // 回复气泡颜色
   Color replyFontColor = Color(0xFF222222); // 回复消息颜色
 
+  Map<int, String> localNickname = {};
+
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
     // readFromFile(); // super会调用，原来这是虚继承
   }
@@ -55,8 +59,13 @@ class UserSettings extends MySettings {
     token = getStr('account/token', '');
     server = getStr('account/server', '');
     enableSelfChats = getBool('function/selfChats', enableSelfChats);
+    enableChatListHistories =
+        getBool('function/chatListHistories', enableChatListHistories);
     enableChatListReply =
         getBool('function/chatListReply', enableChatListReply);
+    enableSelfChats = getBool('function/selfChats', enableSelfChats);
+    chatListReplySendHide =
+        getBool('function/chatListReplySendHide', chatListReplySendHide);
     notificationLaunchQQ =
         getBool('notification/launchQQ', notificationLaunchQQ);
     groupSmartFocus = getBool('notification/groupSmartFocus', groupSmartFocus);
@@ -85,6 +94,20 @@ class UserSettings extends MySettings {
         } catch (e) {}
       });
     }
+
+    // 读取本地名字
+    List<String> sl = getStringList('display/localNickname', strSplit);
+    sl.forEach((idNameString) {
+      Match match;
+      if ((match = RegExp(r'^(-?\d+):(.+)$').firstMatch(idNameString)) == null) {
+        print('无法识别的本地昵称表达式：' + idNameString);
+        return;
+      }
+
+      int id = int.parse(match[1]);
+      String name = match[2];
+      localNickname[id] = name;
+    });
   }
 
   int getFriendImportance(int id) {
@@ -140,5 +163,26 @@ class UserSettings extends MySettings {
     // 保存
     String text = importantGroups.join(';');
     setConfig('notification/importantGroups', text);
+  }
+
+  void setLocalNickname(int id, String name) {
+    if (name.trim().isEmpty) {
+      localNickname.remove(id);
+    } else {
+      localNickname[id] = name;
+    }
+
+    List<String> ss = [];
+    localNickname.forEach((key, value) {
+      ss.add(key.toString() + ":" + value);
+    });
+    setList('display/localNickname', ss, split: strSplit);
+  }
+
+  String getLocalNickname(int id, String def) {
+    if (localNickname.containsKey(id)) {
+      return localNickname[id];
+    }
+    return def;
   }
 }

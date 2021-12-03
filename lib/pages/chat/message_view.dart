@@ -7,10 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
-import 'package:qqnotificationreply/widgets/video_widget.dart';
+import 'package:qqnotificationreply/widgets/video_player_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/slide_images_page.dart';
+import '../search_page.dart';
 
 /// 构造发送的信息
 /// 每一条消息显示的复杂对象
@@ -53,7 +54,7 @@ class _MessageViewState extends State<MessageView> {
   /// 一整行
   Widget _buildMessageLine() {
     // 判断左右
-    bool isSelf = msg.senderId == G.ac.qqId;
+    bool isSelf = msg.senderId == G.ac.myId;
 
     // 消息列的上下控件，是否显示昵称
     List<Widget> vWidgets = [];
@@ -159,7 +160,7 @@ class _MessageViewState extends State<MessageView> {
       padding: bubblePadding,
       margin: bubbleMargin, // 上限间距
       decoration: new BoxDecoration(
-        color: msg.senderId != G.ac.qqId
+        color: msg.senderId != G.ac.myId
             ? G.st.msgBubbleColor
             : G.st.msgBubbleColor2,
         borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
@@ -348,7 +349,7 @@ class _MessageViewState extends State<MessageView> {
                     }
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
-                      return new VideoWidget(url: url);
+                      return new VideoPlayerScreen(url: url);
                     }));
                   },
                 style: TextStyle(
@@ -801,6 +802,10 @@ class _MessageViewState extends State<MessageView> {
         child: Text('回复'),
       ),
       PopupMenuItem(
+        value: 'forward',
+        child: Text('转发'),
+      ),
+      PopupMenuItem(
         value: 'repeat',
         child: Text('+1'),
       ),
@@ -820,7 +825,7 @@ class _MessageViewState extends State<MessageView> {
       items.insert(insertPos++,
           PopupMenuItem(value: 'recall', child: Text('已撤回'), enabled: false));
     } else {
-      if (msg.senderId == G.ac.qqId) {
+      if (msg.senderId == G.ac.myId) {
         // 自己的消息，可以撤回
         items.insert(
             insertPos++,
@@ -842,6 +847,22 @@ class _MessageViewState extends State<MessageView> {
       Clipboard.setData(ClipboardData(text: G.cs.getMessageDisplay(msg)));
     } else if (value == 'reply') {
       widget.addMessageCallback('[CQ:reply,id=${msg.messageId}] ');
+    } else if (value == 'forward') {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Container(
+                constraints: BoxConstraints(minWidth: 350, maxHeight: 500),
+                child: SearchPage(
+                  selectCallback: (m) {
+                    G.cs.sendMsg(m, msg.message);
+                  },
+                ),
+              ),
+              contentPadding: EdgeInsets.all(5),
+            );
+          });
     } else if (value == 'repeat') {
       widget.sendMessageCallback(msg.message);
     } else if (value == 'cq') {

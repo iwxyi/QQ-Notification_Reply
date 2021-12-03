@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,7 @@ import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.d
 
 import 'message_view.dart';
 
-enum ChatMenuItems { Info, EnableNotification }
+enum ChatMenuItems { Info, EnableNotification, CustomName }
 
 // ignore: must_be_immutable
 class ChatWidget extends StatefulWidget {
@@ -77,9 +78,14 @@ class _ChatWidgetState extends State<ChatWidget>
         if (mounted) {
           setState(() {});
         }
-      } else if (event.event == Event.messageRecall &&
-          widget.chatObj.isObj(event.data)) {
-        print('message recall, refresh state');
+      } else if (event.event == Event.messageRecall) {
+        if (widget.chatObj.isObj(event.data)) {
+          print('message recall, refresh state');
+          if (mounted) {
+            setState(() {});
+          }
+        }
+      } else if (event.event == Event.refreshState) {
         if (mounted) {
           setState(() {});
         }
@@ -169,7 +175,7 @@ class _ChatWidgetState extends State<ChatWidget>
                 int ts0 = _messages[index].timestamp;
                 int ts1 = _messages[index + 1].timestamp;
                 int delta = ts0 - ts1;
-                int maxDelta = 60 * 1000;
+                int maxDelta = 120 * 1000;
                 // int maxDelta = 0;
                 if (delta > maxDelta) {
                   // 超过一分钟，显示时间
@@ -268,7 +274,8 @@ class _ChatWidgetState extends State<ChatWidget>
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: new Text(widget.chatObj.title()),
+          title: new Text(G.st.getLocalNickname(
+              widget.chatObj.keyId(), widget.chatObj.title())),
           actions: [buildMenu()],
         ),
         body: _buildBody(context),
@@ -303,6 +310,11 @@ class _ChatWidgetState extends State<ChatWidget>
       ));
     }
 
+    menus.add(PopupMenuItem<ChatMenuItems>(
+      value: ChatMenuItems.CustomName,
+      child: Text('本地昵称'),
+    ));
+
     return PopupMenuButton<ChatMenuItems>(
       icon: Icon(Icons.more_vert, color: Colors.black),
       tooltip: '菜单',
@@ -317,6 +329,57 @@ class _ChatWidgetState extends State<ChatWidget>
               G.st.switchEnabledGroup(widget.chatObj.groupId);
             });
             break;
+          case ChatMenuItems.CustomName:
+            TextEditingController controller = TextEditingController();
+            int keyId = widget.chatObj.keyId();
+            String curName =
+                G.st.getLocalNickname(keyId, widget.chatObj.title());
+            controller.text = curName;
+            if (curName.isNotEmpty) {
+              controller.selection =
+                  TextSelection(baseOffset: 0, extentOffset: curName.length);
+            }
+
+            var confirm = () {
+              setState(() {
+                G.st.setLocalNickname(keyId, controller.text);
+                Navigator.pop(context);
+                G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+              });
+            };
+
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('请输入本地昵称'),
+                    content: TextField(
+                      decoration: InputDecoration(
+                        hintText: '不影响真实昵称',
+                      ),
+                      controller: controller,
+                      autofocus: true,
+                      onSubmitted: (text) {
+                        confirm();
+                      },
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          confirm();
+                        },
+                        child: Text('确定'),
+                      ),
+                    ],
+                  );
+                });
+            break;
         }
       },
     );
@@ -329,7 +392,7 @@ class _ChatWidgetState extends State<ChatWidget>
         child: new Row(children: <Widget>[
           new IconButton(
               icon: new Icon(Icons.image),
-              onPressed: () => getImage(false),
+              onPressed: () => getImage(),
               color: Theme.of(context).primaryColor),
           // 输入框
           new Flexible(
@@ -396,7 +459,7 @@ class _ChatWidgetState extends State<ChatWidget>
                     children: [
                       new IconButton(
                           icon: new Icon(Icons.image),
-                          onPressed: () => getImage(false),
+                          onPressed: () => getImage(),
                           color: Theme.of(context).primaryColor),
                       new IconButton(
                         icon: new Icon(Icons.face),
@@ -500,7 +563,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
   /// 获取图片
   /// @param immediate 是否立刻上传
-  Future getImage(bool immediate) async {
+  Future getImage() async {
     var image = await ImagePickerSaver.pickImage(source: ImageSource.gallery);
     if (image == null) {
       // 取消选择图片
@@ -508,10 +571,10 @@ class _ChatWidgetState extends State<ChatWidget>
           msg: "取消选择图片", gravity: ToastGravity.CENTER, textColor: Colors.grey);
       return;
     }
-    _uploadImage(image, immediate);
+    _uploadImage(image);
   }
 
-  void _uploadImage(File image, bool send) async {
+  void _uploadImage(File image) async {
     if (G.st.server == null || G.st.server.isEmpty) {
       Fluttertoast.showToast(
           msg: "未设置后台服务主机",
@@ -551,9 +614,11 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       String hash = data['hash'];
       String text = "[CQ:image,file=${G.st.server}/files/$hash]";
-      if (send) {
+      if (_textController.text.isEmpty) {
+        // 空文本，直接发送
         G.cs.sendMsg(widget.chatObj, text);
       } else {
+        // 有文本，接到现有文本后面
         _insertMessage(text);
       }
     } else {

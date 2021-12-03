@@ -61,6 +61,25 @@ class MySettings {
     return s.toString();
   }
 
+  /// 默认分割符：','
+  void setList(String key, List value, {split: ','}) {
+    setConfig(key, value.join(split));
+  }
+
+  List<String> getStringList(String key, String split) {
+    return getStr(key, '').split(split);
+  }
+
+  List<int> getIntList(String key) {
+    List<String> ss = getStr(key, '').split(',');
+    List<int> list = [];
+    ss.forEach((element) {
+      if (element.isEmpty) return;
+      list.add(int.parse(element));
+    });
+    return list;
+  }
+
   /// 读取设置，不存在则为空
   dynamic getValue(String key) {
     if (key.contains('/')) {

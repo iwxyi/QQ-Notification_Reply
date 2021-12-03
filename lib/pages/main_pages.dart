@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:awesome_notifications/android_foreground_service.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,9 +9,7 @@ import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/settings/my_settings_widget.dart';
 import 'package:qqnotificationreply/pages/settings/notification_settings_widget.dart';
-import 'package:qqnotificationreply/services/cqhttpservice.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
-import 'package:qqnotificationreply/utils/file_util.dart';
 
 // ignore: unused_import
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
@@ -23,7 +20,7 @@ import 'chat_list_page.dart';
 import 'chat/chat_widget.dart';
 import 'contact/contacts_page.dart';
 import 'search_page.dart';
-import '../widgets/slide_images_page.dart';
+import 'settings/login_widget.dart';
 import 'settings/my_app_bar.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
@@ -106,7 +103,13 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         _messageReceived(event.data);
       } else if (event.event == Event.friendList ||
           event.event == Event.groupList) {
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
+      } else if (event.event == Event.refreshState) {
+        if (mounted) {
+          setState(() {});
+        }
       }
     });
 
@@ -133,8 +136,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       if (G.rt.currentChatPage != null) {
         // 判断旧页面
         if (G.rt.horizontal != G.rt.currentChatPage.innerMode) {
-          // 如果状态不一致，还是得先删除
+          // 如果状态不一致，得删除
+          MsgBean obj = G.rt.currentChatPage.chatObj;
           G.rt.currentChatPage = null;
+
+          // 如果是横屏，则重新创建
+          if (G.rt.horizontal == true) {
+            G.rt.showChatPage(obj);
+          }
         } else {
           setState(() {
             G.rt.currentChatPage.setObject(msg);
@@ -203,12 +212,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     if (G.rt.horizontal) {
       menus.add(const PopupMenuItem<AppBarMenuItems>(
-        value: AppBarMenuItems.Contacts,
-        child: Text('联系人'),
-      ));
-      menus.add(const PopupMenuItem<AppBarMenuItems>(
         value: AppBarMenuItems.Search,
         child: Text('搜索'),
+      ));
+      menus.add(const PopupMenuItem<AppBarMenuItems>(
+        value: AppBarMenuItems.Contacts,
+        child: Text('联系人'),
       ));
       menus.add(const PopupMenuItem<AppBarMenuItems>(
         value: AppBarMenuItems.Settings,
@@ -217,7 +226,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     return PopupMenuButton<AppBarMenuItems>(
-      icon: Icon(Icons.more_vert, color: Colors.black),
+      icon: Icon(Icons.more_vert,
+          color: Theme.of(context).textTheme.bodyText2.color),
       tooltip: '菜单',
       itemBuilder: (BuildContext context) => menus,
       onSelected: (AppBarMenuItems result) {
@@ -263,9 +273,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (G.rt.horizontal) {
       // 横屏，分列
       btnWidget.add(IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.search,
-          color: Colors.black,
+          color: Theme.of(context).textTheme.bodyText2.color,
         ),
         tooltip: '搜索',
         onPressed: () {
@@ -279,9 +289,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     } else {
       // 竖屏，默认
       btnWidget.add(IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.search,
-          color: Colors.black,
+          color: Theme.of(context).textTheme.bodyText2.color,
         ),
         tooltip: '搜索',
         onPressed: () {
@@ -297,9 +307,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     return AppBar(
         brightness: Brightness.light,
-        title: const Text(
+        title: Text(
           'Message',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyText2.color),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -311,10 +321,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     bool isHoriz = G.rt.horizontal;
 
     // 标题
-    widgets.add(const Text(
+    widgets.add(Text(
       'Message',
       style: TextStyle(
-          color: Colors.black, fontSize: 20, fontWeight: FontWeight.w600),
+          color: Theme.of(context).textTheme.bodyText2.color,
+          fontSize: 20,
+          fontWeight: FontWeight.w600),
     ));
 
     widgets.add(Expanded(child: new Text('')));
@@ -322,23 +334,19 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (!isHoriz) {
       // 搜索按钮
       widgets.add(IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.search,
-          color: Colors.black,
+          color: Theme.of(context).textTheme.bodyText2.color,
         ),
         tooltip: '搜索',
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) {
-              return new SearchPage();
-            },
-          ));
+          openSearch();
         },
       ));
-    }
 
-    // 菜单
-    widgets.add(_buildMenu(context));
+      // 菜单
+      widgets.add(_buildMenu(context));
+    }
 
     // 主标题的容器
     double statusBarHeight =
@@ -349,7 +357,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
       ),
-      padding: EdgeInsets.only(left: 18, right: 18, top: statusBarHeight),
+      padding: EdgeInsets.only(left: 0, right: 0, top: statusBarHeight),
       constraints: BoxConstraints(
           maxWidth: isHoriz ? G.rt.chatListFixedWidth : double.infinity),
     );
@@ -360,7 +368,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (isHoriz) {
       // 副标题的容器
       String title = G.rt.currentChatPage != null
-          ? G.rt.currentChatPage.chatObj.title()
+          ? G.st.getLocalNickname(G.rt.currentChatPage.chatObj.keyId(),
+              G.rt.currentChatPage.chatObj.title())
           : '';
 
       /* // 卡片标题
@@ -370,7 +379,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             new Text(
               title,
               style: TextStyle(
-                  color: Colors.black,
+                  color: Theme.of(context).textTheme.bodyText2.color,
                   fontSize: 18,
                   fontWeight: FontWeight.w600),
             )
@@ -387,7 +396,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       Widget titleCard = new Text(
         title,
         style: TextStyle(
-            color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
+            color: Theme.of(context).textTheme.bodyText2.color,
+            fontSize: 20,
+            fontWeight: FontWeight.w500),
       );
 
       Widget subContainer = Expanded(
@@ -414,10 +425,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     return MyAppBar(
         Container(
           child: child,
+          height: kToolbarHeight, // 固定位状态栏高度
           /* decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
               Color(0xFFFAD956),
-              Colors.white,
+              Color(0xFFFAD956),
             ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
           ), */
         ),
@@ -448,6 +460,102 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     );
   }
 
+  Drawer _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        children: <Widget>[
+          Container(
+            height: 170,
+            child: UserAccountsDrawerHeader(
+              //设置用户名
+              accountName: new Text(
+                  G.ac.myNickname != null && G.ac.myNickname.isNotEmpty
+                      ? G.ac.myNickname
+                      : '未登录'),
+              //设置用户邮箱
+              accountEmail:
+                  new Text(G.ac.myId != 0 ? G.ac.myId.toString() : ''),
+              //设置当前用户的头像
+              currentAccountPicture: new CircleAvatar(
+                backgroundImage: G.ac.isLogin()
+                    ? NetworkImage(
+                        "http://q1.qlogo.cn/g?b=qq&nk=${G.ac.myId}&s=100&t=")
+                    : AssetImage('icons/cat_chat.png'),
+              ),
+              //回调事件
+              onDetailsPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) {
+                  return LoginWidget();
+                })).then((value) {
+                  // 可能登录了，刷新一下界面
+                  setState(() {});
+                });
+              },
+            ),
+          ),
+          SizedBox(height: 8),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: '搜索',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+              ),
+              readOnly: true,
+              onTap: () {
+                Navigator.pop(context);
+                openSearch();
+              },
+            ),
+          ),
+          SizedBox(height: 8),
+          ListTile(
+            leading: Icon(Icons.chat),
+            title: new Text('会话'),
+            onTap: () {
+              setState(() {
+                _selectedIndex = 0;
+                Navigator.pop(context);
+              });
+            },
+            selected: _selectedIndex == 0,
+          ),
+          ListTile(
+            leading: Icon(Icons.contacts),
+            title: new Text('联系人'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return createScaffoldPage(context, new ContactsPage(), '联系人');
+                },
+              ));
+            },
+            selected: _selectedIndex == 1,
+          ),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: new Text('设置'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return createScaffoldPage(
+                      context, new MySettingsWidget(), '设置');
+                },
+              ));
+            },
+            selected: _selectedIndex == 2,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     G.rt.mainContext = context;
@@ -460,8 +568,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     return Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(context),
-      bottomNavigationBar:
-          G.rt.horizontal ? null : _buildBottomNavigationBar(context),
+      /* bottomNavigationBar:
+          G.rt.horizontal ? null : _buildBottomNavigationBar(context), */
+      drawer: _buildDrawer(),
     );
     /* // 自定义滑块视图
     return AppRetainWidget(
@@ -543,7 +652,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     int id = UserAccount.getNotificationId(msg);
 
     // 判断自己的通知
-    if (msg.senderId == G.ac.qqId) {
+    if (msg.senderId == G.ac.myId) {
       // 自己发的，一定不需要再通知了
       // 还需要消除掉该聊天对象的通知
       _cancelNotification(id);
@@ -570,7 +679,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           // 有没有 @我 或者 回复我 的消息
           String text = msg.message ?? '';
           bool contains = false;
-          if (text.contains('[CQ:at,qq=${G.ac.qqId}]')) {
+          if (text.contains('[CQ:at,qq=${G.ac.myId}]')) {
             // @自己、回复
             contains = true;
           } else if (G.st.notificationAtAll &&
@@ -608,7 +717,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         channelKey: channelKey,
         groupKey: msg.keyId().toString(),
         summary: msg.title(),
-        title: msg.username(),
+        title: G.st.getLocalNickname(msg.keyId(), msg.username()),
         body: G.cs.getMessageDisplay(msg),
         notificationLayout: NotificationLayout.Messaging,
         displayOnForeground: false,
@@ -758,5 +867,35 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       ),
       body: widget,
     );
+  }
+
+  void openSearch() {
+    /* Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return new SearchPage();
+      },
+    )); */
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+              constraints: BoxConstraints(minWidth: 350, maxHeight: 500),
+              child: SearchPage(
+                selectCallback: (msg) {
+                  // 在聊天界面上显示
+                  msg.timestamp = DateTime.now().millisecondsSinceEpoch;
+                  G.ac.messageTimes[msg.keyId()] = msg.timestamp;
+                  G.ac.eventBus.fire(EventFn(Event.newChat, msg));
+
+                  // 打开聊天框
+                  G.rt.showChatPage(msg);
+                },
+              ),
+            ),
+            contentPadding: EdgeInsets.all(5),
+          );
+        });
   }
 }

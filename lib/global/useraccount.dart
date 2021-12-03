@@ -17,7 +17,7 @@ class GroupInfo {
   int groupId;
   String name;
   Map<int, FriendInfo> members;
-  
+
   Set<int> ignoredMembers; // 需要这些群成员时不进行刷新
   bool focusAsk = false; // 提问聚焦
   Set<int> focusAt; // 艾特聚焦
@@ -29,8 +29,8 @@ class GroupInfo {
 
 class UserAccount {
   // 账号信息
-  String nickname = ''; // QQ昵称
-  int qqId = 0; // QQ ID
+  String myNickname = ''; // QQ昵称
+  int myId = 0; // QQ ID
 
   // 账号数据
   Map<int, FriendInfo> friendList = {}; // 好友列表
@@ -39,11 +39,9 @@ class UserAccount {
   // 消息记录
   List<MsgBean> allLogs = []; // 所有消息记录
   Map<int, List<MsgBean>> allMessages = {}; // 所有消息记录
-  Map<int, int> messageTimes = {}; // 消息事件
-//  Map<int, List<Message>> unreadMessages = {}; // 未读消息（通知）
+  Map<int, int> messageTimes = {}; // 消息事件（毫秒）
   Map<int, int> unreadMessageCount = {}; // 未读消息数量
   Map<int, bool> chatListShowReply = {}; // 聊天记录显示回复框
-  // Set<int> smartFocusGroups = {}; // 智能聚焦的群组
 
   // 账号事件
   EventBus eventBus = new EventBus(); // 事件总线
@@ -65,7 +63,9 @@ class UserAccount {
     return notificationIdMap[id];
   }
 
-  String selfInfo() => nickname + ' (' + qqId.toString() + ')';
+  bool isLogin() => myId != null && myId != 0;
+
+  String selfInfo() => myNickname + ' (' + myId.toString() + ')';
 
   MsgBean getMsgById(int msgId) {
     int index = allLogs.indexWhere((element) => element.messageId == msgId);
