@@ -504,6 +504,8 @@ class _ChatWidgetState extends State<ChatWidget>
     var image = await ImagePickerSaver.pickImage(source: ImageSource.gallery);
     if (image == null) {
       // 取消选择图片
+      Fluttertoast.showToast(
+          msg: "取消选择图片", gravity: ToastGravity.CENTER, textColor: Colors.grey);
       return;
     }
     _uploadImage(image, immediate);
@@ -525,15 +527,28 @@ class _ChatWidgetState extends State<ChatWidget>
       "upfile": await MultipartFile.fromFile(path,
           filename: name, contentType: MediaType.parse("image/$suffix"))
     });
+    Fluttertoast.showToast(
+        msg: "开始上传:$path", gravity: ToastGravity.CENTER, textColor: Colors.grey);
 
     Dio dio = new Dio();
+    Fluttertoast.showToast(
+        msg: "${G.st.server}/file_upload.php", gravity: ToastGravity.CENTER, textColor: Colors.grey);
     var response = await dio.post<String>("${G.st.server}/file_upload.php",
         data: formData);
+    Fluttertoast.showToast(
+        msg: "返回码：${response.statusCode}", gravity: ToastGravity.CENTER, textColor: Colors.grey);
     if (response.statusCode == 200) {
       Fluttertoast.showToast(
           msg: "图片上传成功", gravity: ToastGravity.CENTER, textColor: Colors.grey);
 
       var data = json.decode(response.data);
+      if (data['hash'] == null) {
+        Fluttertoast.showToast(
+            msg: "服务器无效，返回：$data",
+            gravity: ToastGravity.CENTER,
+            textColor: Colors.grey);
+        return;
+      }
       String hash = data['hash'];
       String text = "[CQ:image,file=${G.st.server}/files/$hash]";
       if (send) {
@@ -543,7 +558,9 @@ class _ChatWidgetState extends State<ChatWidget>
       }
     } else {
       Fluttertoast.showToast(
-          msg: "图片上传失败", gravity: ToastGravity.CENTER, textColor: Colors.grey);
+          msg: "图片上传失败：${response.statusCode}",
+          gravity: ToastGravity.CENTER,
+          textColor: Colors.grey);
     }
   }
 
