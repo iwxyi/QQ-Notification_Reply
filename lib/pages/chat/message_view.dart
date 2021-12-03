@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
-import 'package:qqnotificationreply/widgets/video_widget.dart';
+import 'package:qqnotificationreply/widgets/video_player_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/slide_images_page.dart';
@@ -348,7 +348,7 @@ class _MessageViewState extends State<MessageView> {
                     }
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
-                      return new VideoWidget(url: url);
+                      return new VideoPlayerScreen(url: url);
                     }));
                   },
                 style: TextStyle(
