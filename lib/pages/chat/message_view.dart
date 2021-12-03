@@ -11,6 +11,7 @@ import 'package:qqnotificationreply/widgets/video_player_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/slide_images_page.dart';
+import '../search_page.dart';
 
 /// 构造发送的信息
 /// 每一条消息显示的复杂对象
@@ -801,6 +802,10 @@ class _MessageViewState extends State<MessageView> {
         child: Text('回复'),
       ),
       PopupMenuItem(
+        value: 'forward',
+        child: Text('转发'),
+      ),
+      PopupMenuItem(
         value: 'repeat',
         child: Text('+1'),
       ),
@@ -814,7 +819,7 @@ class _MessageViewState extends State<MessageView> {
       ),
     ];
 
-    int insertPos = 2; // 自己的要插入的位置
+    int insertPos = 3; // 自己的要插入的位置
     if (msg.recalled) {
       // 已经撤回，显示状态
       items.insert(insertPos++,
@@ -842,6 +847,19 @@ class _MessageViewState extends State<MessageView> {
       Clipboard.setData(ClipboardData(text: G.cs.getMessageDisplay(msg)));
     } else if (value == 'reply') {
       widget.addMessageCallback('[CQ:reply,id=${msg.messageId}] ');
+    } else if (value == 'forward') {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: SearchPage(
+                selectCallback: (m) {
+                  G.cs.sendMsg(m, msg.message);
+                },
+              ),
+              contentPadding: EdgeInsets.all(5),
+            );
+          });
     } else if (value == 'repeat') {
       widget.sendMessageCallback(msg.message);
     } else if (value == 'cq') {
