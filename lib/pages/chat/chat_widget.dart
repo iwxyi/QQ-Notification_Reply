@@ -392,7 +392,7 @@ class _ChatWidgetState extends State<ChatWidget>
         child: new Row(children: <Widget>[
           new IconButton(
               icon: new Icon(Icons.image),
-              onPressed: () => getImage(false),
+              onPressed: () => getImage(),
               color: Theme.of(context).primaryColor),
           // 输入框
           new Flexible(
@@ -459,7 +459,7 @@ class _ChatWidgetState extends State<ChatWidget>
                     children: [
                       new IconButton(
                           icon: new Icon(Icons.image),
-                          onPressed: () => getImage(false),
+                          onPressed: () => getImage(),
                           color: Theme.of(context).primaryColor),
                       new IconButton(
                         icon: new Icon(Icons.face),
@@ -563,16 +563,16 @@ class _ChatWidgetState extends State<ChatWidget>
 
   /// 获取图片
   /// @param immediate 是否立刻上传
-  Future getImage(bool immediate) async {
+  Future getImage() async {
     var image = await ImagePickerSaver.pickImage(source: ImageSource.gallery);
     if (image == null) {
       // 取消选择图片
       return;
     }
-    _uploadImage(image, immediate);
+    _uploadImage(image);
   }
 
-  void _uploadImage(File image, bool send) async {
+  void _uploadImage(File image) async {
     if (G.st.server == null || G.st.server.isEmpty) {
       Fluttertoast.showToast(
           msg: "未设置后台服务主机",
@@ -599,9 +599,11 @@ class _ChatWidgetState extends State<ChatWidget>
       var data = json.decode(response.data);
       String hash = data['hash'];
       String text = "[CQ:image,file=${G.st.server}/files/$hash]";
-      if (send) {
+      if (_textController.text.isEmpty) {
+        // 空文本，直接发送
         G.cs.sendMsg(widget.chatObj, text);
       } else {
+        // 有文本，接到现有文本后面
         _insertMessage(text);
       }
     } else {
