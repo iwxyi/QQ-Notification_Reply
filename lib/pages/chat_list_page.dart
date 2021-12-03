@@ -65,13 +65,13 @@ class _ChatListPageState extends State<ChatListPage>
         itemCount: timedMsgs.length,
         itemBuilder: (context, index) {
           MsgBean msg = timedMsgs[index];
-          // 设置用户数据
-          String title;
-          String subTitle;
+          // 设置消息主体
+          String titleStr;
+          String subTitleStr;
           String headerUrl;
           if (msg.isGroup()) {
-            title = G.st.getLocalNickname(msg.keyId(), msg.groupName);
-            subTitle = (msg.senderId == null
+            titleStr = G.st.getLocalNickname(msg.keyId(), msg.groupName);
+            subTitleStr = (msg.senderId == null
                     ? ''
                     : G.st.getLocalNickname(
                             msg.senderKeyId(), msg.username() ?? '') +
@@ -80,9 +80,59 @@ class _ChatListPageState extends State<ChatListPage>
             headerUrl =
                 "http://p.qlogo.cn/gh/${msg.groupId}/${msg.groupId}/100";
           } else {
-            title = G.st.getLocalNickname(msg.keyId(), msg.username());
-            subTitle = G.cs.getMessageDisplay(msg);
+            titleStr = G.st.getLocalNickname(msg.keyId(), msg.username());
+            subTitleStr = G.cs.getMessageDisplay(msg);
             headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=${msg.friendId}&s=100&t=";
+          }
+
+          Widget subTitleWidget;
+          if (!G.st.enableChatListHistories) {
+            // 只显示最近一条消息
+          } else {
+            // 显示多条未读消息
+            List<MsgBean> msgs = G.ac.allMessages[msg.keyId()];
+            // 如果最后一条是自己发的，那么只显示自己的
+            if (msgs.length > 0 && msgs.last.senderId != G.ac.qqId) {
+              List<Widget> widgets = [];
+              int maxCount = G.st.chatListHistoriesCount; // 最大显示几条消息
+              int count = 0;
+              for (int i = msgs.length - 1;
+                  i >= 0 && count < maxCount;
+                  i--, count++) {
+                MsgBean msg = msgs[i];
+                if (msg.senderId == G.ac.qqId) {
+                  break;
+                }
+
+                // 显示消息
+                String text;
+                if (msg.isPrivate()) {
+                  // 私聊消息，只显示消息
+                  text = G.cs.getMessageDisplay(msg);
+                } else if (msg.isGroup()) {
+                  // 群聊还是需要显示昵称的
+                  text = (msg.senderId == null
+                          ? ''
+                          : G.st.getLocalNickname(
+                                  msg.senderKeyId(), msg.username() ?? '') +
+                              ": ") +
+                      G.cs.getMessageDisplay(msg);
+                } else {
+                  print('未知的消息类型');
+                }
+                if (text != null) {
+                  widgets.add(Text(text, maxLines: 3));
+                }
+              }
+              subTitleWidget = Column(
+                children: widgets,
+                crossAxisAlignment: CrossAxisAlignment.start
+              );
+            }
+          }
+          if (subTitleWidget == null) {
+            // 不需要多条消息，直接显示最后一条
+            subTitleWidget = Text(subTitleStr, maxLines: 3);
           }
 
           // 时间
@@ -184,32 +234,30 @@ class _ChatListPageState extends State<ChatListPage>
           // 消息内容
           List<Widget> bodyWidgets = [];
           bodyWidgets.add(ListTile(
-              leading: new ClipOval(
-                // 圆形头像
-                child: new FadeInImage.assetNetwork(
-                  placeholder: "assets/icons/default_header.png",
-                  //预览图
-                  fit: BoxFit.contain,
-                  image: headerUrl,
-                  width: 40.0,
-                  height: 40.0,
-                ),
+            leading: new ClipOval(
+              // 圆形头像
+              child: new FadeInImage.assetNetwork(
+                placeholder: "assets/icons/default_header.png",
+                //预览图
+                fit: BoxFit.contain,
+                image: headerUrl,
+                width: 40.0,
+                height: 40.0,
               ),
-              title: Text(title),
-              subtitle: Text(subTitle, maxLines: 3),
-              trailing: gd,
-              onTap: () {
-                // 清除未读消息
-                setState(() {
-                  G.ac.clearUnread(msg);
-                });
+            ),
+            title: Text(titleStr),
+            subtitle: subTitleWidget,
+            trailing: gd,
+            onTap: () {
+              // 清除未读消息
+              setState(() {
+                G.ac.clearUnread(msg);
+              });
 
-                // 打开会话
-                G.rt.showChatPage(msg);
-              },
-              onLongPress: () {
-                // 会话菜单
-              }));
+              // 打开会话
+              G.rt.showChatPage(msg);
+            },
+          ));
 
           // 显示快速回复框
           if (G.st.enableChatListReply &&

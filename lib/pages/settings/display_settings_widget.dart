@@ -62,7 +62,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.reply_all_sharp,
+                    Icons.hide_source,
                     color: Colors.blue,
                   ),
                   title: Text('发送后隐藏'),
@@ -82,6 +82,31 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                       G.st.chatListReplySendHide = !G.st.chatListReplySendHide;
                       G.st.setConfig(
                           'function/chatListReplySendHide', G.st.chatListReplySendHide);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('多条历史'),
+                  subtitle: Text('会话列表显示多条未读记录'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatListHistories = !G.st.enableChatListHistories;
+                        G.st.setConfig(
+                            'function/chatListHistories', G.st.enableChatListHistories);
+                      });
+                    },
+                    value: G.st.enableChatListHistories,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatListHistories = !G.st.enableChatListHistories;
+                      G.st.setConfig(
+                          'function/chatListHistories', G.st.enableChatListHistories);
                     });
                   },
                 ),

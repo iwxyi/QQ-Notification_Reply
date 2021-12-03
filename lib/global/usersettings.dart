@@ -21,8 +21,9 @@ class UserSettings extends MySettings {
 
   // 功能选项
   bool enableSelfChats = true; // 启用本身的聊天功能
-  bool enableChatListHistories = true; // 聊天列表多条未读消息
-  bool enableChatListReply = false; // 聊天列表点击未读按钮快速回复
+  bool enableChatListHistories = true; // 会话列表多条未读消息
+  int chatListHistoriesCount = 3; // 显示多少未读消息
+  bool enableChatListReply = false; // 会话列表点击未读按钮快速回复
   bool chatListReplySendHide = true; // 快速回复后自动隐藏
   bool enableHeader = true; // 显示头像（稍微消耗性能）
   int keepMsgHistoryCount = 100; // 保留多少消息记录
@@ -58,6 +59,8 @@ class UserSettings extends MySettings {
     token = getStr('account/token', '');
     server = getStr('account/server', '');
     enableSelfChats = getBool('function/selfChats', enableSelfChats);
+    enableChatListHistories =
+        getBool('function/chatListHistories', enableChatListHistories);
     enableChatListReply =
         getBool('function/chatListReply', enableChatListReply);
     enableSelfChats = getBool('function/selfChats', enableSelfChats);
