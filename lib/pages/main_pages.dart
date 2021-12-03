@@ -102,7 +102,13 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         _messageReceived(event.data);
       } else if (event.event == Event.friendList ||
           event.event == Event.groupList) {
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
+      } else if (event.event == Event.refreshState) {
+        if (mounted) {
+          setState(() {});
+        }
       }
     });
 
@@ -199,12 +205,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     if (G.rt.horizontal) {
       menus.add(const PopupMenuItem<AppBarMenuItems>(
-        value: AppBarMenuItems.Contacts,
-        child: Text('联系人'),
-      ));
-      menus.add(const PopupMenuItem<AppBarMenuItems>(
         value: AppBarMenuItems.Search,
         child: Text('搜索'),
+      ));
+      menus.add(const PopupMenuItem<AppBarMenuItems>(
+        value: AppBarMenuItems.Contacts,
+        child: Text('联系人'),
       ));
       menus.add(const PopupMenuItem<AppBarMenuItems>(
         value: AppBarMenuItems.Settings,
