@@ -53,7 +53,7 @@ class _MessageViewState extends State<MessageView> {
   /// 一整行
   Widget _buildMessageLine() {
     // 判断左右
-    bool isSelf = msg.senderId == G.ac.qqId;
+    bool isSelf = msg.senderId == G.ac.myId;
 
     // 消息列的上下控件，是否显示昵称
     List<Widget> vWidgets = [];
@@ -159,7 +159,7 @@ class _MessageViewState extends State<MessageView> {
       padding: bubblePadding,
       margin: bubbleMargin, // 上限间距
       decoration: new BoxDecoration(
-        color: msg.senderId != G.ac.qqId
+        color: msg.senderId != G.ac.myId
             ? G.st.msgBubbleColor
             : G.st.msgBubbleColor2,
         borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
@@ -820,7 +820,7 @@ class _MessageViewState extends State<MessageView> {
       items.insert(insertPos++,
           PopupMenuItem(value: 'recall', child: Text('已撤回'), enabled: false));
     } else {
-      if (msg.senderId == G.ac.qqId) {
+      if (msg.senderId == G.ac.myId) {
         // 自己的消息，可以撤回
         items.insert(
             insertPos++,

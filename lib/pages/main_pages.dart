@@ -463,6 +463,70 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     );
   }
 
+  Drawer _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        children: <Widget>[
+          Container(
+            height: 170,
+            child: UserAccountsDrawerHeader(
+              //设置用户名
+              accountName: new Text(
+                  G.ac.myNickname != null && G.ac.myNickname.isNotEmpty
+                      ? G.ac.myNickname
+                      : '未登录'),
+              //设置用户邮箱
+              accountEmail:
+                  new Text(G.ac.myId != 0 ? G.ac.myId.toString() : ''),
+              //设置当前用户的头像
+              currentAccountPicture: new CircleAvatar(
+                backgroundImage: G.ac.isLogin()
+                    ? NetworkImage(
+                        "http://q1.qlogo.cn/g?b=qq&nk=${G.ac.myId}&s=100&t=")
+                    : AssetImage('icons/cat_chat.png'),
+              ),
+              //回调事件
+              onDetailsPressed: () {},
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.chat),
+            title: new Text('会话'),
+            onTap: () {
+              setState(() {
+                _selectedIndex = 0;
+                Navigator.pop(context);
+              });
+            },
+            selected: _selectedIndex == 0,
+          ),
+          ListTile(
+            leading: Icon(Icons.contacts),
+            title: new Text('联系人'),
+            onTap: () {
+              setState(() {
+                _selectedIndex = 1;
+                Navigator.pop(context);
+              });
+            },
+            selected: _selectedIndex == 1,
+          ),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: new Text('设置'),
+            onTap: () {
+              setState(() {
+                _selectedIndex = 2;
+                Navigator.pop(context);
+              });
+            },
+            selected: _selectedIndex == 2,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     G.rt.mainContext = context;
@@ -477,9 +541,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       body: _buildBody(context),
       bottomNavigationBar:
           G.rt.horizontal ? null : _buildBottomNavigationBar(context),
-      drawer: Drawer(
-        child: Text('this is text'),
-      ),
+      drawer: _buildDrawer(),
     );
     /* // 自定义滑块视图
     return AppRetainWidget(
@@ -561,7 +623,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     int id = UserAccount.getNotificationId(msg);
 
     // 判断自己的通知
-    if (msg.senderId == G.ac.qqId) {
+    if (msg.senderId == G.ac.myId) {
       // 自己发的，一定不需要再通知了
       // 还需要消除掉该聊天对象的通知
       _cancelNotification(id);
@@ -588,7 +650,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           // 有没有 @我 或者 回复我 的消息
           String text = msg.message ?? '';
           bool contains = false;
-          if (text.contains('[CQ:at,qq=${G.ac.qqId}]')) {
+          if (text.contains('[CQ:at,qq=${G.ac.myId}]')) {
             // @自己、回复
             contains = true;
           } else if (G.st.notificationAtAll &&

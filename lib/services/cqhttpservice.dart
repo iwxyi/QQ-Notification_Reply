@@ -252,7 +252,7 @@ class CqhttpService {
   /// 连接上，必定会触发这个
   void _parseLifecycle(final obj) {
     int userId = obj['self_id']; // 自己的QQ号
-    ac.qqId = userId;
+    ac.myId = userId;
 
     // 发送获取登录号信息
     send({'action': 'get_login_info', 'echo': 'get_login_info'});
@@ -268,11 +268,11 @@ class CqhttpService {
     if (echo == 'get_login_info') {
       // 登录信息
       var data = obj['data'];
-      ac.qqId = data['user_id'];
-      ac.nickname = data['nickname'];
-      print(log('登录账号：' + ac.nickname + "  " + ac.qqId.toString()));
+      ac.myId = data['user_id'];
+      ac.myNickname = data['nickname'];
+      print(log('登录账号：' + ac.myNickname + "  " + ac.myId.toString()));
       ac.eventBus.fire(
-          EventFn(Event.loginInfo, {'qqId': ac.qqId, 'nickname': ac.nickname}));
+          EventFn(Event.loginInfo, {'qqId': ac.myId, 'nickname': ac.myNickname}));
     } else if (echo == 'get_friend_list') {
       // 好友列表
       ac.friendList.clear();
@@ -332,7 +332,7 @@ class CqhttpService {
         int friendId = int.parse(match.group(1));
         int messageId = int.parse(match.group(2));
         MsgBean msg = new MsgBean(
-            senderId: ac.qqId, friendId: friendId, messageId: messageId);
+            senderId: ac.myId, friendId: friendId, messageId: messageId);
         _markRecalled(msg);
       }
     } else {
@@ -351,7 +351,7 @@ class CqhttpService {
     int senderId = sender['user_id']; // 发送者QQ，大概率是别人，也可能是自己
     String nickname = sender['nickname'];
 
-    int friendId = (senderId == ac.qqId ? targetId : senderId);
+    int friendId = (senderId == ac.myId ? targetId : senderId);
 
     MsgBean msg = new MsgBean(
         subType: subType,
@@ -597,7 +597,7 @@ class CqhttpService {
     // 以及未读消息的数量
     int time = DateTime.now().millisecondsSinceEpoch;
     ac.messageTimes[msg.keyId()] = time;
-    if (msg.senderId == ac.qqId) {
+    if (msg.senderId == ac.myId) {
       // 自己发的，清空未读
       ac.unreadMessageCount.remove(msg.keyId());
     } else if (rt.currentChatPage != null &&

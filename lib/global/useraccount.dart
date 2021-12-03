@@ -29,8 +29,8 @@ class GroupInfo {
 
 class UserAccount {
   // 账号信息
-  String nickname = ''; // QQ昵称
-  int qqId = 0; // QQ ID
+  String myNickname = ''; // QQ昵称
+  int myId = 0; // QQ ID
 
   // 账号数据
   Map<int, FriendInfo> friendList = {}; // 好友列表
@@ -63,7 +63,9 @@ class UserAccount {
     return notificationIdMap[id];
   }
 
-  String selfInfo() => nickname + ' (' + qqId.toString() + ')';
+  bool isLogin() => myId != null && myId != 0;
+
+  String selfInfo() => myNickname + ' (' + myId.toString() + ')';
 
   MsgBean getMsgById(int msgId) {
     int index = allLogs.indexWhere((element) => element.messageId == msgId);
