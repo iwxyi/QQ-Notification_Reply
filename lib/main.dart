@@ -54,7 +54,7 @@ void main() {
           NotificationChannel(
               channelKey: 'important_group_chats',
               channelName: '重要群组通知',
-              channelDescription: '标位重要的群组消息、@与回复自己的消息',
+              channelDescription: '标为重要的群组消息、@与回复自己的消息',
               defaultColor: Color(0xFF9D50DD),
               ledColor: Colors.white),
         ]);

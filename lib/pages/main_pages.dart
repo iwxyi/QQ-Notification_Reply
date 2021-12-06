@@ -596,13 +596,6 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return;
     }
 
-    // 判断是否需要显示通知
-    if (msg.isGroup()) {
-      if (!G.st.enabledGroups.contains(msg.groupId)) {
-        return;
-      }
-    }
-
     // 显示通知（如果平台支持）
     _showNotification(msg);
   }
@@ -710,6 +703,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         } else {
           channelKey = 'normal_group_chats';
         }
+      }
+
+      // 判断是否需要显示通知
+      if (!G.st.enabledGroups.contains(msg.groupId) &&
+          channelKey == 'normal_group_chats') {
+        return;
       }
     }
 

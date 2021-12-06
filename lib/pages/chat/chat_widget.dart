@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -564,6 +563,14 @@ class _ChatWidgetState extends State<ChatWidget>
   /// 获取图片
   /// @param immediate 是否立刻上传
   Future getImage() async {
+    if (Platform.isWindows) {
+      var clipboardData =
+          await Clipboard.getData(Clipboard.kTextPlain); //获取粘贴板中的文本
+      if (clipboardData != null) {
+        print(clipboardData); //打印内容
+      }
+    }
+
     var image = await ImagePickerSaver.pickImage(source: ImageSource.gallery);
     if (image == null) {
       // 取消选择图片
