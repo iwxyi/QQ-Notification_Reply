@@ -1,10 +1,8 @@
 import 'dart:math';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
-import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/settings/group_select_widget.dart';
 
 class NotificationSettingsWidget extends StatefulWidget {
@@ -90,7 +88,7 @@ class _NotificationSettingsWidgetState
                     color: Colors.blue,
                   ),
                   title: Text('群消息智能聚焦'),
-                  subtitle: Text('发送以问号结尾或者@别人的消息后，提升群组至“重要”，直到下一次进入会话'),
+                  subtitle: Text('发送疑问句（问号结尾）或者@别人的消息后，提升群组至“重要”，直到下一次进入会话'),
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
