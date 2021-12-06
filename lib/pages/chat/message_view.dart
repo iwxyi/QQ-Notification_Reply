@@ -142,7 +142,7 @@ class _MessageViewState extends State<MessageView> {
     String text = msg.message ?? '';
     Match match;
     if (msg.isPureMessage() &&
-        (match = RegExp(r'^\[CQ:image,file=.+?,url=(.+?)(,.+?)?\]$')
+        (match = RegExp(r'^\[CQ:image,file=[^\]]+?,url=([^\]]+?)(,[^\]]+?)?\]$')
                 .firstMatch(text)) !=
             null) {
       // 如果是图片

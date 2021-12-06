@@ -140,9 +140,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           MsgBean obj = G.rt.currentChatPage.chatObj;
           G.rt.currentChatPage = null;
 
-          // 如果是横屏，则重新创建
           if (G.rt.horizontal == true) {
+            // 如果是竖屏->横屏，则重新创建
             G.rt.showChatPage(obj);
+          } else {
+            // 如果是横屏->竖屏，则不进行处理
           }
         } else {
           setState(() {
