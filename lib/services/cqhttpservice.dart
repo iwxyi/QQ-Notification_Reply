@@ -149,6 +149,10 @@ class CqhttpService {
           }
         }
       }
+
+      // 群消息动态重要性
+      ac.messageMyTimes[chatObj.keyId()] =
+          DateTime.now().millisecondsSinceEpoch;
     } else if (chatObj.isPrivate()) {
       sendPrivateMessage(chatObj.friendId, text);
     } else {

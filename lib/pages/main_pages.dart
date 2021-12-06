@@ -699,7 +699,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         }
 
         // 群消息动态重要性：判断自己发消息的时间
-        if (G.ac.messageMyTimes.containsKey(msg.keyId())) {
+        if (G.st.groupDynamicImportance &&
+            G.ac.messageMyTimes.containsKey(msg.keyId())) {
           contains = false;
           int delta = DateTime.now().millisecondsSinceEpoch -
               G.ac.messageMyTimes[msg.keyId()];
@@ -708,10 +709,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             // 一分钟内：重要
             channelKey = 'important_group_chats';
             isDynamicImportance = true;
+            print('群消息.动态重要性.重要');
           } else if (delta < 180) {
             // 一分钟内：普通通知，且忽视不通知
             if (channelKey != 'important_group_chats') {
               channelKey = 'normal_group_chats';
+              print('群消息.动态重要性.普通');
             }
             isDynamicImportance = true;
           }
