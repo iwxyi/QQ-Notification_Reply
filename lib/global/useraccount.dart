@@ -39,7 +39,8 @@ class UserAccount {
   // 消息记录
   List<MsgBean> allLogs = []; // 所有消息记录
   Map<int, List<MsgBean>> allMessages = {}; // 所有消息记录
-  Map<int, int> messageTimes = {}; // 消息事件（毫秒）
+  Map<int, int> messageTimes = {}; // 消息时间（毫秒）
+  Map<int, int> messageMyTimes = {}; // 自己在本设备发送的消息时间（毫秒），用来提升动态重要性
   Map<int, int> unreadMessageCount = {}; // 未读消息数量
   Map<int, bool> chatListShowReply = {}; // 聊天记录显示回复框
 

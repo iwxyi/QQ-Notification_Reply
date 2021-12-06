@@ -661,53 +661,75 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 显示通知
     String channelKey = 'notice';
+    bool isSmartFocus = false;
+    bool isDynamicImportance = false;
     if (msg.isPrivate()) {
       // 私聊消息
       channelKey = 'private_chats';
     } else if (msg.isGroup()) {
-      if (G.st.importantGroups.contains(msg.groupId)) {
-        // 重要群组消息
-        channelKey = 'important_group_chats';
-      } else {
-        // 普通群组消息
-        if (msg.isPureMessage()) {
-          // 有没有 @我 或者 回复我 的消息
-          String text = msg.message ?? '';
-          bool contains = false;
-          if (text.contains('[CQ:at,qq=${G.ac.myId}]')) {
-            // @自己、回复
-            contains = true;
-          } else if (G.st.notificationAtAll &&
-              text.contains('[CQ:at,qq=all]')) {
-            // @全体
-            contains = true;
-          } else if (G.st.groupSmartFocus) {
-            GroupInfo group = G.ac.groupList[msg.groupId];
-            if (group != null) {
-              if (group.focusAsk) {
-                // 疑问聚焦
-                contains = true;
-                print('群消息.疑问聚焦');
-              } else if (group.focusAt != null &&
-                  group.focusAt.contains(msg.senderId)) {
-                contains = true;
-                print('群消息.艾特聚焦');
-              }
+      if (msg.isPureMessage()) {
+        // 群消息智能聚焦：有没有 @我 或者 回复我 的消息
+        String text = msg.message ?? '';
+        bool contains = false;
+        if (text.contains('[CQ:at,qq=${G.ac.myId}]')) {
+          // @自己、回复
+          contains = true;
+        } else if (G.st.notificationAtAll && text.contains('[CQ:at,qq=all]')) {
+          // @全体
+          contains = true;
+        } else if (G.st.groupSmartFocus) {
+          GroupInfo group = G.ac.groupList[msg.groupId];
+          if (group != null) {
+            if (group.focusAsk) {
+              // 疑问聚焦
+              contains = true;
+              print('群消息.疑问聚焦');
+            } else if (group.focusAt != null &&
+                group.focusAt.contains(msg.senderId)) {
+              contains = true;
+              print('群消息.艾特聚焦');
             }
           }
-          if (contains) {
-            channelKey = 'important_group_chats';
-          } else {
-            channelKey = 'normal_group_chats';
-          }
+        }
+        if (contains) {
+          channelKey = 'important_group_chats';
+          isSmartFocus = true;
         } else {
           channelKey = 'normal_group_chats';
         }
+
+        // 群消息动态重要性：判断自己发消息的时间
+        if (G.ac.messageMyTimes.containsKey(msg.keyId())) {
+          contains = false;
+          int delta = DateTime.now().millisecondsSinceEpoch -
+              G.ac.messageMyTimes[msg.keyId()];
+          delta = delta ~/ 1000; // 转换为秒
+          if (delta < 60) {
+            // 一分钟内：重要
+            channelKey = 'important_group_chats';
+            isDynamicImportance = true;
+          } else if (delta < 180) {
+            // 一分钟内：普通通知，且忽视不通知
+            if (channelKey != 'important_group_chats') {
+              channelKey = 'normal_group_chats';
+            }
+            isDynamicImportance = true;
+          }
+        }
+      } else {
+        // 不是消息类通知
+        channelKey = 'normal_group_chats';
+      }
+
+      // 重要群组消息，强制设置为重要
+      if (G.st.importantGroups.contains(msg.groupId)) {
+        channelKey = 'important_group_chats';
       }
 
       // 判断是否需要显示通知
       if (!G.st.enabledGroups.contains(msg.groupId) &&
-          channelKey == 'normal_group_chats') {
+          channelKey == 'normal_group_chats' &&
+          !isDynamicImportance) {
         return;
       }
     }
