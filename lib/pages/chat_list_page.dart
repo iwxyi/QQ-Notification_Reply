@@ -1,5 +1,7 @@
+import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -79,12 +81,11 @@ class _ChatListPageState extends State<ChatListPage>
                             msg.senderKeyId(), msg.username() ?? '') +
                         ": ") +
                 G.cs.getMessageDisplay(msg);
-            headerUrl =
-                "http://p.qlogo.cn/gh/${msg.groupId}/${msg.groupId}/100";
+            headerUrl = API.groupHeader(msg.groupId);
           } else {
             titleStr = G.st.getLocalNickname(msg.keyId(), msg.username());
             subTitleStr = G.cs.getMessageDisplay(msg);
-            headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=${msg.friendId}&s=100&t=";
+            headerUrl = API.userHeader(msg.friendId);
           }
 
           Widget subTitleWidget;
@@ -125,10 +126,13 @@ class _ChatListPageState extends State<ChatListPage>
                   print('未知的消息类型');
                 }
                 if (text != null) {
-                  widgets.insert(0, SizedBox(height: 6));
+                  if (widgets.length > 0) {
+                    widgets.insert(0, SizedBox(height: 6));
+                  }
                   widgets.insert(0, Text(text, maxLines: 3));
                 }
               }
+              widgets.insert(0, SizedBox(height: 3));
               subTitleWidget = Column(
                   children: widgets,
                   crossAxisAlignment: CrossAxisAlignment.start);
@@ -327,7 +331,10 @@ class _ChatListPageState extends State<ChatListPage>
                   bottomRight: Radius.circular(20.0)),*/
                     side: showingChat
                         ? BorderSide(
-                            color: Theme.of(context).primaryColor, width: 1)
+                            color: G.ac.chatObjColor.containsKey(msg.keyId())
+                                ? G.ac.chatObjColor[msg.keyId()]
+                                : Theme.of(context).primaryColor,
+                            width: 1)
                         : BorderSide.none),
                 // 设置边框
                 clipBehavior:
@@ -367,7 +374,21 @@ class _ChatListPageState extends State<ChatListPage>
       // 不判断的话，会报错：setState() called after dispose():
       return;
     }
+
     setState(() {});
+
+    // 设置主题色
+    if (!G.ac.chatObjColor.containsKey(msg.keyId())) {
+      G.ac.chatObjColor[msg.keyId()] = Theme.of(context).primaryColor;
+      String url = API.header(msg);
+      getColorFromUrl(url).then((v) {
+        print('主题色：' + msg.title() + ": " + v.toString());
+        setState(() {
+          Color c = Color.fromARGB(255, v[0], v[1], v[2]);
+          G.ac.chatObjColor[msg.keyId()] = c;
+        });
+      });
+    }
   }
 
   /// 在聊天列表界面就显示回复框

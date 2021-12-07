@@ -128,7 +128,10 @@ class CqhttpService {
 
       // 群消息智能聚焦
       if (st.groupSmartFocus) {
-        if (text.endsWith('?') || text.endsWith('？')) {
+        if (text.endsWith('?') ||
+            text.endsWith('？') ||
+            RegExp(r'问|谁|何|什么|哪儿|哪里|几|多少|怎|吗|难道|岂|居然|竟然|究竟|简直|难怪|how|what|when|who|which')
+                .hasMatch(text)) {
           ac.groupList[chatObj.groupId]?.focusAsk = true;
           print('智能聚焦.疑问?');
         }
@@ -146,6 +149,10 @@ class CqhttpService {
           }
         }
       }
+
+      // 群消息动态重要性
+      ac.messageMyTimes[chatObj.keyId()] =
+          DateTime.now().millisecondsSinceEpoch;
     } else if (chatObj.isPrivate()) {
       sendPrivateMessage(chatObj.friendId, text);
     } else {

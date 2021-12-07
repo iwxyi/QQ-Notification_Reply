@@ -32,8 +32,9 @@ class UserSettings extends MySettings {
 
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
-  bool notificationAtAll = false; // @全体成员 与 @自己 同一级
   bool groupSmartFocus = false; // 群消息智能聚焦
+  bool notificationAtAll = false; // @全体成员 与 @自己 同一级
+  bool groupDynamicImportance = false; // 群消息动态重要性
 
   // 界面显示
   bool inputEnterSend = false;
@@ -69,6 +70,7 @@ class UserSettings extends MySettings {
     notificationLaunchQQ =
         getBool('notification/launchQQ', notificationLaunchQQ);
     groupSmartFocus = getBool('notification/groupSmartFocus', groupSmartFocus);
+    notificationAtAll = getBool('notification/atAll', notificationAtAll);
     showRecursionReply =
         getBool('display/showRecursionReply', showRecursionReply);
     inputEnterSend = getBool('display/inputEnterSend', inputEnterSend);

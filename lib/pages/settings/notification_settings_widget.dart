@@ -1,10 +1,8 @@
 import 'dart:math';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qqnotificationreply/global/g.dart';
-import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/settings/group_select_widget.dart';
 
 class NotificationSettingsWidget extends StatefulWidget {
@@ -90,7 +88,7 @@ class _NotificationSettingsWidgetState
                     color: Colors.blue,
                   ),
                   title: Text('群消息智能聚焦'),
-                  subtitle: Text('发送以问号结尾或者@别人的消息后，提升群组至“重要”，直到下一次进入会话'),
+                  subtitle: Text('发送疑问句或者@别人的消息后，提升群组至“重要”，直到下一次进入会话'),
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
@@ -106,6 +104,56 @@ class _NotificationSettingsWidgetState
                       G.st.groupSmartFocus = !G.st.groupSmartFocus;
                       G.st.setConfig(
                           'notification/groupSmartFocus', G.st.groupSmartFocus);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.center_focus_strong,
+                    color: Colors.blue,
+                  ),
+                  title: Text('群消息动态重要性'),
+                  subtitle: Text('自己在低通知级别的群里发消息，一分钟内提升至重要，三分钟内显示通知'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.groupDynamicImportance = !G.st.groupDynamicImportance;
+                        G.st.setConfig(
+                            'notification/groupDynamicImportance', G.st.groupDynamicImportance);
+                      });
+                    },
+                    value: G.st.groupDynamicImportance,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.groupDynamicImportance = !G.st.groupDynamicImportance;
+                      G.st.setConfig(
+                          'notification/groupDynamicImportance', G.st.groupDynamicImportance);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.select_all,
+                    color: Colors.blue,
+                  ),
+                  title: Text('显示“@全体成员”通知'),
+                  subtitle: Text('将“@全体成员”视作和“@我”相同重要性，关闭则忽视'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.notificationAtAll = !G.st.notificationAtAll;
+                        G.st.setConfig(
+                            'notification/atAll', G.st.notificationAtAll);
+                      });
+                    },
+                    value: G.st.notificationAtAll,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.notificationAtAll = !G.st.notificationAtAll;
+                      G.st.setConfig(
+                          'notification/atAll', G.st.notificationAtAll);
                     });
                   },
                 ),
