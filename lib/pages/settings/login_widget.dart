@@ -26,7 +26,7 @@ class LoginWidget extends StatelessWidget {
         ),
         body: Center(
             child: Container(
-          constraints: BoxConstraints(maxHeight: 480, maxWidth: 400),
+          constraints: BoxConstraints(maxHeight: 500, maxWidth: 400),
           child: Card(
             margin: EdgeInsets.all(24),
             child: ListView(

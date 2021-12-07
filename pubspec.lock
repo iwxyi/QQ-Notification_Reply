@@ -61,7 +61,7 @@ packages:
     dependency: "direct main"
     description:
       name: color_thief_flutter
-      url: "https://pub.dartlang.org"
+      url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.2"
   crypto:
@@ -370,7 +370,7 @@ packages:
     dependency: transitive
     description:
       name: quantize_dart
-      url: "https://pub.dartlang.org"
+      url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.3"
   rxdart:
