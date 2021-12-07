@@ -44,6 +44,7 @@ class _MessageViewState extends State<MessageView> {
   final MsgBean msg;
   bool hasCompleted = false;
   GlobalKey anchorKey = GlobalKey();
+  bool pressing = false;
 
   // 媒体播放
   AudioPlayer audioPlayer;
@@ -113,6 +114,9 @@ class _MessageViewState extends State<MessageView> {
 
     return GestureDetector(
         child: container,
+        onTap: () {
+          // TODO: 头像单击
+        },
         onLongPress: () {
           widget.addMessageCallback('[CQ:at,qq=${msg.senderId}] ');
         });
@@ -155,26 +159,69 @@ class _MessageViewState extends State<MessageView> {
     }
 
     // 显示圆角、间距、背景气泡
+    Color c =
+        msg.senderId != G.ac.myId ? G.st.msgBubbleColor : G.st.msgBubbleColor2;
+    if (pressing) {
+      // 正在按下，需要深色一点
+      final hslColor = HSLColor.fromColor(c);
+      // final lightness = min(hslColor.lightness + 0.07, 1.0);
+      final darkness = max(hslColor.lightness - 0.07, 0);
+      c = hslColor.withLightness(darkness).toColor();
+    }
     Widget container = Container(
       child: bubbleContent,
       padding: bubblePadding,
       margin: bubbleMargin, // 上限间距
       decoration: new BoxDecoration(
-        color: msg.senderId != G.ac.myId
-            ? G.st.msgBubbleColor
-            : G.st.msgBubbleColor2,
+        color: c,
         borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
       ),
     );
 
     // 手势操作
     return GestureDetector(
-        key: anchorKey,
-        child: container,
-        onLongPressStart: (details) {
-          // 消息长按菜单
-          _showMenu(context, details);
+      key: anchorKey,
+      child: container,
+      onTapDown: (e) {
+        // 按下极短时间没动
+        setState(() {
+          pressing = true;
         });
+        // print('onTapDown');
+      },
+      onTapUp: (e) {
+        // 单击松起（在此之前会触发onLongPressCancel）
+        setState(() {
+          pressing = false;
+        });
+        // print('onTapUp');
+      },
+      onTapCancel: () {
+        // 触发onTapDown后拖拽会触发cancel
+        setState(() {
+          pressing = false;
+        });
+        // print('onTapCancel');
+      },
+      onLongPressStart: (details) {
+        // 长按事件
+        setState(() {
+          pressing = true;
+        });
+        // print('onLongPressStart');
+
+        // 消息长按菜单
+        // 会触发onLongPressCancel
+        _showMenu(context, details);
+      },
+      onLongPressCancel: () {
+        // 单击也会触发onLongPressCancel
+        setState(() {
+          pressing = false;
+        });
+        // print('onLongPressCancel');
+      },
+    );
   }
 
   /// 构建富文本消息框的入口
@@ -267,9 +314,13 @@ class _MessageViewState extends State<MessageView> {
           RegExp re = RegExp(r'^id=(\d+)$');
           if ((mat = re.firstMatch(params)) != null) {
             String id = mat[1];
-            span = new WidgetSpan(
-                child: Image.asset("assets/qq_face/$id.gif",
-                    scale: 2, height: 28));
+            if (File("assets/qq_face/$id.gif").existsSync()) {
+              span = new WidgetSpan(
+                  child: Image.asset("assets/qq_face/$id.gif",
+                      scale: 2, height: 28));
+            } else {
+              span = new TextSpan(text: '[表情]');
+            }
           }
         } else if (cqCode == 'image') {
           // 替换成图片
@@ -784,7 +835,7 @@ class _MessageViewState extends State<MessageView> {
         _menuSelected(value);
       },
       onCanceled: () {
-        print('onCanceled');
+        print('menu.onCanceled');
         // bgColor = Colors.white;
         setState(() {});
       },
