@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
@@ -480,8 +481,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
               //设置当前用户的头像
               currentAccountPicture: new CircleAvatar(
                 backgroundImage: G.ac.isLogin()
-                    ? NetworkImage(
-                        "http://q1.qlogo.cn/g?b=qq&nk=${G.ac.myId}&s=100&t=")
+                    ? NetworkImage(API.userHeader(G.ac.myId))
                     : AssetImage('icons/cat_chat.png'),
               ),
               //回调事件

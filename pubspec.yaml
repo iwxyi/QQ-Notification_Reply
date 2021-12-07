@@ -47,6 +47,7 @@ dependencies:
   chewie: any
   video_player: any
   audioplayers: ^0.20.1
+  color_thief_flutter: ^1.0.1
 
 dev_dependencies:
   flutter_test:

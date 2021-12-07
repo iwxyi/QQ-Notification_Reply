@@ -5,6 +5,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/video_player_screen.dart';
@@ -103,7 +104,7 @@ class _MessageViewState extends State<MessageView> {
       return SizedBox(width: 72, height: 48);
     }
 
-    String headerUrl = "http://q1.qlogo.cn/g?b=qq&nk=${msg.senderId}&s=100&t=";
+    String headerUrl = API.userHeader(msg.senderId);
     Widget container = new Container(
         margin: const EdgeInsets.only(left: 12.0, right: 12.0),
         child: new CircleAvatar(
