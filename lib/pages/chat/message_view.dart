@@ -85,7 +85,7 @@ class _MessageViewState extends State<MessageView> {
               isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: hWidgets),
-      padding: EdgeInsets.only(top: isNext ? 0 : 8),
+      padding: EdgeInsets.only(top: isNext ? 0 : 6),
     );
 
     // 撤回的消息变成半透明

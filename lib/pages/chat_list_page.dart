@@ -125,10 +125,13 @@ class _ChatListPageState extends State<ChatListPage>
                   print('未知的消息类型');
                 }
                 if (text != null) {
-                  widgets.insert(0, SizedBox(height: 6));
+                  if (widgets.length > 0) {
+                    widgets.insert(0, SizedBox(height: 6));
+                  }
                   widgets.insert(0, Text(text, maxLines: 3));
                 }
               }
+              widgets.insert(0, SizedBox(height: 3));
               subTitleWidget = Column(
                   children: widgets,
                   crossAxisAlignment: CrossAxisAlignment.start);
