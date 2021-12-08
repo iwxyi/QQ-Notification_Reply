@@ -311,16 +311,22 @@ class _ChatListPageState extends State<ChatListPage>
               G.rt.currentChatPage != null &&
               G.rt.currentChatPage.chatObj.isObj(msg);
 
+          Color cardBg = Color(0xFFEEEEEE);
+          if (G.st.enableColorfulChatList) {
+            if (G.ac.chatObjColor.containsKey(msg.keyId())) {
+              cardBg = ColorUtil.fixedLight(
+                  G.ac.chatObjColor[msg.keyId()], G.st.colorfulChatListBg);
+            } else if (!G.ac.gettingChatObjColor.contains(msg.keyId())) {
+              _getChatObjColor(msg);
+            }
+          }
+
           // 单条消息的外部容器
           return new Dismissible(
             child: new Container(
               padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
               child: new Card(
-                color: G.st.enableColorfulChatList &&
-                        G.ac.chatObjColor.containsKey(msg.keyId())
-                    ? ColorUtil.fixedLight(
-                        G.ac.chatObjColor[msg.keyId()], G.st.colorfulChatListBg)
-                    : Color(0xFFEEEEEE),
+                color: cardBg,
                 // 背景颜色
                 elevation: 0.0,
                 // 投影
@@ -378,20 +384,11 @@ class _ChatListPageState extends State<ChatListPage>
     timedMsgs.insert(0, msg);
 
     // 设置主题色
-    if (G.st.enableColorfulChatList &&
+    /* if (G.st.enableColorfulChatList &&
         !G.ac.chatObjColor.containsKey(msg.keyId()) &&
         !G.ac.gettingChatObjColor.contains(msg.keyId())) {
-      G.ac.gettingChatObjColor.add(msg.keyId());
-      String url = API.header(msg);
-      getColorFromUrl(url).then((v) {
-        print('主题色：' + msg.title() + ": " + v.toString());
-        G.ac.gettingChatObjColor.remove(msg.keyId());
-        setState(() {
-          Color c = Color.fromARGB(255, v[0], v[1], v[2]);
-          G.ac.chatObjColor[msg.keyId()] = c;
-        });
-      });
-    }
+      _getChatObjColor(msg);
+    } */
 
     // 判断是否已经释放
     if (!mounted) {
@@ -400,6 +397,19 @@ class _ChatListPageState extends State<ChatListPage>
     }
 
     setState(() {});
+  }
+
+  void _getChatObjColor(MsgBean msg) {
+    G.ac.gettingChatObjColor.add(msg.keyId());
+    String url = API.header(msg);
+    getColorFromUrl(url).then((v) {
+      print('主题色：' + msg.title() + ": " + v.toString());
+      G.ac.gettingChatObjColor.remove(msg.keyId());
+      setState(() {
+        Color c = Color.fromARGB(255, v[0], v[1], v[2]);
+        G.ac.chatObjColor[msg.keyId()] = c;
+      });
+    });
   }
 
   /// 在聊天列表界面就显示回复框
