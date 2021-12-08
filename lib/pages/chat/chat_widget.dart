@@ -591,10 +591,10 @@ class _ChatWidgetState extends State<ChatWidget>
           msg: "取消选择图片", gravity: ToastGravity.CENTER, textColor: Colors.grey);
       return;
     }
-    _uploadImage(image);
+    _uploadImage(image, _textController.text.isEmpty);
   }
 
-  void _uploadImage(File image) async {
+  void _uploadImage(File image, bool sendDirectly) async {
     if (G.st.server == null || G.st.server.isEmpty) {
       Fluttertoast.showToast(
           msg: "未设置后台服务主机",
@@ -640,7 +640,7 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       String hash = data['hash'];
       String text = "[CQ:image,file=${G.st.server}/files/$hash]";
-      if (_textController.text.isEmpty) {
+      if (sendDirectly) {
         // 空文本，直接发送
         G.cs.sendMsg(widget.chatObj, text);
       } else {
