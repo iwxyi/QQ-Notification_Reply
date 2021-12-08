@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/utils/color_util.dart';
 import 'package:qqnotificationreply/widgets/video_player_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -123,16 +125,41 @@ class _MessageViewState extends State<MessageView> {
         });
   }
 
+  Color _getColorfulNickname(int keyId, Color def) {
+    if (G.st.enableColorfulChatName &&
+        !G.ac.gettingChatObjColor.contains(keyId)) {
+      if (G.ac.chatObjColor.containsKey(keyId)) {
+        return ColorUtil.rangeLight(G.ac.chatObjColor[keyId],
+            G.st.colorfulChatNameFont - 0.1, G.st.colorfulChatNameFont + 0.1);
+      } else {
+        G.ac.gettingChatObjColor.add(keyId);
+        String url =
+            API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
+        getColorFromUrl(url).then((v) {
+          print('主题色：' + msg.username() + ": " + v.toString());
+          G.ac.gettingChatObjColor.remove(keyId);
+          Color c = Color.fromARGB(255, v[0], v[1], v[2]);
+          G.ac.chatObjColor[keyId] = c;
+          if (mounted) {
+            setState(() {});
+          }
+        });
+      }
+    }
+    return def;
+  }
+
   /// 构建昵称控件
   /// 自己发的没有昵称
   Widget _buildNicknameView() {
+    Color c = _getColorfulNickname(msg.senderKeyId(), G.st.msgNicknameColor);
     return new Container(
       margin: const EdgeInsets.only(top: 5.0),
       child: new Text(
         msg.username(), // 用户昵称
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: Colors.grey, fontSize: 16),
+        style: TextStyle(color: c, fontSize: 16),
       ),
     );
   }
@@ -162,12 +189,28 @@ class _MessageViewState extends State<MessageView> {
     // 显示圆角、间距、背景气泡
     Color c =
         msg.senderId != G.ac.myId ? G.st.msgBubbleColor : G.st.msgBubbleColor2;
+    if (G.st.enableColorfulChatBubble &&
+        !G.ac.gettingChatObjColor.contains(msg.senderKeyId())) {
+      if (G.ac.chatObjColor.containsKey(msg.senderKeyId())) {
+        c = ColorUtil.fixedLight(
+            G.ac.chatObjColor[msg.senderKeyId()], G.st.colorfulChatBubbleBg);
+      } else {
+        G.ac.gettingChatObjColor.add(msg.senderKeyId());
+        String url =
+            API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
+        getColorFromUrl(url).then((v) {
+          print('主题色：' + msg.username() + ": " + v.toString());
+          G.ac.gettingChatObjColor.remove(msg.senderKeyId());
+          setState(() {
+            Color c = Color.fromARGB(255, v[0], v[1], v[2]);
+            G.ac.chatObjColor[msg.senderKeyId()] = c;
+          });
+        });
+      }
+    }
     if (pressing) {
       // 正在按下，需要深色一点
-      final hslColor = HSLColor.fromColor(c);
-      // final lightness = min(hslColor.lightness + 0.07, 1.0);
-      final darkness = max(hslColor.lightness - 0.07, 0);
-      c = hslColor.withLightness(darkness).toColor();
+      c = ColorUtil.modifyLight(c, -0.07);
     }
     Widget container = Container(
       child: bubbleContent,
@@ -351,6 +394,8 @@ class _MessageViewState extends State<MessageView> {
             String id = mat[1];
             if (id == 'all') {
               // @全体成员
+              Color c = G.st.msgLinkColor;
+              if (G.st.enableColorfulChatName) {}
               span = new TextSpan(
                   text: "@全体成员",
                   recognizer: TapGestureRecognizer()
@@ -360,8 +405,7 @@ class _MessageViewState extends State<MessageView> {
                         widget.addMessageCallback(mAll);
                       }
                     },
-                  style: TextStyle(
-                      fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+                  style: TextStyle(fontSize: G.st.msgFontSize, color: c));
             } else if (match.start != replyEndPos) {
               // @qq，已经判断了不是reply自带的at
               String username =
@@ -382,7 +426,13 @@ class _MessageViewState extends State<MessageView> {
                       }
                     },
                   style: TextStyle(
-                      fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+                      fontSize: G.st.msgFontSize,
+                      color: _getColorfulNickname(
+                          MsgBean(
+                                  friendId: int.parse(id),
+                                  senderId: int.parse(id))
+                              .keyId(),
+                          G.st.msgLinkColor)));
             }
           }
         } else if (cqCode == 'video') {

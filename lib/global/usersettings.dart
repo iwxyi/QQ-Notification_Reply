@@ -42,11 +42,22 @@ class UserSettings extends MySettings {
   double msgFontSize = 16; // 聊天界面字体大小
   Color msgLinkColor = Colors.blue; // 链接的颜色
   double replyFontSize = 14; // 回复字体的大小
+  Color msgNicknameColor = Colors.grey; // 昵称颜色
   Color msgBubbleColor = Color(0xFFEEEEEE); // 消息气泡颜色
   Color msgBubbleColor2 = Color(0xFFE6E6FA); // 自己的消息气泡颜色
   Color replyBubbleColor = Color(0x10000000); // 回复气泡颜色
   Color replyFontColor = Color(0xFF222222); // 回复消息颜色
 
+  // 彩色
+  bool enableColorfulChatList = true; // 会话列表使用头像颜色作为背景
+  double colorfulChatListBg = 0.93;
+  double colorfulChatListSelecting = 0.5;
+  bool enableColorfulChatName = true; // 使用彩色昵称
+  double colorfulChatNameFont = 0.5;
+  bool enableColorfulChatBubble = true; // 使用彩色气泡
+  double colorfulChatBubbleBg = 0.94;
+
+  // 本地昵称
   Map<int, String> localNickname = {};
 
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
@@ -74,6 +85,13 @@ class UserSettings extends MySettings {
     showRecursionReply =
         getBool('display/showRecursionReply', showRecursionReply);
     inputEnterSend = getBool('display/inputEnterSend', inputEnterSend);
+
+    enableColorfulChatList =
+        getBool('display/enableColorfulChatList', enableColorfulChatList);
+    enableColorfulChatName =
+        getBool('display/enableColorfulChatName', enableColorfulChatName);
+    enableColorfulChatBubble =
+        getBool('display/enableColorfulChatBubble', enableColorfulChatBubble);
 
     // 读取启用的群组数组
     String ens = getStr('notification/enabledGroups', '');
