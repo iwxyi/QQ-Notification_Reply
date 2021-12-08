@@ -681,7 +681,7 @@ class CqhttpService {
           // 其他类型
           text = text.replaceAllMapped(
               RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '[${match[1]}]');
-          text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']');
+          text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']').replaceAll('\n\n', '\n');
         }
         break;
       case ActionType.JoinAction:

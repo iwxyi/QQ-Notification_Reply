@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -127,13 +128,33 @@ class _MessageViewState extends State<MessageView> {
   /// 构建昵称控件
   /// 自己发的没有昵称
   Widget _buildNicknameView() {
+    Color c = Colors.grey;
+    if (G.st.enableColorfulChatName &&
+        !G.ac.gettingChatObjColor.contains(msg.senderKeyId())) {
+      if (G.ac.chatObjColor.containsKey(msg.senderKeyId())) {
+        c = ColorUtil.fixedLight(
+            G.ac.chatObjColor[msg.senderKeyId()], G.st.colorfulChatNameFont);
+      } else {
+        G.ac.gettingChatObjColor.add(msg.senderKeyId());
+        String url =
+            API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
+        getColorFromUrl(url).then((v) {
+          print('主题色：' + msg.username() + ": " + v.toString());
+          G.ac.gettingChatObjColor.remove(msg.senderKeyId());
+          setState(() {
+            Color c = Color.fromARGB(255, v[0], v[1], v[2]);
+            G.ac.chatObjColor[msg.senderKeyId()] = c;
+          });
+        });
+      }
+    }
     return new Container(
       margin: const EdgeInsets.only(top: 5.0),
       child: new Text(
         msg.username(), // 用户昵称
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: Colors.grey, fontSize: 16),
+        style: TextStyle(color: c, fontSize: 16),
       ),
     );
   }

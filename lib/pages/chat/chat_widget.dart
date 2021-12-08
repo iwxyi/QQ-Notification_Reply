@@ -507,6 +507,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
   @override
   void dispose() {
+    G.ac.gettingChatObjColor.clear();
     super.dispose();
     eventBusFn.cancel();
   }

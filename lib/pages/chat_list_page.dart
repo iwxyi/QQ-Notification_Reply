@@ -316,11 +316,11 @@ class _ChatListPageState extends State<ChatListPage>
             child: new Container(
               padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
               child: new Card(
-                color: G.st.enableChatListHeaderColor &&
+                color: G.st.enableColorfulChatList &&
                         G.ac.chatObjColor.containsKey(msg.keyId())
-                    ? ColorUtil.fixedLight(G.ac.chatObjColor[msg.keyId()], 0.93)
+                    ? ColorUtil.fixedLight(
+                        G.ac.chatObjColor[msg.keyId()], G.st.colorfulChatListBg)
                     : Color(0xFFEEEEEE),
-                // color: Color(0xFFEEEEEE),
                 // 背景颜色
                 elevation: 0.0,
                 // 投影
@@ -336,10 +336,11 @@ class _ChatListPageState extends State<ChatListPage>
                   bottomRight: Radius.circular(20.0)),*/
                     side: showingChat
                         ? BorderSide(
-                            color: G.st.enableChatListHeaderColor &&
+                            color: G.st.enableColorfulChatList &&
                                     G.ac.chatObjColor.containsKey(msg.keyId())
                                 ? ColorUtil.fixedLight(
-                                    G.ac.chatObjColor[msg.keyId()], 0.5)
+                                    G.ac.chatObjColor[msg.keyId()],
+                                    G.st.colorfulChatListSelecting)
                                 : Theme.of(context).primaryColor,
                             width: 1)
                         : BorderSide.none),
@@ -385,11 +386,14 @@ class _ChatListPageState extends State<ChatListPage>
     setState(() {});
 
     // 设置主题色
-    if (!G.ac.chatObjColor.containsKey(msg.keyId())) {
-      G.ac.chatObjColor[msg.keyId()] = Theme.of(context).primaryColor;
+    if (G.st.enableColorfulChatList &&
+        !G.ac.chatObjColor.containsKey(msg.keyId()) &&
+        !G.ac.gettingChatObjColor.contains(msg.keyId())) {
+      G.ac.gettingChatObjColor.add(msg.keyId());
       String url = API.header(msg);
       getColorFromUrl(url).then((v) {
         print('主题色：' + msg.title() + ": " + v.toString());
+        G.ac.gettingChatObjColor.remove(msg.keyId());
         setState(() {
           Color c = Color.fromARGB(255, v[0], v[1], v[2]);
           G.ac.chatObjColor[msg.keyId()] = c;

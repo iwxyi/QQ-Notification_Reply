@@ -29,8 +29,13 @@ class UserSettings extends MySettings {
   int keepMsgHistoryCount = 100; // 保留多少消息记录
   int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
   bool showRecursionReply = true; // 回复中允许再显示回复
-  bool enableChatListHeaderColor = true; // 会话列表使用头像颜色作为背景
-  bool enableChatNameHeaderColor = true; // 使用头像主题色
+
+  // 主题色
+  bool enableColorfulChatList = true; // 会话列表使用头像颜色作为背景
+  bool enableColorfulChatName = true; // 使用头像主题色
+  double colorfulChatListBg = 0.93;
+  double colorfulChatListSelecting = 0.5;
+  double colorfulChatNameFont = 0.5;
 
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
@@ -103,7 +108,8 @@ class UserSettings extends MySettings {
     List<String> sl = getStringList('display/localNickname', strSplit);
     sl.forEach((idNameString) {
       Match match;
-      if ((match = RegExp(r'^(-?\d+):(.+)$').firstMatch(idNameString)) == null) {
+      if ((match = RegExp(r'^(-?\d+):(.+)$').firstMatch(idNameString)) ==
+          null) {
         print('无法识别的本地昵称表达式：' + idNameString);
         return;
       }
