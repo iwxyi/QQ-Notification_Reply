@@ -30,13 +30,6 @@ class UserSettings extends MySettings {
   int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
   bool showRecursionReply = true; // 回复中允许再显示回复
 
-  // 主题色
-  bool enableColorfulChatList = true; // 会话列表使用头像颜色作为背景
-  bool enableColorfulChatName = true; // 使用头像主题色
-  double colorfulChatListBg = 0.93;
-  double colorfulChatListSelecting = 0.5;
-  double colorfulChatNameFont = 0.5;
-
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
   bool groupSmartFocus = false; // 群消息智能聚焦
@@ -49,11 +42,23 @@ class UserSettings extends MySettings {
   double msgFontSize = 16; // 聊天界面字体大小
   Color msgLinkColor = Colors.blue; // 链接的颜色
   double replyFontSize = 14; // 回复字体的大小
+  Color msgNicknameColor = Colors.grey; // 昵称颜色
   Color msgBubbleColor = Color(0xFFEEEEEE); // 消息气泡颜色
   Color msgBubbleColor2 = Color(0xFFE6E6FA); // 自己的消息气泡颜色
   Color replyBubbleColor = Color(0x10000000); // 回复气泡颜色
   Color replyFontColor = Color(0xFF222222); // 回复消息颜色
 
+  // 彩色
+  bool enableColorfulChatList = true; // 会话列表使用头像颜色作为背景
+  double colorfulChatListBg = 0.93;
+  double colorfulChatListSelecting = 0.5;
+  bool enableColorfulChatName = true; // 使用彩色昵称
+  double colorfulChatNameFont = 0.5;
+  bool enableColorfulChatBubble = true; // 使用彩色气泡
+  double colorfulChatBubbleBg = 0.94;
+
+
+  // 本地昵称
   Map<int, String> localNickname = {};
 
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {

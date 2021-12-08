@@ -128,7 +128,7 @@ class _MessageViewState extends State<MessageView> {
   /// 构建昵称控件
   /// 自己发的没有昵称
   Widget _buildNicknameView() {
-    Color c = Colors.grey;
+    Color c = G.st.msgNicknameColor;
     if (G.st.enableColorfulChatName &&
         !G.ac.gettingChatObjColor.contains(msg.senderKeyId())) {
       if (G.ac.chatObjColor.containsKey(msg.senderKeyId())) {
@@ -184,6 +184,25 @@ class _MessageViewState extends State<MessageView> {
     // 显示圆角、间距、背景气泡
     Color c =
         msg.senderId != G.ac.myId ? G.st.msgBubbleColor : G.st.msgBubbleColor2;
+    if (G.st.enableColorfulChatBubble &&
+        !G.ac.gettingChatObjColor.contains(msg.senderKeyId())) {
+      if (G.ac.chatObjColor.containsKey(msg.senderKeyId())) {
+        c = ColorUtil.fixedLight(
+            G.ac.chatObjColor[msg.senderKeyId()], G.st.colorfulChatBubbleBg);
+      } else {
+        G.ac.gettingChatObjColor.add(msg.senderKeyId());
+        String url =
+            API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
+        getColorFromUrl(url).then((v) {
+          print('主题色：' + msg.username() + ": " + v.toString());
+          G.ac.gettingChatObjColor.remove(msg.senderKeyId());
+          setState(() {
+            Color c = Color.fromARGB(255, v[0], v[1], v[2]);
+            G.ac.chatObjColor[msg.senderKeyId()] = c;
+          });
+        });
+      }
+    }
     if (pressing) {
       // 正在按下，需要深色一点
       c = ColorUtil.modifyLight(c, -0.07);
