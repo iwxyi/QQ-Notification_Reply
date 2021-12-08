@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/utils/color_util.dart';
 import 'package:qqnotificationreply/widgets/video_player_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -164,10 +165,7 @@ class _MessageViewState extends State<MessageView> {
         msg.senderId != G.ac.myId ? G.st.msgBubbleColor : G.st.msgBubbleColor2;
     if (pressing) {
       // 正在按下，需要深色一点
-      final hslColor = HSLColor.fromColor(c);
-      // final lightness = min(hslColor.lightness + 0.07, 1.0);
-      final darkness = max(hslColor.lightness - 0.07, 0);
-      c = hslColor.withLightness(darkness).toColor();
+      c = ColorUtil.modifyLight(c, -0.07);
     }
     Widget container = Container(
       child: bubbleContent,

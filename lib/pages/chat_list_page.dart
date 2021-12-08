@@ -5,6 +5,7 @@ import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/utils/color_util.dart';
 
 List<MsgBean> timedMsgs = []; // 需要显示的列表
 
@@ -315,7 +316,11 @@ class _ChatListPageState extends State<ChatListPage>
             child: new Container(
               padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
               child: new Card(
-                color: Color(0xFFEEEEEE),
+                color: G.st.enableChatListHeaderColor &&
+                        G.ac.chatObjColor.containsKey(msg.keyId())
+                    ? ColorUtil.fixedLight(G.ac.chatObjColor[msg.keyId()], 0.93)
+                    : Color(0xFFEEEEEE),
+                // color: Color(0xFFEEEEEE),
                 // 背景颜色
                 elevation: 0.0,
                 // 投影
@@ -331,8 +336,10 @@ class _ChatListPageState extends State<ChatListPage>
                   bottomRight: Radius.circular(20.0)),*/
                     side: showingChat
                         ? BorderSide(
-                            color: G.ac.chatObjColor.containsKey(msg.keyId())
-                                ? G.ac.chatObjColor[msg.keyId()]
+                            color: G.st.enableChatListHeaderColor &&
+                                    G.ac.chatObjColor.containsKey(msg.keyId())
+                                ? ColorUtil.fixedLight(
+                                    G.ac.chatObjColor[msg.keyId()], 0.5)
                                 : Theme.of(context).primaryColor,
                             width: 1)
                         : BorderSide.none),
