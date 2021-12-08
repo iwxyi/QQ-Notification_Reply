@@ -96,7 +96,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     // 读取配置
-    _selectedIndex = G.st.getInt('recent/navigation', 0);
+    // _selectedIndex = G.st.getInt('recent/navigation', 0);
+    _selectedIndex = 0;
 
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
@@ -360,7 +361,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
       ),
-      padding: EdgeInsets.only(left: 0, right: 0, top: statusBarHeight),
+      padding: EdgeInsets.only(
+        left: 0,
+        right: 0,
+        // top: statusBarHeight,
+      ),
       constraints: BoxConstraints(
           maxWidth: isHoriz ? G.rt.chatListFixedWidth : double.infinity),
     );
@@ -429,12 +434,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         Container(
           child: child,
           height: kToolbarHeight, // 固定位状态栏高度
-          /* decoration: BoxDecoration(
+          /*decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
               Color(0xFFFAD956),
-              Color(0xFFFAD956),
+              Color(0xFF00D956),
             ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-          ), */
+          ),*/
         ),
         ValueKey(G.rt.currentChatPage == null
             ? 0

@@ -666,11 +666,13 @@ class CqhttpService {
             }
             return '@' + match[1];
           });
-          text = text.replaceAllMapped(
-              RegExp(r'\[CQ:json,data=.+?"(?:prompt)":"(.+?)".*?\]'),
-              (match) => '[${match[1]}]');
           text = text.replaceAllMapped(RegExp(r'\[CQ:redbag,title=(.+?)\]'),
               (match) => '[红包: ${match[1]}]');
+          Match mat = RegExp(r'\[CQ:json,data=.+?"(?:prompt)":"(.+?)".*?\]')
+              .firstMatch(text);
+          if (mat != null) {
+            text = mat[1];
+          }
           // 中文名字
           text = text.replaceAllMapped(RegExp(r"\[CQ:([^,]+),.+?\]"), (match) {
             if (CQCodeMap.containsKey(match[1])) {
@@ -681,7 +683,10 @@ class CqhttpService {
           // 其他类型
           text = text.replaceAllMapped(
               RegExp(r"\[CQ:([^,]+),.+?\]"), (match) => '[${match[1]}]');
-          text = text.replaceAll('&#91;', '[').replaceAll('&#93;', ']').replaceAll('\n\n', '\n');
+          text = text
+              .replaceAll('&#91;', '[')
+              .replaceAll('&#93;', ']')
+              .replaceAll('\n\n', '\n');
         }
         break;
       case ActionType.JoinAction:

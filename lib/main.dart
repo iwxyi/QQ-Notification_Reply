@@ -60,8 +60,17 @@ void main() {
         ]);
 
     // 开始运行
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+//    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     runApp(MyApp());
+
+    /*if (Platform.isAndroid) {
+      //设置Android头部的导航栏透明
+      SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent, //全局设置透明
+          statusBarIconBrightness: Brightness.dark //light:黑色图标 dark：白色图标
+          );
+      SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
+    }*/
   });
 }
 
@@ -71,9 +80,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'QQ通知',
       theme: ThemeData(
-        primaryColor: Colors.blue, // 图标颜色
-        primarySwatch: Colors.blue, // 标题栏颜色
-        visualDensity: VisualDensity.adaptivePlatformDensity, // 设置视觉密度：适应平台密度
+        primaryColor: Colors.blue,
+        // 图标颜色
+        primarySwatch: Colors.blue,
+        // 标题栏颜色
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        // 设置视觉密度：适应平台密度
         platform: TargetPlatform.iOS, // 页面滑动切换效果
       ),
       home: AppRetainWidget(child: MainPages()),

@@ -55,12 +55,18 @@ class _ChatWidgetState extends State<ChatWidget>
 
   @override
   void initState() {
+    // 设置新的聊天对象
     widget.setObject = (MsgBean msg) {
+      // 取消旧的
+      if (widget.chatObj != null) {
+        // 去掉正在获取群成员的flag
+        G.ac.gettingGroupMembers.remove(widget.chatObj.keyId());
+      }
+
+      // 设置为新的
       widget.chatObj = msg;
       setState(() {
         _messages = [];
-      });
-      setState(() {
         _initMessages();
       });
     };
@@ -315,7 +321,10 @@ class _ChatWidgetState extends State<ChatWidget>
     ));
 
     return PopupMenuButton<ChatMenuItems>(
-      icon: Icon(Icons.more_vert, color: Colors.black),
+      icon: Icon(Icons.more_vert,
+          color: G.rt.horizontal
+              ? Theme.of(context).textTheme.bodyText2.color
+              : Theme.of(context).iconTheme.color),
       tooltip: '菜单',
       itemBuilder: (BuildContext context) => menus,
       onSelected: (ChatMenuItems result) {
@@ -508,6 +517,9 @@ class _ChatWidgetState extends State<ChatWidget>
   @override
   void dispose() {
     G.ac.gettingChatObjColor.clear();
+    if (widget.chatObj != null) {
+      G.ac.gettingGroupMembers.remove(widget.chatObj.keyId());
+    }
     super.dispose();
     eventBusFn.cancel();
   }
@@ -575,6 +587,8 @@ class _ChatWidgetState extends State<ChatWidget>
     var image = await ImagePickerSaver.pickImage(source: ImageSource.gallery);
     if (image == null) {
       // 取消选择图片
+      Fluttertoast.showToast(
+          msg: "取消选择图片", gravity: ToastGravity.CENTER, textColor: Colors.grey);
       return;
     }
     _uploadImage(image);
@@ -596,15 +610,34 @@ class _ChatWidgetState extends State<ChatWidget>
       "upfile": await MultipartFile.fromFile(path,
           filename: name, contentType: MediaType.parse("image/$suffix"))
     });
+    Fluttertoast.showToast(
+        msg: "开始上传:$path",
+        gravity: ToastGravity.CENTER,
+        textColor: Colors.grey);
 
     Dio dio = new Dio();
+    Fluttertoast.showToast(
+        msg: "${G.st.server}/file_upload.php",
+        gravity: ToastGravity.CENTER,
+        textColor: Colors.grey);
     var response = await dio.post<String>("${G.st.server}/file_upload.php",
         data: formData);
+    Fluttertoast.showToast(
+        msg: "返回码：${response.statusCode}",
+        gravity: ToastGravity.CENTER,
+        textColor: Colors.grey);
     if (response.statusCode == 200) {
       Fluttertoast.showToast(
           msg: "图片上传成功", gravity: ToastGravity.CENTER, textColor: Colors.grey);
 
       var data = json.decode(response.data);
+      if (data['hash'] == null) {
+        Fluttertoast.showToast(
+            msg: "服务器无效，返回：$data",
+            gravity: ToastGravity.CENTER,
+            textColor: Colors.grey);
+        return;
+      }
       String hash = data['hash'];
       String text = "[CQ:image,file=${G.st.server}/files/$hash]";
       if (_textController.text.isEmpty) {
@@ -616,7 +649,9 @@ class _ChatWidgetState extends State<ChatWidget>
       }
     } else {
       Fluttertoast.showToast(
-          msg: "图片上传失败", gravity: ToastGravity.CENTER, textColor: Colors.grey);
+          msg: "图片上传失败：${response.statusCode}",
+          gravity: ToastGravity.CENTER,
+          textColor: Colors.grey);
     }
   }
 

@@ -26,26 +26,25 @@ dependencies:
   ini: ^2.0.1
   url_launcher: ^5.1.3
   shared_preferences: ^0.5.1
-  path_provider: any
+  path_provider: ^2.0.7
   permission_handler: ^8.1.1
-  web_socket_channel: any
+  web_socket_channel: ^2.1.0
   event_bus: ^1.1.1
-#  flutter_local_notifications: ^6.0.0
+  #  flutter_local_notifications: ^6.0.0
   fluttertoast: ^8.0.7
   cupertino_icons: ^1.0.0
   extended_image: ^4.0.0
   extended_text_field: ^8.0.0
-  image_picker_saver: any
+  image_picker_saver: ^0.3.0
   share: ^2.0.4
   date_format: ^1.0.9
-  awesome_notifications: any
-#  awesome_notifications :
-#    git:
-#      url: https://github.com/rafaelsetragni/awesome_notifications.git
-  dio: any
+  awesome_notifications: 0.6.17 # 0.6.18有kt版本问题！
+  #  awesome_notifications :
+  #    git:
+  #      url: https://github.com/rafaelsetragni/awesome_notifications.git
+  dio: ^4.0.4
   flutter_picker: ^1.0.11
-  chewie: any
-  video_player: any
+  video_player: ^2.2.7
   audioplayers: ^0.20.1
   color_thief_flutter: ^1.0.1
 

@@ -125,29 +125,34 @@ class _MessageViewState extends State<MessageView> {
         });
   }
 
-  /// 构建昵称控件
-  /// 自己发的没有昵称
-  Widget _buildNicknameView() {
-    Color c = G.st.msgNicknameColor;
+  Color _getColorfulNickname(int keyId, Color def) {
     if (G.st.enableColorfulChatName &&
-        !G.ac.gettingChatObjColor.contains(msg.senderKeyId())) {
-      if (G.ac.chatObjColor.containsKey(msg.senderKeyId())) {
-        c = ColorUtil.fixedLight(
-            G.ac.chatObjColor[msg.senderKeyId()], G.st.colorfulChatNameFont);
+        !G.ac.gettingChatObjColor.contains(keyId)) {
+      if (G.ac.chatObjColor.containsKey(keyId)) {
+        return ColorUtil.rangeLight(G.ac.chatObjColor[keyId],
+            G.st.colorfulChatNameFont - 0.1, G.st.colorfulChatNameFont + 0.1);
       } else {
-        G.ac.gettingChatObjColor.add(msg.senderKeyId());
+        G.ac.gettingChatObjColor.add(keyId);
         String url =
             API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
         getColorFromUrl(url).then((v) {
           print('主题色：' + msg.username() + ": " + v.toString());
-          G.ac.gettingChatObjColor.remove(msg.senderKeyId());
-          setState(() {
-            Color c = Color.fromARGB(255, v[0], v[1], v[2]);
-            G.ac.chatObjColor[msg.senderKeyId()] = c;
-          });
+          G.ac.gettingChatObjColor.remove(keyId);
+          Color c = Color.fromARGB(255, v[0], v[1], v[2]);
+          G.ac.chatObjColor[keyId] = c;
+          if (mounted) {
+            setState(() {});
+          }
         });
       }
     }
+    return def;
+  }
+
+  /// 构建昵称控件
+  /// 自己发的没有昵称
+  Widget _buildNicknameView() {
+    Color c = _getColorfulNickname(msg.senderKeyId(), G.st.msgNicknameColor);
     return new Container(
       margin: const EdgeInsets.only(top: 5.0),
       child: new Text(
@@ -389,6 +394,8 @@ class _MessageViewState extends State<MessageView> {
             String id = mat[1];
             if (id == 'all') {
               // @全体成员
+              Color c = G.st.msgLinkColor;
+              if (G.st.enableColorfulChatName) {}
               span = new TextSpan(
                   text: "@全体成员",
                   recognizer: TapGestureRecognizer()
@@ -398,8 +405,7 @@ class _MessageViewState extends State<MessageView> {
                         widget.addMessageCallback(mAll);
                       }
                     },
-                  style: TextStyle(
-                      fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+                  style: TextStyle(fontSize: G.st.msgFontSize, color: c));
             } else if (match.start != replyEndPos) {
               // @qq，已经判断了不是reply自带的at
               String username =
@@ -420,7 +426,13 @@ class _MessageViewState extends State<MessageView> {
                       }
                     },
                   style: TextStyle(
-                      fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+                      fontSize: G.st.msgFontSize,
+                      color: _getColorfulNickname(
+                          MsgBean(
+                                  friendId: int.parse(id),
+                                  senderId: int.parse(id))
+                              .keyId(),
+                          G.st.msgLinkColor)));
             }
           }
         } else if (cqCode == 'video') {
@@ -455,6 +467,7 @@ class _MessageViewState extends State<MessageView> {
           if ((mat = re.firstMatch(mAll)) != null) {
             String url = mat.group(2);
             url = url.replaceAll('&amp;', '&');
+            print('播放语音：' + url);
             span = new TextSpan(
                 text: "[语音]",
                 recognizer: TapGestureRecognizer()
@@ -471,17 +484,17 @@ class _MessageViewState extends State<MessageView> {
                     if (currentAudio != null && currentAudio == url) {
                       // 是当前媒体：暂停/继续
                       if (audioPlayer.state == PlayerState.PAUSED) {
-                        audioPlayer.resume().then((value) => print('语音.继续 失败'));
+                        audioPlayer.resume().then((value) => print('语音.继续 结束'));
                       } else if (audioPlayer.state == PlayerState.PLAYING) {
-                        audioPlayer.pause().then((value) => print('语音.暂停 失败'));
+                        audioPlayer.pause().then((value) => print('语音.暂停 结束'));
                       } else {
                         audioPlayer
                             .play(url)
-                            .then((value) => print('语音.重新开始 失败'));
+                            .then((value) => print('语音.重新开始 结束'));
                       }
                     } else {
                       // 不是当前媒体，或没在播放：从头开始播放
-                      audioPlayer.play(url).then((value) => print('语音.播放 失败'));
+                      audioPlayer.play(url).then((value) => print('语音.播放 结束'));
                       currentAudio = url;
                     }
                   },
