@@ -377,14 +377,6 @@ class _ChatListPageState extends State<ChatListPage>
     }
     timedMsgs.insert(0, msg);
 
-    // 判断是否已经释放
-    if (!mounted) {
-      // 不判断的话，会报错：setState() called after dispose():
-      return;
-    }
-
-    setState(() {});
-
     // 设置主题色
     if (G.st.enableColorfulChatList &&
         !G.ac.chatObjColor.containsKey(msg.keyId()) &&
@@ -400,6 +392,14 @@ class _ChatListPageState extends State<ChatListPage>
         });
       });
     }
+
+    // 判断是否已经释放
+    if (!mounted) {
+      // 不判断的话，会报错：setState() called after dispose():
+      return;
+    }
+
+    setState(() {});
   }
 
   /// 在聊天列表界面就显示回复框

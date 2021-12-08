@@ -188,6 +188,96 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              '彩色',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ),
+          Card(
+            color: Colors.white,
+            elevation: 4.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.color_lens,
+                    color: Colors.blue,
+                  ),
+                  title: Text('会话列表'),
+                  subtitle: Text('会话列表使用头像主题色作为背景颜色'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableColorfulChatList = !G.st.enableColorfulChatList;
+                        G.st.setConfig('display/enableColorfulChatList',
+                            G.st.enableColorfulChatList);
+                      });
+                    },
+                    value: G.st.enableColorfulChatList,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableColorfulChatList = !G.st.enableColorfulChatList;
+                      G.st.setConfig('display/enableColorfulChatList',
+                          G.st.enableColorfulChatList);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.color_lens,
+                    color: Colors.blue,
+                  ),
+                  title: Text('聊天昵称'),
+                  subtitle: Text('聊天昵称使用头像主题色作为字体颜色'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableColorfulChatName = !G.st.enableColorfulChatName;
+                        G.st.setConfig('display/enableColorfulChatName',
+                            G.st.enableColorfulChatName);
+                      });
+                    },
+                    value: G.st.enableColorfulChatName,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableColorfulChatName = !G.st.enableColorfulChatName;
+                      G.st.setConfig('display/enableColorfulChatName',
+                          G.st.enableColorfulChatName);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.color_lens,
+                    color: Colors.blue,
+                  ),
+                  title: Text('聊天气泡'),
+                  subtitle: Text('聊天气泡使用头像主题色作为背景颜色'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableColorfulChatBubble = !G.st.enableColorfulChatBubble;
+                        G.st.setConfig('display/enableColorfulChatBubble',
+                            G.st.enableColorfulChatBubble);
+                      });
+                    },
+                    value: G.st.enableColorfulChatBubble,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableColorfulChatBubble = !G.st.enableColorfulChatBubble;
+                      G.st.setConfig('display/enableColorfulChatBubble',
+                          G.st.enableColorfulChatBubble);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
