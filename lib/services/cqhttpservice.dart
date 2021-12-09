@@ -686,7 +686,8 @@ class CqhttpService {
           text = text
               .replaceAll('&#91;', '[')
               .replaceAll('&#93;', ']')
-              .replaceAll('\n\n', '\n');
+              .replaceAll('\n\n', '\n')
+              .replaceAll('&amp;', '&');
         }
         break;
       case ActionType.JoinAction:

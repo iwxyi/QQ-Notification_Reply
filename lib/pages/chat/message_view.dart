@@ -939,6 +939,12 @@ class _MessageViewState extends State<MessageView> {
       }
     }
 
+    if (RegExp(r'^\[CQ:image,[^\]]+\]$').hasMatch(msg.message) ||
+        RegExp(r'^[CQ:face,[^\]]+]$').hasMatch(msg.message)) {
+      items.insert(
+          insertPos++, PopupMenuItem(value: 'addEmoji', child: Text('添加表情')));
+    }
+
     return items;
   }
 
@@ -967,7 +973,8 @@ class _MessageViewState extends State<MessageView> {
             );
           });
     } else if (value == 'repeat') {
-      widget.sendMessageCallback(msg.message);
+      // widget.sendMessageCallback(msg.message);
+      widget.addMessageCallback(msg.message);
     } else if (value == 'cq') {
       _showCopyTextDialog(
           'CQ码',
@@ -983,6 +990,12 @@ class _MessageViewState extends State<MessageView> {
         'params': {'message_id': msg.messageId},
         'echo': 'msg_recall_friend:${msg.friendId}_${msg.messageId}',
       });
+    } else if (value == 'addEmoji') {
+      G.st.emojiList.remove(msg.message); // 去掉重复的表情包
+      G.st.emojiList.insert(0, msg.message); // 添加到开头
+      G.st.setList('emoji/list', G.st.emojiList, split: ';');
+      print(
+          '添加表情：' + msg.message + ', 总数量：' + G.st.emojiList.length.toString());
     }
   }
 
