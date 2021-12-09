@@ -355,16 +355,24 @@ class _MessageViewState extends State<MessageView> {
         Match mat;
         if (cqCode == 'face') {
           // 替换成表情
-          RegExp re = RegExp(r'^id=(\d+)$');
+          RegExp re = RegExp(r'^id=(\d+)(?:,(.+))?$');
           if ((mat = re.firstMatch(params)) != null) {
             String id = mat[1];
             if (File("assets/qq_face/$id.gif").existsSync()) {
+              double height = 28;
+              double scale = 2;
+              if (mat[2] != null && mat[2] == 'type=sticker') {
+                height = 56;
+                scale = 1;
+              }
               span = new WidgetSpan(
                   child: Image.asset("assets/qq_face/$id.gif",
-                      scale: 2, height: 28));
+                      scale: scale, height: height));
             } else {
               span = new TextSpan(text: '[表情]');
             }
+          } else {
+            span = new TextSpan(text: '[表情]');
           }
         } else if (cqCode == 'image') {
           // 替换成图片
@@ -373,6 +381,10 @@ class _MessageViewState extends State<MessageView> {
             String url = mat[1];
             span = new WidgetSpan(
                 child: _buildImageWidget(url, recursion: recursion));
+          } else if (RegExp(r"\[CQ:image,type=flash,.+?\]").hasMatch(mAll)) {
+            span = new TextSpan(text: '[闪照]');
+          } else {
+            span = new TextSpan(text: '[图片]');
           }
         } else if (cqCode == 'redbag') {
           RegExp rgRE = RegExp(r'^title=(.+)$');
@@ -994,8 +1006,7 @@ class _MessageViewState extends State<MessageView> {
       G.st.emojiList.remove(msg.message); // 去掉重复的表情包
       G.st.emojiList.insert(0, msg.message); // 添加到开头
       G.st.setList('emoji/list', G.st.emojiList, split: ';');
-      print(
-          '存表情：' + msg.message + ', 总数量：' + G.st.emojiList.length.toString());
+      print('存表情：' + msg.message + ', 总数量：' + G.st.emojiList.length.toString());
     }
   }
 
