@@ -942,7 +942,7 @@ class _MessageViewState extends State<MessageView> {
     if (RegExp(r'^\[CQ:image,[^\]]+\]$').hasMatch(msg.message) ||
         RegExp(r'^[CQ:face,[^\]]+]$').hasMatch(msg.message)) {
       items.insert(
-          insertPos++, PopupMenuItem(value: 'addEmoji', child: Text('添加表情')));
+          insertPos++, PopupMenuItem(value: 'addEmoji', child: Text('存表情')));
     }
 
     return items;
@@ -995,7 +995,7 @@ class _MessageViewState extends State<MessageView> {
       G.st.emojiList.insert(0, msg.message); // 添加到开头
       G.st.setList('emoji/list', G.st.emojiList, split: ';');
       print(
-          '添加表情：' + msg.message + ', 总数量：' + G.st.emojiList.length.toString());
+          '存表情：' + msg.message + ', 总数量：' + G.st.emojiList.length.toString());
     }
   }
 
