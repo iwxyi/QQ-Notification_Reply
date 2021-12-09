@@ -15,6 +15,7 @@ import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'message_view.dart';
 
@@ -706,13 +707,112 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   void showEmojiList() {
+    /* Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return StaggeredGridView.countBuilder(
+          crossAxisCount: 4, //横轴单元格数量
+          itemCount: 20, //元素数量
+          itemBuilder: (context, i) {
+            return new Material(
+              elevation: 8.0,
+              borderRadius: BorderRadius.all(Radius.circular(8.0)),
+              child: new CachedNetworkImage(
+                imageUrl:
+                    "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg1.yuntouxiang.com%2Fuploads%2F20130521%2F21-022304_646.jpg&refer=http%3A%2F%2Fimg1.yuntouxiang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1613615452&t=590bdef8fdbfb5c972066acbeca6543d",
+                imageBuilder: (context, imageProvider) => Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.fitHeight,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+          staggeredTileBuilder: (index) {
+            return StaggeredTile.count(
+                2, index.isEven ? 2 : 1); //第一个参数是横轴所占的单元数，第二个参数是主轴所占的单元数
+          },
+          padding: EdgeInsets.all(8),
+          mainAxisSpacing: 8.0,
+          crossAxisSpacing: 8.0,
+        );
+      },
+    )); */
     final size = MediaQuery.of(context).size;
-    final swidth = size.width;
-    final sheight = size.height;
+    final twidth = size.width / 2;
+    final theight = size.height * 4 / 5;
+
+    const int bsize = 64; // 图片边长（正方形）
+
     showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(content: Text(''));
+          return AlertDialog(
+            content: Container(
+                constraints: BoxConstraints(
+                    minWidth: twidth,
+                    maxWidth: twidth,
+                    minHeight: theight,
+                    maxHeight: theight),
+                child: StaggeredGridView.countBuilder(
+                  crossAxisCount: twidth ~/ bsize, //横轴单元格数量
+                  itemCount: G.st.emojiList.length, //元素数量
+                  itemBuilder: (context, i) {
+                    String cq = G.st.emojiList[i];
+                    bool local = false;
+                    String url;
+
+                    Match mat = RegExp(r'\[CQ:face,id=(\d+)\]$').firstMatch(cq);
+                    if (mat != null) {
+                      local = true;
+                      String id = mat[1];
+                      url = "assets/qq_face/$id.gif";
+                    }
+                    if (!local) {
+                      mat = RegExp(r'url=([^,]+)').firstMatch(cq);
+                      if (mat == null) {
+                        return Text(cq);
+                      }
+                      url = mat[1];
+                    }
+                    ImageProvider itemWidget = local
+                        ? Image.asset(url)
+                        : CachedNetworkImageProvider(url);
+                    return new Card(
+                      elevation: 8.0,
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: itemWidget,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                            if (_textController.text.isEmpty) {
+                              _sendMessage(cq);
+                            } else {
+                              _insertMessage(cq);
+                            }
+                          },
+                          onLongPress: () {},
+                        ),
+                      ),
+                    );
+                  },
+                  staggeredTileBuilder: (index) {
+                    return StaggeredTile.count(2,
+                        index.isEven ? 2 : 1); //第一个参数是横轴所占的单元数，第二个参数是主轴所占的单元数
+                  },
+                  padding: EdgeInsets.all(8),
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 8.0,
+                )),
+          );
         });
   }
 }

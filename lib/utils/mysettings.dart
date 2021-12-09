@@ -75,7 +75,9 @@ class MySettings {
     List<int> list = [];
     ss.forEach((element) {
       if (element.isEmpty) return;
-      list.add(int.parse(element));
+      try {
+        list.add(int.parse(element));
+      } catch (e) {}
     });
     return list;
   }
