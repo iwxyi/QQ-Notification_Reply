@@ -748,7 +748,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         channelKey: channelKey,
         groupKey: msg.keyId().toString(),
         summary: msg.title(),
-        title: G.st.getLocalNickname(msg.keyId(), msg.username()),
+        title: G.st.getLocalNickname(msg.senderKeyId(), msg.username()),
         body: G.cs.getMessageDisplay(msg),
         notificationLayout: NotificationLayout.Messaging,
         displayOnForeground: false,
