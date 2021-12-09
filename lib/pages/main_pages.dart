@@ -901,12 +901,6 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   }
 
   void openSearch() {
-    /* Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) {
-        return new SearchPage();
-      },
-    )); */
-
     showDialog(
         context: context,
         builder: (context) {

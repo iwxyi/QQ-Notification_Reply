@@ -167,6 +167,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.5"
+  flutter_staggered_grid_view:
+    dependency: "direct main"
+    description:
+      name: flutter_staggered_grid_view
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.7"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -212,13 +219,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.0"
-  image_picker_saver:
+  image_pickers:
     dependency: "direct main"
     description:
-      name: image_picker_saver
+      name: image_pickers
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.0"
+    version: "2.0.0+2"
   ini:
     dependency: "direct main"
     description:

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker_saver/image_picker_saver.dart';
+import 'package:image_pickers/image_pickers.dart';
 import 'package:qqnotificationreply/widgets/hero.dart';
 import 'package:share/share.dart';
 
@@ -208,7 +208,8 @@ class _SlidePageState extends State<SlidePage> with TickerProviderStateMixin {
   Future<String> saveNetworkImageToPhoto(String url,
       {bool useCache: true}) async {
     var data = await getNetworkImageData(url, useCache: useCache);
-    var filePath = await ImagePickerSaver.saveFile(fileData: data);
+    // var filePath = await ImagePickerSaver.saveFile(fileData: data);
+    String filePath = await ImagePickers.saveByteDataImageToGallery(data);
     // return filePath != null && filePath != "";
     return filePath;
   }
