@@ -403,7 +403,11 @@ class _ChatWidgetState extends State<ChatWidget>
         child: new Row(children: <Widget>[
           new IconButton(
               icon: new Icon(Icons.image),
-              onPressed: () => getImage(),
+              onPressed: getImage,
+              color: Theme.of(context).primaryColor),
+          new IconButton(
+              icon: new Icon(Icons.face),
+              onPressed: showEmojiList,
               color: Theme.of(context).primaryColor),
           // 输入框
           new Flexible(

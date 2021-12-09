@@ -20,7 +20,7 @@ class _EmojiGridState extends State<EmojiGrid> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final twidth = size.width / 2;
-    const int bsize = 64; // 图片边长（正方形）
+    const int bsize = 48; // 图片边长（正方形）
     return StaggeredGridView.countBuilder(
       crossAxisCount: twidth ~/ bsize, //横轴单元格数量
       itemCount: G.st.emojiList.length, //元素数量
@@ -83,18 +83,19 @@ class _EmojiGridState extends State<EmojiGrid> {
                       child: Container(
                           clipBehavior: Clip.antiAlias,
                           constraints: BoxConstraints(
-                              minHeight: 32,
-                              maxHeight: 32,
-                              minWidth: 32,
-                              maxWidth: 32),
+                              minHeight: 24,
+                              maxHeight: 24,
+                              minWidth: 24,
+                              maxWidth: 24),
                           decoration: BoxDecoration(
                               color: Colors.red,
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(16))),
+                                  BorderRadius.all(Radius.circular(12))),
                           child: IconButton(
                               icon: Icon(Icons.close),
                               color: Colors.white,
                               iconSize: 16,
+                              padding: EdgeInsets.all(2),
                               onPressed: () {
                                 setState(() {
                                   G.st.emojiList.removeAt(i);
