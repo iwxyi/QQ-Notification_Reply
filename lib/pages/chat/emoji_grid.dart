@@ -43,7 +43,7 @@ class _EmojiGridState extends State<EmojiGrid> {
           url = mat[1];
         }
         ImageProvider itemWidget =
-            local ? Image.asset(url) : CachedNetworkImageProvider(url);
+            local ? AssetImage(url) : CachedNetworkImageProvider(url);
         return new Card(
           elevation: 8.0,
           shape: RoundedRectangleBorder(

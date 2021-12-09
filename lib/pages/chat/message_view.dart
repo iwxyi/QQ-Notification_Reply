@@ -940,7 +940,7 @@ class _MessageViewState extends State<MessageView> {
     }
 
     if (RegExp(r'^\[CQ:image,[^\]]+\]$').hasMatch(msg.message) ||
-        RegExp(r'^[CQ:face,[^\]]+]$').hasMatch(msg.message)) {
+        RegExp(r'^\[CQ:face,[^\]]+\]$').hasMatch(msg.message)) {
       items.insert(
           insertPos++, PopupMenuItem(value: 'addEmoji', child: Text('存表情')));
     }
