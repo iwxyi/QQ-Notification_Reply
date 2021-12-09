@@ -142,12 +142,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           MsgBean obj = G.rt.currentChatPage.chatObj;
           G.rt.currentChatPage = null;
 
-          if (G.rt.horizontal == true) {
+          /* if (G.rt.horizontal == true) {
             // 如果是竖屏->横屏，则重新创建
             G.rt.showChatPage(obj);
           } else {
             // 如果是横屏->竖屏，则不进行处理
-          }
+          } */
         } else {
           setState(() {
             G.rt.currentChatPage.setObject(msg);
@@ -753,7 +753,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         channelKey: channelKey,
         groupKey: msg.keyId().toString(),
         summary: msg.title(),
-        title: G.st.getLocalNickname(msg.keyId(), msg.username()),
+        title: G.st.getLocalNickname(msg.senderKeyId(), msg.username()),
         body: G.cs.getMessageDisplay(msg),
         notificationLayout: NotificationLayout.Messaging,
         displayOnForeground: false,
@@ -906,12 +906,6 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   }
 
   void openSearch() {
-    /* Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) {
-        return new SearchPage();
-      },
-    )); */
-
     showDialog(
         context: context,
         builder: (context) {

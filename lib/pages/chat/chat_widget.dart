@@ -9,12 +9,15 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:image_picker_saver/image_picker_saver.dart';
+import 'package:image_pickers/image_pickers.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
+import 'emoji_grid.dart';
 import 'message_view.dart';
 
 enum ChatMenuItems { Info, EnableNotification, CustomName }
@@ -327,9 +330,11 @@ class _ChatWidgetState extends State<ChatWidget>
 
     return PopupMenuButton<ChatMenuItems>(
       icon: Icon(Icons.more_vert,
-          color: G.rt.horizontal
-              ? Theme.of(context).textTheme.bodyText2.color
-              : Theme.of(context).iconTheme.color),
+          color: !mounted
+              ? Colors.black
+              : G.rt.horizontal
+                  ? Theme.of(context).textTheme.bodyText2.color
+                  : Theme.of(context).iconTheme.color),
       tooltip: '菜单',
       itemBuilder: (BuildContext context) => menus,
       onSelected: (ChatMenuItems result) {
@@ -413,7 +418,11 @@ class _ChatWidgetState extends State<ChatWidget>
         child: new Row(children: <Widget>[
           new IconButton(
               icon: new Icon(Icons.image),
-              onPressed: () => getImage(),
+              onPressed: getImage,
+              color: Theme.of(context).primaryColor),
+          new IconButton(
+              icon: new Icon(Icons.face),
+              onPressed: showEmojiList,
               color: Theme.of(context).primaryColor),
           // 输入框
           new Flexible(
@@ -473,18 +482,18 @@ class _ChatWidgetState extends State<ChatWidget>
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                 ),
-                // 发送按钮
+                // 底部功能区
                 new Container(
                   margin: new EdgeInsets.symmetric(horizontal: 8.0),
                   child: new Row(
                     children: [
                       new IconButton(
                           icon: new Icon(Icons.image),
-                          onPressed: () => getImage(),
+                          onPressed: getImage,
                           color: Theme.of(context).primaryColor),
                       new IconButton(
                         icon: new Icon(Icons.face),
-                        onPressed: () {},
+                        onPressed: showEmojiList,
                         color: Theme.of(context).primaryColor,
                       ),
                       Expanded(child: new SizedBox(width: 100)),
@@ -597,14 +606,22 @@ class _ChatWidgetState extends State<ChatWidget>
       }
     }
 
-    var image = await ImagePickerSaver.pickImage(source: ImageSource.gallery);
+    bool sendDirectly = _textController.text.isEmpty;
+    ImagePickers.pickerPaths().then((List<Media> medias) {
+      /// medias 照片路径信息 Photo path information
+      medias.forEach((media) {
+        _uploadImage(File(media.path), sendDirectly);
+      });
+    });
+
+    /* var image = await ImagePickerSaver.pickImage(source: ImageSource.gallery);
     if (image == null) {
       // 取消选择图片
       Fluttertoast.showToast(
           msg: "取消选择图片", gravity: ToastGravity.CENTER, textColor: Colors.grey);
       return;
     }
-    _uploadImage(image, _textController.text.isEmpty);
+    _uploadImage(image, sendDirectly); */
   }
 
   void _uploadImage(File image, bool sendDirectly) async {
@@ -707,6 +724,34 @@ class _ChatWidgetState extends State<ChatWidget>
       _scrollController
           .jumpTo(_scrollController.position.maxScrollExtent - deltaBottom);
     }); */
+  }
+
+  void showEmojiList() {
+    final size = MediaQuery.of(context).size;
+    final twidth = size.width / 2;
+    final theight = size.height * 4 / 5;
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+                constraints: BoxConstraints(
+                    minWidth: twidth,
+                    maxWidth: twidth,
+                    minHeight: theight,
+                    maxHeight: theight),
+                child: EmojiGrid(
+                  sendEmojiCallback: (cq) {
+                    if (_textController.text.isEmpty) {
+                      _sendMessage(cq);
+                    } else {
+                      _insertMessage(cq);
+                    }
+                  },
+                )),
+          );
+        });
   }
 }
 

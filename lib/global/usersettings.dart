@@ -60,6 +60,9 @@ class UserSettings extends MySettings {
   // 本地昵称
   Map<int, String> localNickname = {};
 
+  // 表情包
+  List<String> emojiList = []; // 表情包的CQ码（理论上可以是任意消息），但只显示face或image
+
   UserSettings({@required String iniPath}) : super(iniPath: iniPath) {
     // readFromFile(); // super会调用，原来这是虚继承
   }
@@ -94,26 +97,10 @@ class UserSettings extends MySettings {
         getBool('display/enableColorfulChatBubble', enableColorfulChatBubble);
 
     // 读取启用的群组数组
-    String ens = getStr('notification/enabledGroups', '');
-    if (ens.isNotEmpty) {
-      List<String> sl = ens.split(';');
-      sl.forEach((idString) {
-        try {
-          enabledGroups.add(int.parse(idString));
-        } catch (e) {}
-      });
-    }
+    enabledGroups = getIntList('notification/enabledGroups');
 
     // 读取重要的群组数组
-    ens = getStr('notification/importantGroups', '');
-    if (ens.isNotEmpty) {
-      List<String> sl = ens.split(';');
-      sl.forEach((idString) {
-        try {
-          importantGroups.add(int.parse(idString));
-        } catch (e) {}
-      });
-    }
+    importantGroups = getIntList('notification/importantGroups');
 
     // 读取本地名字
     List<String> sl = getStringList('display/localNickname', strSplit);
@@ -130,6 +117,9 @@ class UserSettings extends MySettings {
       String name = match[2];
       localNickname[id] = name;
     });
+
+    // 读取表情包
+    emojiList = getStringList('emoji/list', ';');
   }
 
   int getFriendImportance(int id) {

@@ -136,6 +136,10 @@ class _MessageViewState extends State<MessageView> {
         String url =
             API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
         getColorFromUrl(url).then((v) {
+          if (v == null) {
+            // 一直保持获取状态，就不使用了
+            return;
+          }
           print('主题色：' + msg.username() + ": " + v.toString());
           G.ac.gettingChatObjColor.remove(keyId);
           Color c = Color.fromARGB(255, v[0], v[1], v[2]);
@@ -355,24 +359,36 @@ class _MessageViewState extends State<MessageView> {
         Match mat;
         if (cqCode == 'face') {
           // 替换成表情
-          RegExp re = RegExp(r'^id=(\d+)$');
+          RegExp re = RegExp(r'^id=(\d+)(?:,(.+))?$');
           if ((mat = re.firstMatch(params)) != null) {
             String id = mat[1];
             if (File("assets/qq_face/$id.gif").existsSync()) {
+              double height = 28;
+              double scale = 2;
+              if (mat[2] != null && mat[2] == 'type=sticker') {
+                height = 56;
+                scale = 1;
+              }
               span = new WidgetSpan(
                   child: Image.asset("assets/qq_face/$id.gif",
-                      scale: 2, height: 28));
+                      scale: scale, height: height));
             } else {
               span = new TextSpan(text: '[表情]');
             }
+          } else {
+            span = new TextSpan(text: '[表情]');
           }
         } else if (cqCode == 'image') {
           // 替换成图片
-          RegExp imageRE = RegExp(r'^file=.+?,url=([^,]+)$');
+          RegExp imageRE = RegExp(r'^file=.+?,url=([^,]+)');
           if ((mat = imageRE.firstMatch(params)) != null) {
             String url = mat[1];
             span = new WidgetSpan(
                 child: _buildImageWidget(url, recursion: recursion));
+          } else if (RegExp(r"\[CQ:image,type=flash,.+?\]").hasMatch(mAll)) {
+            span = new TextSpan(text: '[闪照]');
+          } else {
+            span = new TextSpan(text: '[图片]');
           }
         } else if (cqCode == 'redbag') {
           RegExp rgRE = RegExp(r'^title=(.+)$');
@@ -939,6 +955,12 @@ class _MessageViewState extends State<MessageView> {
       }
     }
 
+    if (RegExp(r'^\[CQ:image,[^\]]+\]$').hasMatch(msg.message) ||
+        RegExp(r'^\[CQ:face,[^\]]+\]$').hasMatch(msg.message)) {
+      items.insert(
+          insertPos++, PopupMenuItem(value: 'addEmoji', child: Text('存表情')));
+    }
+
     return items;
   }
 
@@ -967,7 +989,8 @@ class _MessageViewState extends State<MessageView> {
             );
           });
     } else if (value == 'repeat') {
-      widget.sendMessageCallback(msg.message);
+      // widget.sendMessageCallback(msg.message);
+      widget.addMessageCallback(msg.message);
     } else if (value == 'cq') {
       _showCopyTextDialog(
           'CQ码',
@@ -983,6 +1006,11 @@ class _MessageViewState extends State<MessageView> {
         'params': {'message_id': msg.messageId},
         'echo': 'msg_recall_friend:${msg.friendId}_${msg.messageId}',
       });
+    } else if (value == 'addEmoji') {
+      G.st.emojiList.remove(msg.message); // 去掉重复的表情包
+      G.st.emojiList.insert(0, msg.message); // 添加到开头
+      G.st.setList('emoji/list', G.st.emojiList, split: ';');
+      print('存表情：' + msg.message + ', 总数量：' + G.st.emojiList.length.toString());
     }
   }
 

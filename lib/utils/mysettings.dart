@@ -62,7 +62,7 @@ class MySettings {
   }
 
   /// 默认分割符：','
-  void setList(String key, List value, {split: ','}) {
+  void setList(String key, List value, {split: ';'}) {
     setConfig(key, value.join(split));
   }
 
@@ -71,11 +71,13 @@ class MySettings {
   }
 
   List<int> getIntList(String key) {
-    List<String> ss = getStr(key, '').split(',');
+    List<String> ss = getStr(key, '').split(';');
     List<int> list = [];
     ss.forEach((element) {
       if (element.isEmpty) return;
-      list.add(int.parse(element));
+      try {
+        list.add(int.parse(element));
+      } catch (e) {}
     });
     return list;
   }
