@@ -136,6 +136,10 @@ class _MessageViewState extends State<MessageView> {
         String url =
             API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
         getColorFromUrl(url).then((v) {
+          if (v == null) {
+            // 一直保持获取状态，就不使用了
+            return;
+          }
           print('主题色：' + msg.username() + ": " + v.toString());
           G.ac.gettingChatObjColor.remove(keyId);
           Color c = Color.fromARGB(255, v[0], v[1], v[2]);
@@ -376,7 +380,7 @@ class _MessageViewState extends State<MessageView> {
           }
         } else if (cqCode == 'image') {
           // 替换成图片
-          RegExp imageRE = RegExp(r'^file=.+?,url=([^,]+)$');
+          RegExp imageRE = RegExp(r'^file=.+?,url=([^,]+)');
           if ((mat = imageRE.firstMatch(params)) != null) {
             String url = mat[1];
             span = new WidgetSpan(

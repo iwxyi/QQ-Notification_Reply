@@ -325,9 +325,11 @@ class _ChatWidgetState extends State<ChatWidget>
 
     return PopupMenuButton<ChatMenuItems>(
       icon: Icon(Icons.more_vert,
-          color: G.rt.horizontal
-              ? Theme.of(context).textTheme.bodyText2.color
-              : Theme.of(context).iconTheme.color),
+          color: !mounted
+              ? Colors.black
+              : G.rt.horizontal
+                  ? Theme.of(context).textTheme.bodyText2.color
+                  : Theme.of(context).iconTheme.color),
       tooltip: '菜单',
       itemBuilder: (BuildContext context) => menus,
       onSelected: (ChatMenuItems result) {
