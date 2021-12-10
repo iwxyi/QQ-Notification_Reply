@@ -154,7 +154,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           setState(() {
             G.rt.currentChatPage.setObject(msg);
             SchedulerBinding.instance.addPostFrameCallback((_) {
-              G.rt.currentChatPage.focusEditor();
+              if (Platform.isWindows) {
+                G.rt.currentChatPage.focusEditor();
+              }
             });
           });
           return;
