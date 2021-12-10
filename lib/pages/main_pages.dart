@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
@@ -151,6 +153,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         } else {
           setState(() {
             G.rt.currentChatPage.setObject(msg);
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              G.rt.currentChatPage.focusEditor();
+            });
           });
           return;
         }
