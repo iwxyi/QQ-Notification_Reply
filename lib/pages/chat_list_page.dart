@@ -120,7 +120,7 @@ class _ChatListPageState extends State<ChatListPage>
                   text = (msg.senderId == null
                           ? ''
                           : G.st.getLocalNickname(
-                                  msg.senderKeyId(), msg.username() ?? '') +
+                                  msg.senderKeyId(), msg.usernameSimplify() ?? '') +
                               ": ") +
                       G.cs.getMessageDisplay(msg);
                 } else {
