@@ -84,6 +84,20 @@ class MsgBean {
           ? remark
           : nickname;
 
+  String usernameSimplify() {
+    String s = nickname;
+    if (groupCard != null && groupCard.isNotEmpty) {
+      s = groupCard;
+    }
+    if (remark != null && remark.isNotEmpty) {
+      s = remark;
+    }
+    s = s.replaceAllMapped(RegExp(r'(.+)（.+?）$'), (match) => match[1]);
+    s = s.replaceAllMapped(
+        RegExp(r'^(?:id|Id|ID)[:：](.+)'), (match) => match[1]);
+    return s;
+  }
+
   int keyId() => groupId != null && groupId != 0 ? -groupId : friendId;
 
   int senderKeyId() => senderId;
@@ -99,9 +113,9 @@ class MsgBean {
   bool isGroup() => groupId != null && groupId != 0;
 
   bool isFile() => fileId != null && fileId.isNotEmpty;
-  
+
   bool isMessage() => action == ActionType.Message;
-  
+
   bool isPureMessage() => isMessage() && message != null;
 
   bool isObj(MsgBean msg) {

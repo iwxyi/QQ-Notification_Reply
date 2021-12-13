@@ -29,6 +29,7 @@ class ChatWidget extends StatefulWidget {
   bool innerMode;
   var buildChatMenu;
   var unfocusEditor;
+  var focusEditor;
 
   ChatWidget(this.chatObj, {this.innerMode = false});
 
@@ -81,6 +82,12 @@ class _ChatWidgetState extends State<ChatWidget>
 
     widget.unfocusEditor = () {
       _removeEditorFocus();
+    };
+
+    widget.focusEditor = () {
+      if (mounted) {
+        FocusScope.of(context).requestFocus(_editorFocus);
+      }
     };
 
     // 注册监听器，订阅 eventBus
@@ -411,6 +418,11 @@ class _ChatWidgetState extends State<ChatWidget>
     );
   }
 
+  /// 输入框是否自动聚焦
+  bool _autofocusEdit() {
+    return Platform.isWindows;
+  }
+
   /// 构造单行输入框
   Widget _buildLineEditor() {
     return new Container(
@@ -428,6 +440,7 @@ class _ChatWidgetState extends State<ChatWidget>
           new Flexible(
               child: Container(
             child: new TextField(
+              autofocus: _autofocusEdit(),
               controller: _textController,
               onSubmitted: _sendMessage,
               decoration: new InputDecoration.collapsed(
@@ -470,6 +483,7 @@ class _ChatWidgetState extends State<ChatWidget>
                 // 输入框
                 Container(
                   child: new TextField(
+                    autofocus: _autofocusEdit(),
                     controller: _textController,
                     decoration: new InputDecoration.collapsed(
                       // 取消奇怪的padding
