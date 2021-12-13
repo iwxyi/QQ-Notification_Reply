@@ -261,6 +261,11 @@ class CqhttpService {
 
   /// 连接上，必定会触发这个
   void _parseLifecycle(final obj) {
+    // 清空旧的数据
+    ac.gettingChatObjColor.clear();
+    ac.gettingGroupMembers.clear();
+    
+    // 自己的信息
     int userId = obj['self_id']; // 自己的QQ号
     ac.myId = userId;
 
