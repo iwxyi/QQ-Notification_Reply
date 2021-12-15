@@ -15,8 +15,6 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import 'emoji_grid.dart';
 import 'message_view.dart';
@@ -360,6 +358,44 @@ class _ChatWidgetState extends State<ChatWidget>
     );
   }
 
+  AppBar _buildAppBar(BuildContext context) {
+    String title =
+        G.st.getLocalNickname(widget.chatObj.keyId(), widget.chatObj.title());
+
+    Widget content = Row(
+      children: [
+        IconButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            icon: Icon(Icons.arrow_back)),
+        Expanded(
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).textTheme.bodyText2.color,
+                fontWeight: FontWeight.w500),
+          ),
+        ),
+        buildMenu()
+      ],
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+    );
+
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      flexibleSpace: Container(
+          // 整个区域，包括leading等
+          child: content,
+          height: kToolbarHeight),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -368,11 +404,7 @@ class _ChatWidgetState extends State<ChatWidget>
       return _buildBody(context);
     } else {
       return Scaffold(
-        appBar: AppBar(
-          title: new Text(G.st.getLocalNickname(
-              widget.chatObj.keyId(), widget.chatObj.title())),
-          actions: [buildMenu()],
-        ),
+        appBar: _buildAppBar(context),
         body: _buildBody(context),
         /* floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
             ? FloatingActionButton(
