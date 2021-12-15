@@ -18,13 +18,13 @@ import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../widgets/gallerybar.dart';
+import '../../widgets/gallerybar.dart';
 import 'chat_list_page.dart';
-import 'chat/chat_widget.dart';
-import 'contact/contacts_page.dart';
+import '../chat/chat_widget.dart';
+import '../contact/contacts_page.dart';
 import 'search_page.dart';
-import 'settings/login_widget.dart';
-import 'settings/my_app_bar.dart';
+import '../settings/login_widget.dart';
+import 'transparent_app_bar.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
 const Color _appBarColor2 = const Color(0xFF8266D4);
@@ -327,7 +327,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         actions: btnWidget);
   }
 
-  MyAppBar _buildAppBar(BuildContext context) {
+  TransparentAppBar _buildAppBar(BuildContext context) {
     List<Widget> widgets = [];
     bool isHoriz = G.rt.horizontal;
 
@@ -437,7 +437,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     // 返回
-    return MyAppBar(
+    return TransparentAppBar(
         Container(
           child: child,
           height: kToolbarHeight, // 固定位状态栏高度

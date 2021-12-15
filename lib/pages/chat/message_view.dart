@@ -14,7 +14,7 @@ import 'package:qqnotificationreply/widgets/video_player_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/slide_images_page.dart';
-import '../search_page.dart';
+import '../main/search_page.dart';
 
 /// 构造发送的信息
 /// 每一条消息显示的复杂对象

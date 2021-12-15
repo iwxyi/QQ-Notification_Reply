@@ -140,6 +140,10 @@ class _ChatWidgetState extends State<ChatWidget>
           _scrollController.position.minScrollExtent + 500);
       if (_prevShow != _showGoToBottomButton) {
         setState(() {});
+        if (!_showGoToBottomButton) {
+          // 开始滚动到底部
+          _hasNewMsg = 0;
+        }
       }
 
       // 顶部加载历史消息
@@ -322,7 +326,7 @@ class _ChatWidgetState extends State<ChatWidget>
         style: TextStyle(fontSize: G.st.msgFontSize),
       );
       stack.add(Positioned(
-        bottom: -2,
+        bottom: -4,
         child: FlatButton(
           color: Color.fromARGB(255, 230, 230, 255),
           child: Container(

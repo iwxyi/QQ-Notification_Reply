@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:qqnotificationreply/pages/main_pages.dart';
+import 'package:qqnotificationreply/pages/main/main_pages.dart';
 
 import 'global/g.dart';
 import 'widgets/app_retain_widget.dart';
@@ -86,11 +84,13 @@ class MyApp extends StatelessWidget {
         // 标题栏颜色
         visualDensity: VisualDensity.adaptivePlatformDensity,
         // 设置视觉密度：适应平台密度
-        platform: TargetPlatform.iOS, // 页面滑动切换效果
+        platform: TargetPlatform.iOS, // 左侧右滑返回效果
       ),
       home: AppRetainWidget(child: MainPages()),
-      scrollBehavior: const MaterialScrollBehavior()
-          .copyWith(scrollbars: true, dragDevices: _kTouchLikeDeviceTypes),
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        scrollbars: true,
+        dragDevices: _kTouchLikeDeviceTypes, // 支持鼠标手势
+      ),
     );
   }
 }
