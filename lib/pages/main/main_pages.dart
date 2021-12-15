@@ -18,13 +18,13 @@ import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../widgets/gallerybar.dart';
+import '../../widgets/gallerybar.dart';
 import 'chat_list_page.dart';
-import 'chat/chat_widget.dart';
-import 'contact/contacts_page.dart';
+import '../chat/chat_widget.dart';
+import '../contact/contacts_page.dart';
 import 'search_page.dart';
-import 'settings/login_widget.dart';
-import 'settings/my_app_bar.dart';
+import '../settings/login_widget.dart';
+import 'transparent_app_bar.dart';
 
 const Color _appBarColor1 = const Color(0xFF3B5F8F);
 const Color _appBarColor2 = const Color(0xFF8266D4);
@@ -122,7 +122,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 任意位置打开聊天页面
     G.rt.mainContext = context;
-    G.rt.showChatPage = (MsgBean msg) {
+    G.rt.showChatPage = (MsgBean msg, {directlyClose: false}) {
       // 清除通知
       if (G.rt.enableNotification) {
         if (UserAccount.notificationIdMap.containsKey(msg.keyId())) {
@@ -151,10 +151,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             // 如果是横屏->竖屏，则不进行处理
           } */
         } else {
+          // 已有的页面，直接设置即可
           setState(() {
             G.rt.currentChatPage.setObject(msg);
             SchedulerBinding.instance.addPostFrameCallback((_) {
               if (Platform.isWindows) {
+                G.rt.currentChatPage.setDirectlyClose(directlyClose);
                 G.rt.currentChatPage.focusEditor();
               }
             });
@@ -166,13 +168,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       if (G.rt.horizontal) {
         // 横屏页面
         setState(() {
+          // 直接创建就行了，更新状态的时候会自动获取
           G.rt.currentChatPage = new ChatWidget(msg, innerMode: true);
         });
       } else {
         // 重新创建页面
         Navigator.of(G.rt.mainContext).push(MaterialPageRoute(
           builder: (context) {
-            G.rt.currentChatPage = new ChatWidget(msg);
+            G.rt.currentChatPage =
+                new ChatWidget(msg, directlyClose: directlyClose);
             return G.rt.currentChatPage;
           },
         )).then((value) {
@@ -180,6 +184,30 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           setState(() {});
         });
       }
+    };
+
+    G.rt.updateChatPageUnreadCount = () {
+      if (G.rt.currentChatPage == null || G.rt.horizontal) {
+        return;
+      }
+      int keyId = G.rt.currentChatPage.chatObj.keyId();
+      int sum = 0;
+      G.ac.unreadMessageCount.forEach((key, value) {
+        // 不显示自己的消息
+        if (key == keyId) {
+          return;
+        }
+        // 不显示不通知群组的消息
+        if (key < 0 && !G.st.enabledGroups.contains(-key)) {
+          return;
+        }
+        sum += value;
+      });
+      if (G.rt.currentChatPage != null &&
+          G.rt.currentChatPage.setUnreadCount != null) {
+        G.rt.currentChatPage.setUnreadCount(sum);
+      }
+      // print('--------设置数量：' + sum.toString());
     };
   }
 
@@ -327,7 +355,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         actions: btnWidget);
   }
 
-  MyAppBar _buildAppBar(BuildContext context) {
+  TransparentAppBar _buildAppBar(BuildContext context) {
     List<Widget> widgets = [];
     bool isHoriz = G.rt.horizontal;
 
@@ -437,7 +465,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     // 返回
-    return MyAppBar(
+    return TransparentAppBar(
         Container(
           child: child,
           height: kToolbarHeight, // 固定位状态栏高度
@@ -649,17 +677,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   /// 取消通知
   /// @param id 通知的ID，不是聊天ID或者消息ID
   void _cancelNotification(int id) {
+    if (!G.rt.enableNotification) {
+      return;
+    }
     AwesomeNotifications().cancel(id);
   }
 
   /// 显示通知栏通知
   /// 仅支持 Android、IOS、MacOS
   void _showNotification(MsgBean msg) async {
-    // 当前平台不支持该通知
-    if (!G.rt.enableNotification) {
-      return;
-    }
-
     // 该聊天对象的通知ID（每次启动都不一样）
     int id = UserAccount.getNotificationId(msg);
 
@@ -671,15 +697,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return;
     }
 
-    // 前台不显示通知
-    /*if (G.rt.runOnForeground) {
-      return;
-    }*/
-
-    // 显示通知
+    // 判断通知类型和级别
     String channelKey = 'notice';
-    bool isSmartFocus = false;
-    bool isDynamicImportance = false;
+    bool isSmartFocus = false; // 是否是智能聚焦，添加关闭（理论上来说不需要，因为是一次性的）
+    bool isDynamicImportance = false; // 是否是动态重要性，添加关闭
     if (msg.isPrivate()) {
       // 私聊消息
       channelKey = 'private_chats';
@@ -722,16 +743,18 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           int delta = DateTime.now().millisecondsSinceEpoch -
               G.ac.messageMyTimes[msg.keyId()];
           delta = delta ~/ 1000; // 转换为秒
-          if (delta < 60) {
+          int rCount = G.ac.receivedCountAfterMySent[msg.keyId()] ?? 0;
+          rCount--; // 自己发送消息后的收到的别人的消息数量
+          if (delta <= 60 || rCount <= 3) {
             // 一分钟内：重要
             channelKey = 'important_group_chats';
             isDynamicImportance = true;
-            print('群消息.动态重要性.重要');
-          } else if (delta < 180) {
+            print('群消息.动态重要性.重要  $delta  $rCount');
+          } else if (delta <= 180 || rCount <= 10) {
             // 一分钟内：普通通知，且忽视不通知
             if (channelKey != 'important_group_chats') {
               channelKey = 'normal_group_chats';
-              print('群消息.动态重要性.普通');
+              print('群消息.动态重要性.普通  $delta  $rCount');
             }
             isDynamicImportance = true;
           }
@@ -746,12 +769,29 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         channelKey = 'important_group_chats';
       }
 
-      // 判断是否需要显示通知
+      // 判断未启用的群组是否需要显示通知
       if (!G.st.enabledGroups.contains(msg.groupId) &&
           channelKey == 'normal_group_chats' &&
           !isDynamicImportance) {
         return;
       }
+    }
+
+    // 在前台
+    if (G.rt.runOnForeground) {
+      if (G.rt.currentChatPage != null && !G.rt.horizontal) {
+        if (!msg.isObj(G.rt.currentChatPage.chatObj)) {
+          // 显示在聊天界面顶层上面，并且能直接点进来
+          G.rt.currentChatPage.showJumpMessage(msg);
+        }
+      }
+      // 在前台的话，就不发送通知了
+      return;
+    }
+
+    // 当前平台不支持该通知
+    if (!G.rt.enableNotification) {
+      return;
     }
 
     AwesomeNotifications().createNotification(
@@ -791,7 +831,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 打开会话
     if (!G.st.notificationLaunchQQ) {
-      G.rt.showChatPage(msg);
+      // 后台通知打开的聊天界面，则在左上角显示一个叉，直接退出程序
+      G.rt.showChatPage(msg, directlyClose: !G.rt.runOnForeground);
     } else {
       String url;
       // android 和 ios 的 QQ 启动 url scheme 是不同的
@@ -852,11 +893,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return;
     }
 
-    if (msg.isPrivate()) {
-      G.cs.sendPrivateMessage(msg.friendId, text);
-    } else if (msg.isGroup()) {
-      G.cs.sendGroupMessage(msg.groupId, text);
-    }
+    G.cs.sendMsg(msg, text);
   }
 
   /// 这个是 iOS 的通知回调

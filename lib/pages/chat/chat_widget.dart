@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -14,8 +15,6 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import 'emoji_grid.dart';
 import 'message_view.dart';
@@ -30,8 +29,15 @@ class ChatWidget extends StatefulWidget {
   var buildChatMenu;
   var unfocusEditor;
   var focusEditor;
+  var setUnreadCount;
+  var setDirectlyClose;
+  bool directlyClose = false;
 
-  ChatWidget(this.chatObj, {this.innerMode = false});
+  var showJumpMessage; // 显示其他聊天对象的最新消息的入口
+  MsgBean jumpMsg; // 其他聊天对象的最新消息
+  int jumpMsgTimestamp = 0;
+
+  ChatWidget(this.chatObj, {this.innerMode: false, this.directlyClose: false});
 
   @override
   State<StatefulWidget> createState() {
@@ -54,6 +60,7 @@ class _ChatWidgetState extends State<ChatWidget>
   bool _blankHistory = false; // 是否已经将加载完历史记录
   bool _showGoToBottomButton = false; // 是否显示返回底部按钮
   num _hasNewMsg = 0; // 是否有新消息
+  int _unreadCount = 0;
 
   List<MsgBean> _messages = []; // 显示的msg列表，不显示全
   Map<int, bool> hasToBottom = {}; // 指定图片是否已经申请跳bottom
@@ -67,6 +74,7 @@ class _ChatWidgetState extends State<ChatWidget>
         // 去掉正在获取群成员的flag
         G.ac.gettingGroupMembers.remove(widget.chatObj.keyId());
       }
+      widget.jumpMsg = null;
 
       // 设置为新的
       widget.chatObj = msg;
@@ -74,6 +82,10 @@ class _ChatWidgetState extends State<ChatWidget>
         _messages = [];
         _initMessages();
       });
+
+      if (!widget.innerMode) {
+        G.rt.updateChatPageUnreadCount();
+      }
     };
 
     widget.buildChatMenu = () {
@@ -88,6 +100,31 @@ class _ChatWidgetState extends State<ChatWidget>
       if (mounted) {
         FocusScope.of(context).requestFocus(_editorFocus);
       }
+    };
+
+    widget.showJumpMessage = (MsgBean msg) {
+      setState(() {
+        widget.jumpMsg = msg;
+        widget.jumpMsgTimestamp = DateTime.now().millisecondsSinceEpoch;
+      });
+      // 显示几秒后取消显示
+      Timer(Duration(milliseconds: G.st.chatTopMsgDisplayMSecond + 200), () {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    };
+
+    widget.setUnreadCount = (int c) {
+      setState(() {
+        _unreadCount = c;
+      });
+    };
+
+    widget.setDirectlyClose = (bool b) {
+      setState(() {
+        widget.directlyClose = b;
+      });
     };
 
     // 注册监听器，订阅 eventBus
@@ -127,6 +164,10 @@ class _ChatWidgetState extends State<ChatWidget>
           _scrollController.position.minScrollExtent + 500);
       if (_prevShow != _showGoToBottomButton) {
         setState(() {});
+        if (!_showGoToBottomButton) {
+          // 开始滚动到底部
+          _hasNewMsg = 0;
+        }
       }
 
       // 顶部加载历史消息
@@ -167,6 +208,8 @@ class _ChatWidgetState extends State<ChatWidget>
     _hasNewMsg = 0;
     _scrollToLatest(false);
     _textController.text = "";
+
+    G.rt.updateChatPageUnreadCount();
   }
 
   /// 跳转到最新的位置
@@ -183,105 +226,229 @@ class _ChatWidgetState extends State<ChatWidget>
     });
   }
 
+  Widget _buildListStack(BuildContext context) {
+    List<Widget> stack = [
+      new ListView.separated(
+        separatorBuilder: (BuildContext context, int index) {
+          if (index < _messages.length - 1) {
+            int ts0 = _messages[index].timestamp;
+            int ts1 = _messages[index + 1].timestamp;
+            int delta = ts0 - ts1;
+            int maxDelta = 120 * 1000;
+            // int maxDelta = 0;
+            if (delta > maxDelta) {
+              // 超过一分钟，显示时间
+              DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
+              String str = formatDate(dt, ['HH', ':', 'nn']);
+              return new Row(
+                children: [new Text(str, style: TextStyle(color: Colors.grey))],
+                mainAxisAlignment: MainAxisAlignment.center,
+              );
+            }
+          }
+
+          return Divider(
+            color: Colors.transparent,
+            height: 0.0,
+            indent: 0,
+          );
+        },
+        reverse: true,
+        // padding: new EdgeInsets.all(8.0),
+        itemBuilder: (context, int index) => MessageView(
+          _messages[index],
+          index >= _messages.length - 1
+              ? false
+              : _messages[index + 1].senderId == _messages[index].senderId,
+          ValueKey(_messages[index].messageId),
+          loadFinishedCallback: () {
+            // 图片加载完毕，会影响大小
+            if (_keepScrollBottom) {
+              if (!hasToBottom.containsKey(_messages[index].messageId)) {
+                // 重复判断，避免不知道哪来的多次complete
+                hasToBottom[_messages[index].messageId] = true;
+                _scrollToLatest(true);
+              }
+            }
+          },
+          jumpMessageCallback: (int messageId) {
+            // 跳转到指定消息（如果有）
+            int index = _messages.lastIndexWhere((element) {
+              return element.messageId == messageId;
+            });
+            if (index > -1) {
+              // TODO: 滚动到index
+            }
+          },
+          addMessageCallback: (String text) {
+            // 添加消息到发送框
+            _insertMessage(text);
+            FocusScope.of(context).requestFocus(_editorFocus);
+          },
+          sendMessageCallback: (String text) {
+            // 直接发送消息
+            MsgBean msg = _messages[index];
+            G.cs.sendMsg(msg, text);
+          },
+          deleteMessageCallback: (MsgBean msg) {
+            // 本地删除消息
+            setState(() {
+              _messages
+                  .removeWhere((element) => element.messageId == msg.messageId);
+              G.ac.allMessages[msg.keyId()]
+                  .removeWhere((element) => element.messageId == msg.messageId);
+            });
+          },
+          unfocusEditorCallback: () {
+            _removeEditorFocus();
+          },
+        ),
+        itemCount: _messages.length,
+        controller: _scrollController,
+      ),
+    ];
+
+    // 显示跳转的消息
+    if (widget.jumpMsg != null &&
+        ((DateTime.now().millisecondsSinceEpoch - widget.jumpMsgTimestamp) <
+            G.st.chatTopMsgDisplayMSecond)) {
+      MsgBean msg = widget.jumpMsg;
+      String title = msg.username() + "：" + G.cs.getMessageDisplay(msg);
+      if (msg.isGroup()) {
+        String gn = G.st.getLocalNickname(msg.keyId(), msg.groupName);
+        title = '[$gn] ' + title;
+      }
+      Widget label = Text(
+        title,
+        maxLines: 2,
+        style: TextStyle(fontSize: G.st.msgFontSize),
+      );
+      stack.add(Positioned(
+        top: -4, // 因为上面有几个像素阴影，会露出后面的
+        child: FlatButton(
+          color: Color.fromARGB(255, 230, 230, 255),
+          child: Container(
+            padding: EdgeInsets.all(6),
+            child: label,
+            width: MediaQuery.of(context).size.width,
+          ),
+          onPressed: () {
+            widget.setObject(widget.jumpMsg);
+          },
+        ),
+      ));
+    }
+
+    // 显示最新的消息
+    if (_hasNewMsg > 0 && !_keepScrollBottom && _showGoToBottomButton) {
+      MsgBean msg = _messages.first;
+      String title = G.cs.getMessageDisplay(msg);
+      if (msg.isGroup()) {
+        title = msg.username() + "：" + title;
+      }
+      Widget label = Text(
+        title,
+        maxLines: 2,
+        style: TextStyle(fontSize: G.st.msgFontSize),
+      );
+      stack.add(Positioned(
+        bottom: -4,
+        child: FlatButton(
+          color: Color.fromARGB(255, 230, 230, 255),
+          child: Container(
+            padding: EdgeInsets.all(6),
+            child: label,
+            width: MediaQuery.of(context).size.width,
+          ),
+          onPressed: () {
+            _scrollToLatest(true);
+          },
+        ),
+      ));
+    }
+
+    return new Flexible(
+        child: Stack(
+      children: stack,
+    ));
+  }
+
   Widget _buildBody(BuildContext context) {
     return new Column(
       children: <Widget>[
         // 消息列表
-        new Flexible(
-          // child: Scrollbar(
-          child: new ListView.separated(
-            separatorBuilder: (BuildContext context, int index) {
-              if (index < _messages.length - 1) {
-                int ts0 = _messages[index].timestamp;
-                int ts1 = _messages[index + 1].timestamp;
-                int delta = ts0 - ts1;
-                int maxDelta = 120 * 1000;
-                // int maxDelta = 0;
-                if (delta > maxDelta) {
-                  // 超过一分钟，显示时间
-                  DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
-                  String str = formatDate(dt, ['HH', ':', 'nn']);
-                  return new Row(
-                    children: [
-                      new Text(str, style: TextStyle(color: Colors.grey))
-                    ],
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  );
-                }
-              }
-
-              return Divider(
-                color: Colors.transparent,
-                height: 0.0,
-                indent: 0,
-              );
-            },
-            reverse: true,
-            // padding: new EdgeInsets.all(8.0),
-            itemBuilder: (context, int index) => MessageView(
-              _messages[index],
-              index >= _messages.length - 1
-                  ? false
-                  : _messages[index + 1].senderId == _messages[index].senderId,
-              ValueKey(_messages[index].messageId),
-              loadFinishedCallback: () {
-                // 图片加载完毕，会影响大小
-                if (_keepScrollBottom) {
-                  if (!hasToBottom.containsKey(_messages[index].messageId)) {
-                    // 重复判断，避免不知道哪来的多次complete
-                    hasToBottom[_messages[index].messageId] = true;
-                    _scrollToLatest(true);
-                  }
-                }
-              },
-              jumpMessageCallback: (int messageId) {
-                // 跳转到指定消息（如果有）
-                int index = _messages.lastIndexWhere((element) {
-                  return element.messageId == messageId;
-                });
-                if (index > -1) {
-                  // TODO: 滚动到index
-                }
-              },
-              addMessageCallback: (String text) {
-                // 添加消息到发送框
-                _insertMessage(text);
-                FocusScope.of(context).requestFocus(_editorFocus);
-              },
-              sendMessageCallback: (String text) {
-                // 直接发送消息
-                MsgBean msg = _messages[index];
-                if (msg.isPrivate()) {
-                  G.cs.sendPrivateMessage(msg.friendId, text);
-                } else if (msg.isGroup()) {
-                  G.cs.sendGroupMessage(msg.groupId, text);
-                } else {
-                  print('error: 未知的发送对象');
-                }
-              },
-              deleteMessageCallback: (MsgBean msg) {
-                // 本地删除消息
-                setState(() {
-                  _messages.removeWhere(
-                      (element) => element.messageId == msg.messageId);
-                  G.ac.allMessages[msg.keyId()].removeWhere(
-                      (element) => element.messageId == msg.messageId);
-                });
-              },
-              unfocusEditorCallback: () {
-                _removeEditorFocus();
-              },
-            ),
-            itemCount: _messages.length,
-            controller: _scrollController,
-          ),
-          //), // Scrollbar
-        ),
+        _buildListStack(context),
         SizedBox(height: 8),
         // 输入框
         widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
         SizedBox(height: 8),
       ],
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    String title =
+        G.st.getLocalNickname(widget.chatObj.keyId(), widget.chatObj.title());
+
+    List<Widget> widgets = [
+      IconButton(
+          onPressed: () {
+            // 返回上一页
+            Navigator.of(context).pop();
+            if (widget.directlyClose) {
+              // 离开整个程序，模拟返回键
+              // TODO
+            }
+          },
+          icon: Icon(widget.directlyClose ? Icons.close : Icons.arrow_back)),
+      Expanded(
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: 20,
+              color: Theme.of(context).textTheme.bodyText2.color,
+              fontWeight: FontWeight.w500),
+        ),
+      ),
+      buildMenu()
+    ];
+
+    if (_unreadCount > 0) {
+      Widget pt = new Container(
+        padding: EdgeInsets.all(4),
+        decoration: new BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        constraints: BoxConstraints(
+          minWidth: 24,
+          minHeight: 24,
+        ),
+        child: new Text(
+          _unreadCount.toString(), //通知数量
+          style: new TextStyle(
+            color: Colors.black,
+            fontSize: 12,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+      widgets.insert(1, pt);
+    }
+
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      flexibleSpace: Container(
+          // 整个区域，包括leading等
+          child: Row(
+            children: widgets,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+          ),
+          height: kToolbarHeight),
     );
   }
 
@@ -293,20 +460,16 @@ class _ChatWidgetState extends State<ChatWidget>
       return _buildBody(context);
     } else {
       return Scaffold(
-        appBar: AppBar(
-          title: new Text(G.st.getLocalNickname(
-              widget.chatObj.keyId(), widget.chatObj.title())),
-          actions: [buildMenu()],
-        ),
+        appBar: _buildAppBar(context),
         body: _buildBody(context),
-        floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
+        /* floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
             ? FloatingActionButton(
                 child: Icon(Icons.arrow_downward),
                 onPressed: () {
                   _scrollToLatest(true);
                 },
               )
-            : null,
+            : null, */
         floatingActionButtonLocation: CustomFloatingActionButtonLocation(
             FloatingActionButtonLocation.miniEndFloat, 0, -56),
       );
@@ -443,16 +606,26 @@ class _ChatWidgetState extends State<ChatWidget>
               autofocus: _autofocusEdit(),
               controller: _textController,
               onSubmitted: _sendMessage,
-              decoration: new InputDecoration.collapsed(
+              decoration: new InputDecoration(
                 hintText: '发送消息',
+                enabledBorder: UnderlineInputBorder(
+                  // 未获得焦点下划线
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  //获得焦点下划线
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+                isDense: true, // 去除很大的间距
               ),
               focusNode: _editorFocus,
+              textInputAction: TextInputAction.send,
             ),
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-            decoration: BoxDecoration(
+            /* decoration: BoxDecoration(
                 border: Border.all(
                     color: Theme.of(context).primaryColor, width: 0.5),
-                borderRadius: BorderRadius.all(Radius.circular(15))),
+                borderRadius: BorderRadius.all(Radius.circular(15))), */
           )),
           // 发送按钮
           new Container(
@@ -654,22 +827,10 @@ class _ChatWidgetState extends State<ChatWidget>
       "upfile": await MultipartFile.fromFile(path,
           filename: name, contentType: MediaType.parse("image/$suffix"))
     });
-    Fluttertoast.showToast(
-        msg: "开始上传:$path",
-        gravity: ToastGravity.CENTER,
-        textColor: Colors.grey);
 
     Dio dio = new Dio();
-    Fluttertoast.showToast(
-        msg: "${G.st.server}/file_upload.php",
-        gravity: ToastGravity.CENTER,
-        textColor: Colors.grey);
     var response = await dio.post<String>("${G.st.server}/file_upload.php",
         data: formData);
-    Fluttertoast.showToast(
-        msg: "返回码：${response.statusCode}",
-        gravity: ToastGravity.CENTER,
-        textColor: Colors.grey);
     if (response.statusCode == 200) {
       Fluttertoast.showToast(
           msg: "图片上传成功", gravity: ToastGravity.CENTER, textColor: Colors.grey);

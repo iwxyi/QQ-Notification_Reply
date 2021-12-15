@@ -14,7 +14,7 @@ import 'package:qqnotificationreply/widgets/video_player_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/slide_images_page.dart';
-import '../search_page.dart';
+import '../main/search_page.dart';
 
 /// 构造发送的信息
 /// 每一条消息显示的复杂对象
@@ -298,17 +298,7 @@ class _MessageViewState extends State<MessageView> {
     Widget contentWidget =
         _buildRichTextSpans(msg, message, recursion: recursion);
     if (replyWidget != null) {
-      // 设置回复的颜色
-      replyWidget = Container(
-          child: replyWidget,
-          padding: EdgeInsets.all(5.0),
-          decoration: new BoxDecoration(
-            color: G.st.replyBubbleColor,
-            borderRadius:
-                BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
-          ));
-
-      // 回复-内容 进行col连接
+      // 回复-内容 进行column连接
       contentWidget = Column(
         children: [replyWidget, contentWidget],
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -662,16 +652,19 @@ class _MessageViewState extends State<MessageView> {
 
   /// 构建回复框控件
   /// 本质上还是调用富文本构建的方法
-  /// 在外面再设置底色用以区分
+  /// 再设置底色用以区分
   Widget _buildReplyRichWidget(MsgBean msg, int messageId,
       {int recursion = 0}) {
+    Widget replyWidget;
+    MsgBean replyMsg;
+    // 获取回复的框
     if (G.ac.allMessages.containsKey(msg.keyId())) {
       int index = G.ac.allMessages[msg.keyId()].lastIndexWhere((element) {
         return element.messageId == messageId;
       });
       if (index > -1) {
         // 找到对应的回复对象
-        MsgBean replyMsg = G.ac.allMessages[msg.keyId()].elementAt(index);
+        replyMsg = G.ac.allMessages[msg.keyId()].elementAt(index);
         String username =
             G.ac.getGroupMemberName(replyMsg.senderId, replyMsg.groupId);
         if (username == null || username.isEmpty) {
@@ -681,7 +674,7 @@ class _MessageViewState extends State<MessageView> {
         if (G.st.showRecursionReply) {
           // 显示递归回复，即回复里面可以再显示回复的内容
           // 回复越深，颜色越深
-          return _buildRichContentWidget(replyMsg,
+          replyWidget = _buildRichContentWidget(replyMsg,
               useMessage: username + ': ' + replyMsg.message,
               recursion: recursion + 1);
         } else {
@@ -689,12 +682,36 @@ class _MessageViewState extends State<MessageView> {
           String rs = replyMsg.message;
           rs = rs.replaceAll(
               RegExp(r"\[CQ:reply,.+?\]\s*(\[CQ:at,qq=\d+?\])?"), '[回复]');
-          return _buildRichTextSpans(replyMsg, username + ': ' + rs,
+          replyWidget = _buildRichTextSpans(replyMsg, username + ': ' + rs,
               recursion: recursion + 1);
         }
       }
     }
-    return new Text('[回复]');
+    if (replyWidget == null) {
+      replyWidget = Text('[回复]');
+    }
+
+    // 设置外面的气泡颜色
+    Color c = G.st.replyBubbleColor;
+    if (G.st.enableColorfulReplyBubble &&
+        replyMsg != null &&
+        replyMsg.senderId != null &&
+        !G.ac.gettingChatObjColor.contains(replyMsg.senderKeyId())) {
+      if (G.ac.chatObjColor.containsKey(replyMsg.senderKeyId())) {
+        c = ColorUtil.fixedLight(G.ac.chatObjColor[replyMsg.senderKeyId()],
+            G.st.colorfulReplyBubbleBg);
+      }
+    }
+    // 回复的气泡
+    replyWidget = Container(
+        child: replyWidget,
+        padding: EdgeInsets.all(5.0),
+        decoration: new BoxDecoration(
+          color: c,
+          borderRadius: BorderRadius.all(Radius.circular(G.st.msgBubbleRadius)),
+        ));
+
+    return replyWidget;
   }
 
   /// 单独构建一个JSON卡片控件

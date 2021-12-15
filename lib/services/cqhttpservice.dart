@@ -110,6 +110,7 @@ class CqhttpService {
     return true;
   }
 
+  /// 发送socket
   void send(Map<String, dynamic> obj) {
     String text = json.encode(obj);
     print('ws发送数据：' + text);
@@ -124,7 +125,7 @@ class CqhttpService {
       return;
     }
     if (chatObj.isGroup()) {
-      sendGroupMessage(chatObj.groupId, text);
+      _sendGroupMessage(chatObj.groupId, text);
 
       // 群消息智能聚焦
       if (st.groupSmartFocus) {
@@ -154,10 +155,12 @@ class CqhttpService {
       ac.messageMyTimes[chatObj.keyId()] =
           DateTime.now().millisecondsSinceEpoch;
     } else if (chatObj.isPrivate()) {
-      sendPrivateMessage(chatObj.friendId, text);
+      _sendPrivateMessage(chatObj.friendId, text);
     } else {
       print('无法判断的发送对象');
     }
+
+    ac.receivedCountAfterMySent[chatObj.keyId()] = 0;
   }
 
   void reconnect(String host, String token) {
@@ -264,7 +267,7 @@ class CqhttpService {
     // 清空旧的数据
     ac.gettingChatObjColor.clear();
     ac.gettingGroupMembers.clear();
-    
+
     // 自己的信息
     int userId = obj['self_id']; // 自己的QQ号
     ac.myId = userId;
@@ -551,7 +554,7 @@ class CqhttpService {
     send({'action': 'get_group_list', 'echo': 'get_group_list'});
   }
 
-  void sendPrivateMessage(int userId, String message) {
+  void _sendPrivateMessage(int userId, String message) {
     if (message == null || message.isEmpty) {
       return;
     }
@@ -562,7 +565,7 @@ class CqhttpService {
     });
   }
 
-  void sendGroupMessage(int groupId, String message) {
+  void _sendGroupMessage(int groupId, String message) {
     if (message == null || message.isEmpty) {
       return;
     }
@@ -631,6 +634,12 @@ class CqhttpService {
                   ? ac.unreadMessageCount[msg.keyId()]
                   : 0) +
               1;
+    }
+
+    // 自己发送消息后收到的消息数量（包括当前自己的一条）
+    if (msg.senderId != null) {
+      int count = ac.receivedCountAfterMySent[msg.keyId()] ?? 0;
+      ac.receivedCountAfterMySent[msg.keyId()] = count + 1;
     }
 
     // 通知界面

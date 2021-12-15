@@ -9,6 +9,7 @@ class AppRuntime {
   var currentChatPage;
   var showChatPage;
   var mainContext;
+  var updateChatPageUnreadCount;
 
   bool horizontal = false;
   bool enableNotification = true;

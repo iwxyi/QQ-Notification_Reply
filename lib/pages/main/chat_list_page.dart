@@ -1,6 +1,7 @@
 import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
@@ -119,8 +120,8 @@ class _ChatListPageState extends State<ChatListPage>
                   // 群聊还是需要显示昵称的
                   text = (msg.senderId == null
                           ? ''
-                          : G.st.getLocalNickname(
-                                  msg.senderKeyId(), msg.usernameSimplify() ?? '') +
+                          : G.st.getLocalNickname(msg.senderKeyId(),
+                                  msg.usernameSimplify() ?? '') +
                               ": ") +
                       G.cs.getMessageDisplay(msg);
                 } else {
@@ -264,7 +265,7 @@ class _ChatListPageState extends State<ChatListPage>
               });
 
               // 打开会话
-              G.rt.showChatPage(msg);
+              G.rt.showChatPage(msg, directlyClose: false);
             },
           ));
 
@@ -382,6 +383,13 @@ class _ChatListPageState extends State<ChatListPage>
       }
     }
     timedMsgs.insert(0, msg);
+
+    // 设置未读数量
+    if (G.rt.updateChatPageUnreadCount != null) {
+      G.rt.updateChatPageUnreadCount();
+    } else {
+      print('warning: G.rt.updateChatPageUnreadCount == null');
+    }
 
     // 设置主题色
     /* if (G.st.enableColorfulChatList &&

@@ -35,6 +35,7 @@ class UserSettings extends MySettings {
   bool groupSmartFocus = false; // 群消息智能聚焦
   bool notificationAtAll = false; // @全体成员 与 @自己 同一级
   bool groupDynamicImportance = false; // 群消息动态重要性
+  int chatTopMsgDisplayMSecond = 5000; // 聊天界面顶部消息显示
 
   // 界面显示
   bool inputEnterSend = false;
@@ -49,13 +50,15 @@ class UserSettings extends MySettings {
   Color replyFontColor = Color(0xFF222222); // 回复消息颜色
 
   // 彩色
-  bool enableColorfulChatList = true; // 会话列表使用头像颜色作为背景
+  bool enableColorfulChatList = false; // 会话列表使用头像颜色作为背景
   double colorfulChatListBg = 0.93;
   double colorfulChatListSelecting = 0.5;
-  bool enableColorfulChatName = true; // 使用彩色昵称
+  bool enableColorfulChatName = false; // 使用彩色昵称
   double colorfulChatNameFont = 0.5;
-  bool enableColorfulChatBubble = true; // 使用彩色气泡
+  bool enableColorfulChatBubble = false; // 使用彩色气泡
   double colorfulChatBubbleBg = 0.94;
+  bool enableColorfulReplyBubble = false; // 使用彩色回复
+  double colorfulReplyBubbleBg = 0.9;
 
   // 本地昵称
   Map<int, String> localNickname = {};
@@ -84,6 +87,8 @@ class UserSettings extends MySettings {
     notificationLaunchQQ =
         getBool('notification/launchQQ', notificationLaunchQQ);
     groupSmartFocus = getBool('notification/groupSmartFocus', groupSmartFocus);
+    groupDynamicImportance =
+        getBool('notification/groupDynamicImportance', groupDynamicImportance);
     notificationAtAll = getBool('notification/atAll', notificationAtAll);
     showRecursionReply =
         getBool('display/showRecursionReply', showRecursionReply);
@@ -95,6 +100,8 @@ class UserSettings extends MySettings {
         getBool('display/enableColorfulChatName', enableColorfulChatName);
     enableColorfulChatBubble =
         getBool('display/enableColorfulChatBubble', enableColorfulChatBubble);
+    enableColorfulReplyBubble =
+        getBool('display/enableColorfulReplyBubble', enableColorfulReplyBubble);
 
     // 读取启用的群组数组
     enabledGroups = getIntList('notification/enabledGroups');

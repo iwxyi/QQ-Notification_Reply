@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-class MyAppBar extends StatefulWidget implements PreferredSizeWidget {
+class TransparentAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Widget child;
 
-  MyAppBar(this.child, Key key) : super(key: key);
+  TransparentAppBar(this.child, Key key) : super(key: key);
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  State<StatefulWidget> createState() => _MyAppBarState();
+  State<StatefulWidget> createState() => _TransparentAppBarState();
 }
 
-class _MyAppBarState extends State<MyAppBar> {
+class _TransparentAppBarState extends State<TransparentAppBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
