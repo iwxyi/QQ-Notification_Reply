@@ -44,6 +44,7 @@ class UserAccount {
   Map<int, int> messageTimes = {}; // 消息时间（毫秒）
   Map<int, int> messageMyTimes = {}; // 自己在本设备发送的消息时间（毫秒），用来提升动态重要性
   Map<int, int> unreadMessageCount = {}; // 未读消息数量
+  Map<int, int> receivedCountAfterMySent = {}; // 自自己发送消息后收到了多少未读通知，用来提升动态重要性
 
   // 聊天对象的变量
   Map<int, bool> chatListShowReply = {}; // 聊天记录显示回复框

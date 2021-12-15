@@ -84,6 +84,8 @@ class UserSettings extends MySettings {
     notificationLaunchQQ =
         getBool('notification/launchQQ', notificationLaunchQQ);
     groupSmartFocus = getBool('notification/groupSmartFocus', groupSmartFocus);
+    groupDynamicImportance =
+        getBool('notification/groupDynamicImportance', groupDynamicImportance);
     notificationAtAll = getBool('notification/atAll', notificationAtAll);
     showRecursionReply =
         getBool('display/showRecursionReply', showRecursionReply);

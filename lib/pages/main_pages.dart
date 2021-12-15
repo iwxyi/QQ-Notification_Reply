@@ -650,10 +650,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   /// 显示通知栏通知
   /// 仅支持 Android、IOS、MacOS
   void _showNotification(MsgBean msg) async {
-    // 当前平台不支持该通知
-    if (!G.rt.enableNotification) {
-      return;
-    }
+    // // 当前平台不支持该通知
+    // if (!G.rt.enableNotification) {
+    //   return;
+    // }
 
     // 该聊天对象的通知ID（每次启动都不一样）
     int id = UserAccount.getNotificationId(msg);
@@ -673,8 +673,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 显示通知
     String channelKey = 'notice';
-    bool isSmartFocus = false;
-    bool isDynamicImportance = false;
+    bool isSmartFocus = false; // 是否是智能聚焦，添加关闭（理论上来说不需要，因为是一次性的）
+    bool isDynamicImportance = false; // 是否是动态重要性，添加关闭
     if (msg.isPrivate()) {
       // 私聊消息
       channelKey = 'private_chats';
@@ -717,16 +717,18 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           int delta = DateTime.now().millisecondsSinceEpoch -
               G.ac.messageMyTimes[msg.keyId()];
           delta = delta ~/ 1000; // 转换为秒
-          if (delta < 60) {
+          int rCount = G.ac.receivedCountAfterMySent[msg.keyId()] ?? 0;
+          rCount--; // 自己发送消息后的收到的别人的消息数量
+          if (delta <= 60 || rCount <= 3) {
             // 一分钟内：重要
             channelKey = 'important_group_chats';
             isDynamicImportance = true;
-            print('群消息.动态重要性.重要');
-          } else if (delta < 180) {
+            print('群消息.动态重要性.重要  $delta  $rCount');
+          } else if (delta <= 180 || rCount <= 10) {
             // 一分钟内：普通通知，且忽视不通知
             if (channelKey != 'important_group_chats') {
               channelKey = 'normal_group_chats';
-              print('群消息.动态重要性.普通');
+              print('群消息.动态重要性.普通  $delta  $rCount');
             }
             isDynamicImportance = true;
           }
@@ -847,11 +849,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return;
     }
 
-    if (msg.isPrivate()) {
-      G.cs.sendPrivateMessage(msg.friendId, text);
-    } else if (msg.isGroup()) {
-      G.cs.sendGroupMessage(msg.groupId, text);
-    }
+    G.cs.sendMsg(msg, text);
   }
 
   /// 这个是 iOS 的通知回调

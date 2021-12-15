@@ -246,13 +246,7 @@ class _ChatWidgetState extends State<ChatWidget>
               sendMessageCallback: (String text) {
                 // 直接发送消息
                 MsgBean msg = _messages[index];
-                if (msg.isPrivate()) {
-                  G.cs.sendPrivateMessage(msg.friendId, text);
-                } else if (msg.isGroup()) {
-                  G.cs.sendGroupMessage(msg.groupId, text);
-                } else {
-                  print('error: 未知的发送对象');
-                }
+                G.cs.sendMsg(msg, text);
               },
               deleteMessageCallback: (MsgBean msg) {
                 // 本地删除消息
@@ -641,22 +635,10 @@ class _ChatWidgetState extends State<ChatWidget>
       "upfile": await MultipartFile.fromFile(path,
           filename: name, contentType: MediaType.parse("image/$suffix"))
     });
-    Fluttertoast.showToast(
-        msg: "开始上传:$path",
-        gravity: ToastGravity.CENTER,
-        textColor: Colors.grey);
 
     Dio dio = new Dio();
-    Fluttertoast.showToast(
-        msg: "${G.st.server}/file_upload.php",
-        gravity: ToastGravity.CENTER,
-        textColor: Colors.grey);
     var response = await dio.post<String>("${G.st.server}/file_upload.php",
         data: formData);
-    Fluttertoast.showToast(
-        msg: "返回码：${response.statusCode}",
-        gravity: ToastGravity.CENTER,
-        textColor: Colors.grey);
     if (response.statusCode == 200) {
       Fluttertoast.showToast(
           msg: "图片上传成功", gravity: ToastGravity.CENTER, textColor: Colors.grey);
