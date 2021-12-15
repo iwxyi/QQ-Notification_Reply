@@ -122,7 +122,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 任意位置打开聊天页面
     G.rt.mainContext = context;
-    G.rt.showChatPage = (MsgBean msg) {
+    G.rt.showChatPage = (MsgBean msg, {directlyClose: false}) {
       // 清除通知
       if (G.rt.enableNotification) {
         if (UserAccount.notificationIdMap.containsKey(msg.keyId())) {
@@ -151,10 +151,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             // 如果是横屏->竖屏，则不进行处理
           } */
         } else {
+          // 已有的页面，直接设置即可
           setState(() {
             G.rt.currentChatPage.setObject(msg);
             SchedulerBinding.instance.addPostFrameCallback((_) {
               if (Platform.isWindows) {
+                G.rt.currentChatPage.setDirectlyClose(directlyClose);
                 G.rt.currentChatPage.focusEditor();
               }
             });
@@ -166,13 +168,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       if (G.rt.horizontal) {
         // 横屏页面
         setState(() {
+          // 直接创建就行了，更新状态的时候会自动获取
           G.rt.currentChatPage = new ChatWidget(msg, innerMode: true);
         });
       } else {
         // 重新创建页面
         Navigator.of(G.rt.mainContext).push(MaterialPageRoute(
           builder: (context) {
-            G.rt.currentChatPage = new ChatWidget(msg);
+            G.rt.currentChatPage =
+                new ChatWidget(msg, directlyClose: directlyClose);
             return G.rt.currentChatPage;
           },
         )).then((value) {
@@ -819,7 +823,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 打开会话
     if (!G.st.notificationLaunchQQ) {
-      G.rt.showChatPage(msg);
+      // 后台通知打开的聊天界面，则在左上角显示一个叉，直接退出程序
+      G.rt.showChatPage(msg, directlyClose: !G.rt.runOnForeground);
     } else {
       String url;
       // android 和 ios 的 QQ 启动 url scheme 是不同的

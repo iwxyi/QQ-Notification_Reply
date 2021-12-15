@@ -30,12 +30,13 @@ class ChatWidget extends StatefulWidget {
   var focusEditor;
   var setUnreadCount;
   var setDirectlyClose;
+  bool directlyClose = false;
 
   var showJumpMessage; // 显示其他聊天对象的最新消息的入口
   MsgBean jumpMsg; // 其他聊天对象的最新消息
   int jumpMsgTimestamp = 0;
 
-  ChatWidget(this.chatObj, {this.innerMode = false});
+  ChatWidget(this.chatObj, {this.innerMode: false, this.directlyClose: false});
 
   @override
   State<StatefulWidget> createState() {
@@ -59,7 +60,6 @@ class _ChatWidgetState extends State<ChatWidget>
   bool _showGoToBottomButton = false; // 是否显示返回底部按钮
   num _hasNewMsg = 0; // 是否有新消息
   int _unreadCount = 0;
-  bool _directlyClose = false;
 
   List<MsgBean> _messages = []; // 显示的msg列表，不显示全
   Map<int, bool> hasToBottom = {}; // 指定图片是否已经申请跳bottom
@@ -116,7 +116,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
     widget.setDirectlyClose = (bool b) {
       setState(() {
-        _directlyClose = b;
+        widget.directlyClose = b;
       });
     };
 
@@ -309,7 +309,7 @@ class _ChatWidgetState extends State<ChatWidget>
       String title = msg.username() + "：" + G.cs.getMessageDisplay(msg);
       if (msg.isGroup()) {
         String gn = G.st.getLocalNickname(msg.keyId(), msg.groupName);
-        title = '[$gn]' + title;
+        title = '[$gn] ' + title;
       }
       Widget label = Text(
         title,
@@ -386,9 +386,14 @@ class _ChatWidgetState extends State<ChatWidget>
     List<Widget> widgets = [
       IconButton(
           onPressed: () {
+            // 返回上一页
             Navigator.of(context).pop();
+            if (widget.directlyClose) {
+              // 离开整个程序，模拟返回键
+              // TODO
+            }
           },
-          icon: Icon(Icons.arrow_back)),
+          icon: Icon(widget.directlyClose ? Icons.close : Icons.arrow_back)),
       Expanded(
         child: Text(
           title,

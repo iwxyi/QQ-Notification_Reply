@@ -265,7 +265,7 @@ class _ChatListPageState extends State<ChatListPage>
               });
 
               // 打开会话
-              G.rt.showChatPage(msg);
+              G.rt.showChatPage(msg, directlyClose: false);
             },
           ));
 
