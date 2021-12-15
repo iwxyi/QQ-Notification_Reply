@@ -29,6 +29,7 @@ class ChatWidget extends StatefulWidget {
   bool innerMode;
   var buildChatMenu;
   var focusEditor;
+  var showOtherMessage; // 显示其他聊天对象的最新消息
 
   ChatWidget(this.chatObj, {this.innerMode = false});
 
@@ -83,6 +84,10 @@ class _ChatWidgetState extends State<ChatWidget>
       if (mounted) {
         FocusScope.of(context).requestFocus(_editorFocus);
       }
+    };
+
+    widget.showOtherMessage = (MsgBean msg) {
+      print('显示其他消息：' + msg.simpleString());
     };
 
     // 注册监听器，订阅 eventBus
@@ -178,94 +183,99 @@ class _ChatWidgetState extends State<ChatWidget>
     });
   }
 
+  Widget _buildListStack(BuildContext context) {
+    List<Widget> stack = [
+      new ListView.separated(
+        separatorBuilder: (BuildContext context, int index) {
+          if (index < _messages.length - 1) {
+            int ts0 = _messages[index].timestamp;
+            int ts1 = _messages[index + 1].timestamp;
+            int delta = ts0 - ts1;
+            int maxDelta = 120 * 1000;
+            // int maxDelta = 0;
+            if (delta > maxDelta) {
+              // 超过一分钟，显示时间
+              DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
+              String str = formatDate(dt, ['HH', ':', 'nn']);
+              return new Row(
+                children: [new Text(str, style: TextStyle(color: Colors.grey))],
+                mainAxisAlignment: MainAxisAlignment.center,
+              );
+            }
+          }
+
+          return Divider(
+            color: Colors.transparent,
+            height: 0.0,
+            indent: 0,
+          );
+        },
+        reverse: true,
+        // padding: new EdgeInsets.all(8.0),
+        itemBuilder: (context, int index) => MessageView(
+          _messages[index],
+          index >= _messages.length - 1
+              ? false
+              : _messages[index + 1].senderId == _messages[index].senderId,
+          ValueKey(_messages[index].messageId),
+          loadFinishedCallback: () {
+            // 图片加载完毕，会影响大小
+            if (_keepScrollBottom) {
+              if (!hasToBottom.containsKey(_messages[index].messageId)) {
+                // 重复判断，避免不知道哪来的多次complete
+                hasToBottom[_messages[index].messageId] = true;
+                _scrollToLatest(true);
+              }
+            }
+          },
+          jumpMessageCallback: (int messageId) {
+            // 跳转到指定消息（如果有）
+            int index = _messages.lastIndexWhere((element) {
+              return element.messageId == messageId;
+            });
+            if (index > -1) {
+              // TODO: 滚动到index
+            }
+          },
+          addMessageCallback: (String text) {
+            // 添加消息到发送框
+            _insertMessage(text);
+            FocusScope.of(context).requestFocus(_editorFocus);
+          },
+          sendMessageCallback: (String text) {
+            // 直接发送消息
+            MsgBean msg = _messages[index];
+            G.cs.sendMsg(msg, text);
+          },
+          deleteMessageCallback: (MsgBean msg) {
+            // 本地删除消息
+            setState(() {
+              _messages
+                  .removeWhere((element) => element.messageId == msg.messageId);
+              G.ac.allMessages[msg.keyId()]
+                  .removeWhere((element) => element.messageId == msg.messageId);
+            });
+          },
+          unfocusEditorCallback: () {
+            _removeEditorFocus();
+          },
+        ),
+        itemCount: _messages.length,
+        controller: _scrollController,
+      ),
+    ];
+
+    return new Flexible(
+        child: Stack(
+      children: stack,
+    ));
+  }
+
   Widget _buildBody(BuildContext context) {
     return new Column(
       children: <Widget>[
         // 消息列表
-        new Flexible(
-          // child: Scrollbar(
-          child: new ListView.separated(
-            separatorBuilder: (BuildContext context, int index) {
-              if (index < _messages.length - 1) {
-                int ts0 = _messages[index].timestamp;
-                int ts1 = _messages[index + 1].timestamp;
-                int delta = ts0 - ts1;
-                int maxDelta = 120 * 1000;
-                // int maxDelta = 0;
-                if (delta > maxDelta) {
-                  // 超过一分钟，显示时间
-                  DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
-                  String str = formatDate(dt, ['HH', ':', 'nn']);
-                  return new Row(
-                    children: [
-                      new Text(str, style: TextStyle(color: Colors.grey))
-                    ],
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  );
-                }
-              }
-
-              return Divider(
-                color: Colors.transparent,
-                height: 0.0,
-                indent: 0,
-              );
-            },
-            reverse: true,
-            // padding: new EdgeInsets.all(8.0),
-            itemBuilder: (context, int index) => MessageView(
-              _messages[index],
-              index >= _messages.length - 1
-                  ? false
-                  : _messages[index + 1].senderId == _messages[index].senderId,
-              ValueKey(_messages[index].messageId),
-              loadFinishedCallback: () {
-                // 图片加载完毕，会影响大小
-                if (_keepScrollBottom) {
-                  if (!hasToBottom.containsKey(_messages[index].messageId)) {
-                    // 重复判断，避免不知道哪来的多次complete
-                    hasToBottom[_messages[index].messageId] = true;
-                    _scrollToLatest(true);
-                  }
-                }
-              },
-              jumpMessageCallback: (int messageId) {
-                // 跳转到指定消息（如果有）
-                int index = _messages.lastIndexWhere((element) {
-                  return element.messageId == messageId;
-                });
-                if (index > -1) {
-                  // TODO: 滚动到index
-                }
-              },
-              addMessageCallback: (String text) {
-                // 添加消息到发送框
-                _insertMessage(text);
-                FocusScope.of(context).requestFocus(_editorFocus);
-              },
-              sendMessageCallback: (String text) {
-                // 直接发送消息
-                MsgBean msg = _messages[index];
-                G.cs.sendMsg(msg, text);
-              },
-              deleteMessageCallback: (MsgBean msg) {
-                // 本地删除消息
-                setState(() {
-                  _messages.removeWhere(
-                      (element) => element.messageId == msg.messageId);
-                  G.ac.allMessages[msg.keyId()].removeWhere(
-                      (element) => element.messageId == msg.messageId);
-                });
-              },
-              unfocusEditorCallback: () {
-                _removeEditorFocus();
-              },
-            ),
-            itemCount: _messages.length,
-            controller: _scrollController,
-          ),
-          //), // Scrollbar
-        ),
+        _buildListStack(context),
         SizedBox(height: 8),
         // 输入框
         widget.innerMode ? _buildTextEditor() : _buildLineEditor(),

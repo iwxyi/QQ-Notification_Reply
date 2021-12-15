@@ -644,17 +644,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   /// 取消通知
   /// @param id 通知的ID，不是聊天ID或者消息ID
   void _cancelNotification(int id) {
+    if (!G.rt.enableNotification) {
+      return;
+    }
     AwesomeNotifications().cancel(id);
   }
 
   /// 显示通知栏通知
   /// 仅支持 Android、IOS、MacOS
   void _showNotification(MsgBean msg) async {
-    // // 当前平台不支持该通知
-    // if (!G.rt.enableNotification) {
-    //   return;
-    // }
-
     // 该聊天对象的通知ID（每次启动都不一样）
     int id = UserAccount.getNotificationId(msg);
 
@@ -666,12 +664,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return;
     }
 
-    // 前台不显示通知
-    /*if (G.rt.runOnForeground) {
-      return;
-    }*/
-
-    // 显示通知
+    // 判断通知类型和级别
     String channelKey = 'notice';
     bool isSmartFocus = false; // 是否是智能聚焦，添加关闭（理论上来说不需要，因为是一次性的）
     bool isDynamicImportance = false; // 是否是动态重要性，添加关闭
@@ -743,12 +736,29 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         channelKey = 'important_group_chats';
       }
 
-      // 判断是否需要显示通知
+      // 判断未启用的群组是否需要显示通知
       if (!G.st.enabledGroups.contains(msg.groupId) &&
           channelKey == 'normal_group_chats' &&
           !isDynamicImportance) {
         return;
       }
+    }
+
+    // 在前台
+    if (G.rt.runOnForeground) {
+      if (G.rt.currentChatPage != null && !G.rt.horizontal) {
+        if (!msg.isObj(G.rt.currentChatPage.chatObj)) {
+          // 显示在聊天界面顶层上面，并且能直接点进来
+          G.rt.currentChatPage.showOtherMessage(msg);
+        }
+      }
+      // 在前台的话，就不发送通知了
+      return;
+    }
+
+    // 当前平台不支持该通知
+    if (!G.rt.enableNotification) {
+      return;
     }
 
     AwesomeNotifications().createNotification(

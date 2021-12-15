@@ -119,6 +119,7 @@ class MsgBean {
   bool isPureMessage() => isMessage() && message != null;
 
   bool isObj(MsgBean msg) {
+    if (msg == null) return false;
     if (groupId != null && groupId != 0) {
       return this.groupId == msg.groupId;
     } else {
