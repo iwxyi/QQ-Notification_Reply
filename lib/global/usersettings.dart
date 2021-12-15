@@ -35,7 +35,7 @@ class UserSettings extends MySettings {
   bool groupSmartFocus = false; // 群消息智能聚焦
   bool notificationAtAll = false; // @全体成员 与 @自己 同一级
   bool groupDynamicImportance = false; // 群消息动态重要性
-  int chatTopMsgDisplayMSecond = 3000; // 聊天界面顶部消息显示
+  int chatTopMsgDisplayMSecond = 5000; // 聊天界面顶部消息显示
 
   // 界面显示
   bool inputEnterSend = false;

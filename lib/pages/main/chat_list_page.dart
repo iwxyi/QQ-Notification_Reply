@@ -1,6 +1,7 @@
 import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
@@ -265,6 +266,9 @@ class _ChatListPageState extends State<ChatListPage>
 
               // 打开会话
               G.rt.showChatPage(msg);
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                setChatPageUnreadCount(null);
+              });
             },
           ));
 
@@ -383,6 +387,9 @@ class _ChatListPageState extends State<ChatListPage>
     }
     timedMsgs.insert(0, msg);
 
+    // 设置未读数量
+    setChatPageUnreadCount(msg);
+
     // 设置主题色
     /* if (G.st.enableColorfulChatList &&
         !G.ac.chatObjColor.containsKey(msg.keyId()) &&
@@ -423,5 +430,27 @@ class _ChatListPageState extends State<ChatListPage>
         G.ac.chatListShowReply[msg.keyId()] = true;
       }
     });
+  }
+
+  void setChatPageUnreadCount(MsgBean msg) {
+    if (G.rt.currentChatPage != null && !G.rt.horizontal) {
+      if (msg == null || !msg.isObj(G.rt.currentChatPage.chatObj)) {
+        int keyId = G.rt.currentChatPage.chatObj.keyId();
+        int sum = 0;
+        G.ac.unreadMessageCount.forEach((key, value) {
+          // 不显示自己的消息
+          if (key == keyId) {
+            return;
+          }
+          // 不显示不通知群组的消息
+          if (key < 0 && !G.st.enabledGroups.contains(-key)) {
+            return;
+          }
+          sum += value;
+        });
+        G.rt.currentChatPage.setUnreadCount(sum);
+        print('--------设置数量：' + sum.toString());
+      }
+    }
   }
 }

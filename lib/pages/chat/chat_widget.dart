@@ -28,6 +28,8 @@ class ChatWidget extends StatefulWidget {
   bool innerMode;
   var buildChatMenu;
   var focusEditor;
+  var setUnreadCount;
+  var setDirectlyClose;
 
   var showJumpMessage; // 显示其他聊天对象的最新消息的入口
   MsgBean jumpMsg; // 其他聊天对象的最新消息
@@ -56,6 +58,8 @@ class _ChatWidgetState extends State<ChatWidget>
   bool _blankHistory = false; // 是否已经将加载完历史记录
   bool _showGoToBottomButton = false; // 是否显示返回底部按钮
   num _hasNewMsg = 0; // 是否有新消息
+  int _unreadCount = 0;
+  bool _direclyClose = false;
 
   List<MsgBean> _messages = []; // 显示的msg列表，不显示全
   Map<int, bool> hasToBottom = {}; // 指定图片是否已经申请跳bottom
@@ -90,14 +94,27 @@ class _ChatWidgetState extends State<ChatWidget>
     };
 
     widget.showJumpMessage = (MsgBean msg) {
-      print('显示其他消息：' + msg.simpleString());
       setState(() {
         widget.jumpMsg = msg;
         widget.jumpMsgTimestamp = DateTime.now().millisecondsSinceEpoch;
       });
       // 显示几秒后取消显示
       Timer(Duration(milliseconds: G.st.chatTopMsgDisplayMSecond + 200), () {
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    };
+
+    widget.setUnreadCount = (int c) {
+      setState(() {
+        _unreadCount = c;
+      });
+    };
+
+    widget.setDirectlyClose = (bool b) {
+      setState(() {
+        _direclyClose = b;
       });
     };
 
@@ -362,28 +379,47 @@ class _ChatWidgetState extends State<ChatWidget>
     String title =
         G.st.getLocalNickname(widget.chatObj.keyId(), widget.chatObj.title());
 
-    Widget content = Row(
-      children: [
-        IconButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            icon: Icon(Icons.arrow_back)),
-        Expanded(
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 20,
-                color: Theme.of(context).textTheme.bodyText2.color,
-                fontWeight: FontWeight.w500),
-          ),
+    List<Widget> widgets = [
+      IconButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          icon: Icon(Icons.arrow_back)),
+      Expanded(
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: 20,
+              color: Theme.of(context).textTheme.bodyText2.color,
+              fontWeight: FontWeight.w500),
         ),
-        buildMenu()
-      ],
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-    );
+      ),
+      buildMenu()
+    ];
+
+    if (_unreadCount > 0) {
+      Widget pt = new Container(
+        padding: EdgeInsets.all(4),
+        decoration: new BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        constraints: BoxConstraints(
+          minWidth: 24,
+          minHeight: 24,
+        ),
+        child: new Text(
+          _unreadCount.toString(), //通知数量
+          style: new TextStyle(
+            color: Colors.black,
+            fontSize: 12,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+      widgets.insert(1, pt);
+    }
 
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -391,7 +427,11 @@ class _ChatWidgetState extends State<ChatWidget>
       automaticallyImplyLeading: false,
       flexibleSpace: Container(
           // 整个区域，包括leading等
-          child: content,
+          child: Row(
+            children: widgets,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+          ),
           height: kToolbarHeight),
     );
   }
