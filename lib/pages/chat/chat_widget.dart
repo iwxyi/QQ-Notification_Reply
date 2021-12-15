@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -29,8 +30,10 @@ class ChatWidget extends StatefulWidget {
   bool innerMode;
   var buildChatMenu;
   var focusEditor;
+
   var showJumpMessage; // 显示其他聊天对象的最新消息的入口
   MsgBean jumpMsg; // 其他聊天对象的最新消息
+  int jumpMsgTimestamp = 0;
 
   ChatWidget(this.chatObj, {this.innerMode = false});
 
@@ -92,6 +95,11 @@ class _ChatWidgetState extends State<ChatWidget>
       print('显示其他消息：' + msg.simpleString());
       setState(() {
         widget.jumpMsg = msg;
+        widget.jumpMsgTimestamp = DateTime.now().millisecondsSinceEpoch;
+      });
+      // 显示几秒后取消显示
+      Timer(Duration(milliseconds: G.st.chatTopMsgDisplayMSecond + 200), () {
+        setState(() {});
       });
     };
 
@@ -271,7 +279,9 @@ class _ChatWidgetState extends State<ChatWidget>
     ];
 
     // 显示跳转的消息
-    if (widget.jumpMsg != null) {
+    if (widget.jumpMsg != null &&
+        ((DateTime.now().millisecondsSinceEpoch - widget.jumpMsgTimestamp) <
+            G.st.chatTopMsgDisplayMSecond)) {
       MsgBean msg = widget.jumpMsg;
       String title = msg.username() + "：" + G.cs.getMessageDisplay(msg);
       if (msg.isGroup()) {
