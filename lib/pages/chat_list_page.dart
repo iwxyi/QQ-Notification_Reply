@@ -119,8 +119,8 @@ class _ChatListPageState extends State<ChatListPage>
                   // 群聊还是需要显示昵称的
                   text = (msg.senderId == null
                           ? ''
-                          : G.st.getLocalNickname(
-                                  msg.senderKeyId(), msg.usernameSimplify() ?? '') +
+                          : G.st.getLocalNickname(msg.senderKeyId(),
+                                  msg.usernameSimplify() ?? '') +
                               ": ") +
                       G.cs.getMessageDisplay(msg);
                 } else {

@@ -749,7 +749,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       if (G.rt.currentChatPage != null && !G.rt.horizontal) {
         if (!msg.isObj(G.rt.currentChatPage.chatObj)) {
           // 显示在聊天界面顶层上面，并且能直接点进来
-          G.rt.currentChatPage.showOtherMessage(msg);
+          G.rt.currentChatPage.showJumpMessage(msg);
         }
       }
       // 在前台的话，就不发送通知了

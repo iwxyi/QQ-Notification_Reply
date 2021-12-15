@@ -29,7 +29,8 @@ class ChatWidget extends StatefulWidget {
   bool innerMode;
   var buildChatMenu;
   var focusEditor;
-  var showOtherMessage; // 显示其他聊天对象的最新消息
+  var showJumpMessage; // 显示其他聊天对象的最新消息的入口
+  MsgBean jumpMsg; // 其他聊天对象的最新消息
 
   ChatWidget(this.chatObj, {this.innerMode = false});
 
@@ -67,6 +68,7 @@ class _ChatWidgetState extends State<ChatWidget>
         // 去掉正在获取群成员的flag
         G.ac.gettingGroupMembers.remove(widget.chatObj.keyId());
       }
+      widget.jumpMsg = null;
 
       // 设置为新的
       widget.chatObj = msg;
@@ -86,8 +88,11 @@ class _ChatWidgetState extends State<ChatWidget>
       }
     };
 
-    widget.showOtherMessage = (MsgBean msg) {
+    widget.showJumpMessage = (MsgBean msg) {
       print('显示其他消息：' + msg.simpleString());
+      setState(() {
+        widget.jumpMsg = msg;
+      });
     };
 
     // 注册监听器，订阅 eventBus
@@ -264,6 +269,35 @@ class _ChatWidgetState extends State<ChatWidget>
         controller: _scrollController,
       ),
     ];
+
+    // 显示跳转的消息
+    if (widget.jumpMsg != null) {
+      MsgBean msg = widget.jumpMsg;
+      String title = msg.username() + "：" + G.cs.getMessageDisplay(msg);
+      if (msg.isGroup()) {
+        String gn = G.st.getLocalNickname(msg.keyId(), msg.groupName);
+        title = '[$gn]' + title;
+      }
+      Widget label = Text(
+        title,
+        maxLines: 2,
+        style: TextStyle(fontSize: G.st.msgFontSize),
+      );
+      stack.add(Positioned(
+        top: -2, // 因为上面有几个像素阴影，会露出后面的
+        child: FlatButton(
+          color: Color.fromARGB(255, 230, 230, 255),
+          child: Container(
+            padding: EdgeInsets.all(8),
+            child: label,
+            width: MediaQuery.of(context).size.width,
+          ),
+          onPressed: () {
+            widget.setObject(widget.jumpMsg);
+          },
+        ),
+      ));
+    }
 
     return new Flexible(
         child: Stack(
