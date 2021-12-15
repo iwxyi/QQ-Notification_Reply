@@ -281,7 +281,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     color: Colors.blue,
                   ),
                   title: Text('回复气泡'),
-                  subtitle: Text('回复气泡使用头像主题色作为背景颜色'),
+                  subtitle: Text('回复的背景使用聊天气泡颜色'),
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {

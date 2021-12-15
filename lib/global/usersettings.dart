@@ -50,12 +50,12 @@ class UserSettings extends MySettings {
   Color replyFontColor = Color(0xFF222222); // 回复消息颜色
 
   // 彩色
-  bool enableColorfulChatList = true; // 会话列表使用头像颜色作为背景
+  bool enableColorfulChatList = false; // 会话列表使用头像颜色作为背景
   double colorfulChatListBg = 0.93;
   double colorfulChatListSelecting = 0.5;
-  bool enableColorfulChatName = true; // 使用彩色昵称
+  bool enableColorfulChatName = false; // 使用彩色昵称
   double colorfulChatNameFont = 0.5;
-  bool enableColorfulChatBubble = true; // 使用彩色气泡
+  bool enableColorfulChatBubble = false; // 使用彩色气泡
   double colorfulChatBubbleBg = 0.94;
   bool enableColorfulReplyBubble = false; // 使用彩色回复
   double colorfulReplyBubbleBg = 0.9;
