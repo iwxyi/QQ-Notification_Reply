@@ -203,7 +203,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         }
         sum += value;
       });
-      G.rt.currentChatPage.setUnreadCount(sum);
+      if (G.rt.currentChatPage != null &&
+          G.rt.currentChatPage.setUnreadCount != null) {
+        G.rt.currentChatPage.setUnreadCount(sum);
+      }
       // print('--------设置数量：' + sum.toString());
     };
   }

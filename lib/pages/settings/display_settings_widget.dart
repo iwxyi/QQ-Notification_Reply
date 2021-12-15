@@ -202,7 +202,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
               children: <Widget>[
                 ListTile(
                   leading: Icon(
-                    Icons.color_lens,
+                    Icons.list,
                     color: Colors.blue,
                   ),
                   title: Text('会话列表'),
@@ -227,7 +227,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.color_lens,
+                    Icons.card_membership,
                     color: Colors.blue,
                   ),
                   title: Text('聊天昵称'),
@@ -252,7 +252,7 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.color_lens,
+                    Icons.chat_bubble,
                     color: Colors.blue,
                   ),
                   title: Text('聊天气泡'),
@@ -272,6 +272,31 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                       G.st.enableColorfulChatBubble = !G.st.enableColorfulChatBubble;
                       G.st.setConfig('display/enableColorfulChatBubble',
                           G.st.enableColorfulChatBubble);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.reply,
+                    color: Colors.blue,
+                  ),
+                  title: Text('回复气泡'),
+                  subtitle: Text('回复气泡使用头像主题色作为背景颜色'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableColorfulReplyBubble = !G.st.enableColorfulReplyBubble;
+                        G.st.setConfig('display/enableColorfulReplyBubble',
+                            G.st.enableColorfulReplyBubble);
+                      });
+                    },
+                    value: G.st.enableColorfulReplyBubble,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableColorfulReplyBubble = !G.st.enableColorfulReplyBubble;
+                      G.st.setConfig('display/enableColorfulReplyBubble',
+                          G.st.enableColorfulReplyBubble);
                     });
                   },
                 ),

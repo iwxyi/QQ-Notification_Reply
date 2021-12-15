@@ -82,7 +82,9 @@ class _ChatWidgetState extends State<ChatWidget>
         _initMessages();
       });
 
-      G.rt.updateChatPageUnreadCount();
+      if (!widget.innerMode) {
+        G.rt.updateChatPageUnreadCount();
+      }
     };
 
     widget.buildChatMenu = () {

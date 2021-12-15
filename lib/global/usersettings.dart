@@ -57,6 +57,8 @@ class UserSettings extends MySettings {
   double colorfulChatNameFont = 0.5;
   bool enableColorfulChatBubble = true; // 使用彩色气泡
   double colorfulChatBubbleBg = 0.94;
+  bool enableColorfulReplyBubble = false; // 使用彩色回复
+  double colorfulReplyBubbleBg = 0.9;
 
   // 本地昵称
   Map<int, String> localNickname = {};
@@ -98,6 +100,8 @@ class UserSettings extends MySettings {
         getBool('display/enableColorfulChatName', enableColorfulChatName);
     enableColorfulChatBubble =
         getBool('display/enableColorfulChatBubble', enableColorfulChatBubble);
+    enableColorfulReplyBubble =
+        getBool('display/enableColorfulReplyBubble', enableColorfulReplyBubble);
 
     // 读取启用的群组数组
     enabledGroups = getIntList('notification/enabledGroups');

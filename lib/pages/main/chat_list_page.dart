@@ -385,7 +385,11 @@ class _ChatListPageState extends State<ChatListPage>
     timedMsgs.insert(0, msg);
 
     // 设置未读数量
-    G.rt.updateChatPageUnreadCount();
+    if (G.rt.updateChatPageUnreadCount != null) {
+      G.rt.updateChatPageUnreadCount();
+    } else {
+      print('warning: G.rt.updateChatPageUnreadCount == null');
+    }
 
     // 设置主题色
     /* if (G.st.enableColorfulChatList &&
