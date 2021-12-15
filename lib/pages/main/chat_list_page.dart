@@ -266,9 +266,6 @@ class _ChatListPageState extends State<ChatListPage>
 
               // 打开会话
               G.rt.showChatPage(msg);
-              SchedulerBinding.instance.addPostFrameCallback((_) {
-                setChatPageUnreadCount(null);
-              });
             },
           ));
 
@@ -388,7 +385,7 @@ class _ChatListPageState extends State<ChatListPage>
     timedMsgs.insert(0, msg);
 
     // 设置未读数量
-    setChatPageUnreadCount(msg);
+    G.rt.updateChatPageUnreadCount();
 
     // 设置主题色
     /* if (G.st.enableColorfulChatList &&
@@ -430,27 +427,5 @@ class _ChatListPageState extends State<ChatListPage>
         G.ac.chatListShowReply[msg.keyId()] = true;
       }
     });
-  }
-
-  void setChatPageUnreadCount(MsgBean msg) {
-    if (G.rt.currentChatPage != null && !G.rt.horizontal) {
-      if (msg == null || !msg.isObj(G.rt.currentChatPage.chatObj)) {
-        int keyId = G.rt.currentChatPage.chatObj.keyId();
-        int sum = 0;
-        G.ac.unreadMessageCount.forEach((key, value) {
-          // 不显示自己的消息
-          if (key == keyId) {
-            return;
-          }
-          // 不显示不通知群组的消息
-          if (key < 0 && !G.st.enabledGroups.contains(-key)) {
-            return;
-          }
-          sum += value;
-        });
-        G.rt.currentChatPage.setUnreadCount(sum);
-        print('--------设置数量：' + sum.toString());
-      }
-    }
   }
 }

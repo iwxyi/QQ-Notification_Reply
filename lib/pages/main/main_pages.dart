@@ -181,6 +181,27 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         });
       }
     };
+
+    G.rt.updateChatPageUnreadCount = () {
+      if (G.rt.currentChatPage == null || G.rt.horizontal) {
+        return;
+      }
+      int keyId = G.rt.currentChatPage.chatObj.keyId();
+      int sum = 0;
+      G.ac.unreadMessageCount.forEach((key, value) {
+        // 不显示自己的消息
+        if (key == keyId) {
+          return;
+        }
+        // 不显示不通知群组的消息
+        if (key < 0 && !G.st.enabledGroups.contains(-key)) {
+          return;
+        }
+        sum += value;
+      });
+      G.rt.currentChatPage.setUnreadCount(sum);
+      // print('--------设置数量：' + sum.toString());
+    };
   }
 
   Widget _buildChatObjView(BuildContext context) {

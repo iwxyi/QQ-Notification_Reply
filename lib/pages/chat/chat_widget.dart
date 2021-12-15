@@ -59,7 +59,7 @@ class _ChatWidgetState extends State<ChatWidget>
   bool _showGoToBottomButton = false; // 是否显示返回底部按钮
   num _hasNewMsg = 0; // 是否有新消息
   int _unreadCount = 0;
-  bool _direclyClose = false;
+  bool _directlyClose = false;
 
   List<MsgBean> _messages = []; // 显示的msg列表，不显示全
   Map<int, bool> hasToBottom = {}; // 指定图片是否已经申请跳bottom
@@ -81,6 +81,8 @@ class _ChatWidgetState extends State<ChatWidget>
         _messages = [];
         _initMessages();
       });
+
+      G.rt.updateChatPageUnreadCount();
     };
 
     widget.buildChatMenu = () {
@@ -114,7 +116,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
     widget.setDirectlyClose = (bool b) {
       setState(() {
-        _direclyClose = b;
+        _directlyClose = b;
       });
     };
 
@@ -199,6 +201,8 @@ class _ChatWidgetState extends State<ChatWidget>
     _hasNewMsg = 0;
     _scrollToLatest(false);
     _textController.text = "";
+
+    G.rt.updateChatPageUnreadCount();
   }
 
   /// 跳转到最新的位置
