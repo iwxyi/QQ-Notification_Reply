@@ -298,12 +298,40 @@ class _ChatWidgetState extends State<ChatWidget>
         child: FlatButton(
           color: Color.fromARGB(255, 230, 230, 255),
           child: Container(
-            padding: EdgeInsets.all(8),
+            padding: EdgeInsets.all(6),
             child: label,
             width: MediaQuery.of(context).size.width,
           ),
           onPressed: () {
             widget.setObject(widget.jumpMsg);
+          },
+        ),
+      ));
+    }
+
+    // 显示最新的消息
+    if (_hasNewMsg > 0 && !_keepScrollBottom && _showGoToBottomButton) {
+      MsgBean msg = _messages.first;
+      String title = G.cs.getMessageDisplay(msg);
+      if (msg.isGroup()) {
+        title = msg.username() + "：" + title;
+      }
+      Widget label = Text(
+        title,
+        maxLines: 2,
+        style: TextStyle(fontSize: G.st.msgFontSize),
+      );
+      stack.add(Positioned(
+        bottom: -2,
+        child: FlatButton(
+          color: Color.fromARGB(255, 230, 230, 255),
+          child: Container(
+            padding: EdgeInsets.all(6),
+            child: label,
+            width: MediaQuery.of(context).size.width,
+          ),
+          onPressed: () {
+            _scrollToLatest(true);
           },
         ),
       ));
@@ -342,14 +370,14 @@ class _ChatWidgetState extends State<ChatWidget>
           actions: [buildMenu()],
         ),
         body: _buildBody(context),
-        floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
+        /* floatingActionButton: _hasNewMsg > 0 && _showGoToBottomButton
             ? FloatingActionButton(
                 child: Icon(Icons.arrow_downward),
                 onPressed: () {
                   _scrollToLatest(true);
                 },
               )
-            : null,
+            : null, */
         floatingActionButtonLocation: CustomFloatingActionButtonLocation(
             FloatingActionButtonLocation.miniEndFloat, 0, -56),
       );
