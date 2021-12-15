@@ -294,7 +294,7 @@ class _ChatWidgetState extends State<ChatWidget>
         style: TextStyle(fontSize: G.st.msgFontSize),
       );
       stack.add(Positioned(
-        top: -2, // 因为上面有几个像素阴影，会露出后面的
+        top: -4, // 因为上面有几个像素阴影，会露出后面的
         child: FlatButton(
           color: Color.fromARGB(255, 230, 230, 255),
           child: Container(
@@ -506,16 +506,26 @@ class _ChatWidgetState extends State<ChatWidget>
               autofocus: _autofocusEdit(),
               controller: _textController,
               onSubmitted: _sendMessage,
-              decoration: new InputDecoration.collapsed(
+              decoration: new InputDecoration(
                 hintText: '发送消息',
+                enabledBorder: UnderlineInputBorder(
+                  // 未获得焦点下划线
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  //获得焦点下划线
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+                isDense: true, // 去除很大的间距
               ),
               focusNode: _editorFocus,
+              textInputAction: TextInputAction.send,
             ),
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-            decoration: BoxDecoration(
+            /* decoration: BoxDecoration(
                 border: Border.all(
                     color: Theme.of(context).primaryColor, width: 0.5),
-                borderRadius: BorderRadius.all(Radius.circular(15))),
+                borderRadius: BorderRadius.all(Radius.circular(15))), */
           )),
           // 发送按钮
           new Container(
