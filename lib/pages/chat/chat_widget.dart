@@ -442,6 +442,7 @@ class _ChatWidgetState extends State<ChatWidget>
       elevation: 0,
       automaticallyImplyLeading: false,
       flexibleSpace: Container(
+          margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
           // 整个区域，包括leading等
           child: Row(
             children: widgets,

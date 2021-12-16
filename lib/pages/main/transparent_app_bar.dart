@@ -18,7 +18,7 @@ class _TransparentAppBarState extends State<TransparentAppBar> {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      /* flexibleSpace: Container( // 整个区域，包括leading等
+      /* flexibleSpace: Container( // 整个区域，包括leading、状态栏等
         child: widget.child,
       ), */
       title: widget.child,
