@@ -13,6 +13,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_pickers/image_pickers.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.dart';
 
@@ -292,12 +293,8 @@ class _ChatWidgetState extends State<ChatWidget>
           });
         }, unfocusEditorCallback: () {
           _removeEditorFocus();
-        }, showUserProfileCallback: (int id) {
-          G.cs.send({
-            'action': 'get_stranger_info',
-            'params': {'user_id': id},
-            'echo': 'get_user_info:$id'
-          });
+        }, showUserInfoCallback: (int id, nickname) {
+          showUserInfo(id, nickname);
         }),
         itemCount: _messages.length,
         controller: _scrollController,
@@ -715,6 +712,7 @@ class _ChatWidgetState extends State<ChatWidget>
     G.ac.gettingChatObjColor.clear();
     if (widget.chatObj != null) {
       G.ac.gettingGroupMembers.remove(widget.chatObj.keyId());
+      G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     }
     super.dispose();
     eventBusFn.cancel();
@@ -912,6 +910,20 @@ class _ChatWidgetState extends State<ChatWidget>
                     }
                   },
                 )),
+          );
+        });
+  }
+
+  void showUserInfo(int userId, String nickname) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+              constraints: BoxConstraints(minWidth: 350, maxHeight: 500),
+              child: UserProfileWidget(userId: userId, nickname: nickname),
+            ),
+            contentPadding: EdgeInsets.all(5),
           );
         });
   }

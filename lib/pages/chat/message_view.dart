@@ -28,7 +28,7 @@ class MessageView extends StatefulWidget {
   final sendMessageCallback;
   final deleteMessageCallback;
   final unfocusEditorCallback;
-  final showUserProfileCallback;
+  final showUserInfoCallback;
 
   MessageView(this.msg, this.isNext, Key key,
       {this.loadFinishedCallback,
@@ -37,7 +37,7 @@ class MessageView extends StatefulWidget {
       this.sendMessageCallback,
       this.deleteMessageCallback,
       this.unfocusEditorCallback,
-      this.showUserProfileCallback})
+      this.showUserInfoCallback})
       : super(key: key);
 
   @override
@@ -121,7 +121,7 @@ class _MessageViewState extends State<MessageView> {
         child: container,
         onTap: () {
           // 头像单击
-          widget.showUserProfileCallback(msg.senderId);
+          widget.showUserInfoCallback(msg.senderId, msg.nickname);
         },
         onLongPress: () {
           widget.addMessageCallback('[CQ:at,qq=${msg.senderId}] ');

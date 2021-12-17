@@ -10,6 +10,7 @@ import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
+import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
 import 'package:qqnotificationreply/pages/settings/my_settings_widget.dart';
 import 'package:qqnotificationreply/pages/settings/notification_settings_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -114,8 +115,6 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         if (mounted) {
           setState(() {});
         }
-      } else if (event.event == Event.userInfo) {
-        showUserInfo(event.data);
       }
     });
 
@@ -212,13 +211,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       // print('--------设置数量：' + sum.toString());
     };
 
-    G.rt.showUserInfo = (json) {
+    G.rt.showUserInfo = (json) {};
 
-    };
-
-    G.rt.showGroupInfo = (json) {
-
-    };
+    G.rt.showGroupInfo = (json) {};
   }
 
   Widget _buildChatObjView(BuildContext context) {
@@ -787,7 +782,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       if (G.rt.currentChatPage != null && !G.rt.horizontal) {
         if (!msg.isObj(G.rt.currentChatPage.chatObj)) {
           // 显示在聊天界面顶层上面，并且能直接点进来
-          G.rt.currentChatPage.showJumpMessage(msg);
+          if (G.rt.currentChatPage.showJumpMessage != null) {
+            G.rt.currentChatPage.showJumpMessage(msg);
+          } else {
+            print('warning: G.rt.currentChatPage.showJumpMessage == null');
+          }
         }
       }
       // 在前台的话，就不发送通知了
@@ -976,9 +975,5 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             contentPadding: EdgeInsets.all(5),
           );
         });
-  }
-
-  void showUserInfo(json) {
-    print('-----------showUserInfo------------');
   }
 }
