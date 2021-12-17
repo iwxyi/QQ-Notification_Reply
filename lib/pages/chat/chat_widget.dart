@@ -305,8 +305,8 @@ class _ChatWidgetState extends State<ChatWidget>
           });
         }, unfocusEditorCallback: () {
           _removeEditorFocus();
-        }, showUserInfoCallback: (int id, nickname) {
-          showUserInfo(id, nickname);
+        }, showUserInfoCallback: (MsgBean msg) {
+          showUserInfo(msg);
         }),
         itemCount: _messages.length,
         controller: _scrollController,
@@ -534,7 +534,7 @@ class _ChatWidgetState extends State<ChatWidget>
           icon: Icon(widget.directlyClose ? Icons.close : Icons.arrow_back)),
       Expanded(
         child: Text(
-          title,
+          title ?? '',
           textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: 20,
@@ -1062,14 +1062,15 @@ class _ChatWidgetState extends State<ChatWidget>
         });
   }
 
-  void showUserInfo(int userId, String nickname) {
+  void showUserInfo(MsgBean msg) {
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             content: Container(
-              constraints: BoxConstraints(minWidth: 350, maxHeight: 500),
-              child: UserProfileWidget(userId: userId, nickname: nickname),
+              constraints:
+                  BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 220),
+              child: UserProfileWidget(chatObj: msg),
             ),
             contentPadding: EdgeInsets.all(5),
           );
