@@ -342,8 +342,9 @@ class CqhttpService {
         print('无法识别的群成员echo: ' + echo);
       }
     } else if (echo.startsWith('msg_recall_group')) {
-      // 群消息，就不处理了
+      // 群消息撤回，有对应的事件，就不处理了
     } else if (echo.startsWith('msg_recall_friend')) {
+      // 好友消息撤回
       RegExp re = RegExp(r'^msg_recall_friend:(\d+)_(-?\d+)$');
       Match match;
       if ((match = re.firstMatch(echo)) != null) {
@@ -352,7 +353,13 @@ class CqhttpService {
         MsgBean msg = new MsgBean(
             senderId: ac.myId, friendId: friendId, messageId: messageId);
         _markRecalled(msg);
+      } else {
+        print('无法识别的撤回echo: ' + echo);
       }
+    } else if (echo.startsWith('get_user_info')) {
+      // 获取用户信息
+      print(obj['data']);
+      ac.eventBus.fire(EventFn(Event.userInfo, obj['data']));
     } else {
       print('未处理类型的echo: ' + echo);
     }

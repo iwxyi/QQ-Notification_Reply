@@ -111,9 +111,11 @@ class _ChatWidgetState extends State<ChatWidget>
     };
 
     widget.setUnreadCount = (int c) {
-      setState(() {
-        _unreadCount = c;
-      });
+      if (mounted) {
+        setState(() {
+          _unreadCount = c;
+        });
+      }
     };
 
     widget.setDirectlyClose = (bool b) {
@@ -251,53 +253,52 @@ class _ChatWidgetState extends State<ChatWidget>
         reverse: true,
         // padding: new EdgeInsets.all(8.0),
         itemBuilder: (context, int index) => MessageView(
-          _messages[index],
-          index >= _messages.length - 1
-              ? false
-              : _messages[index + 1].senderId == _messages[index].senderId,
-          ValueKey(_messages[index].messageId),
-          loadFinishedCallback: () {
-            // 图片加载完毕，会影响大小
-            if (_keepScrollBottom) {
-              if (!hasToBottom.containsKey(_messages[index].messageId)) {
-                // 重复判断，避免不知道哪来的多次complete
-                hasToBottom[_messages[index].messageId] = true;
-                _scrollToLatest(true);
-              }
+            _messages[index],
+            index >= _messages.length - 1
+                ? false
+                : _messages[index + 1].senderId == _messages[index].senderId,
+            ValueKey(_messages[index].messageId), loadFinishedCallback: () {
+          // 图片加载完毕，会影响大小
+          if (_keepScrollBottom) {
+            if (!hasToBottom.containsKey(_messages[index].messageId)) {
+              // 重复判断，避免不知道哪来的多次complete
+              hasToBottom[_messages[index].messageId] = true;
+              _scrollToLatest(true);
             }
-          },
-          jumpMessageCallback: (int messageId) {
-            // 跳转到指定消息（如果有）
-            int index = _messages.lastIndexWhere((element) {
-              return element.messageId == messageId;
-            });
-            if (index > -1) {
-              // TODO: 滚动到index
-            }
-          },
-          addMessageCallback: (String text) {
-            // 添加消息到发送框
-            _insertMessage(text);
-            FocusScope.of(context).requestFocus(_editorFocus);
-          },
-          sendMessageCallback: (String text) {
-            // 直接发送消息
-            MsgBean msg = _messages[index];
-            G.cs.sendMsg(msg, text);
-          },
-          deleteMessageCallback: (MsgBean msg) {
-            // 本地删除消息
-            setState(() {
-              _messages
-                  .removeWhere((element) => element.messageId == msg.messageId);
-              G.ac.allMessages[msg.keyId()]
-                  .removeWhere((element) => element.messageId == msg.messageId);
-            });
-          },
-          unfocusEditorCallback: () {
-            _removeEditorFocus();
-          },
-        ),
+          }
+        }, jumpMessageCallback: (int messageId) {
+          // 跳转到指定消息（如果有）
+          int index = _messages.lastIndexWhere((element) {
+            return element.messageId == messageId;
+          });
+          if (index > -1) {
+            // TODO: 滚动到index
+          }
+        }, addMessageCallback: (String text) {
+          // 添加消息到发送框
+          _insertMessage(text);
+          FocusScope.of(context).requestFocus(_editorFocus);
+        }, sendMessageCallback: (String text) {
+          // 直接发送消息
+          MsgBean msg = _messages[index];
+          G.cs.sendMsg(msg, text);
+        }, deleteMessageCallback: (MsgBean msg) {
+          // 本地删除消息
+          setState(() {
+            _messages
+                .removeWhere((element) => element.messageId == msg.messageId);
+            G.ac.allMessages[msg.keyId()]
+                .removeWhere((element) => element.messageId == msg.messageId);
+          });
+        }, unfocusEditorCallback: () {
+          _removeEditorFocus();
+        }, showUserProfileCallback: (int id) {
+          G.cs.send({
+            'action': 'get_stranger_info',
+            'params': {'user_id': id},
+            'echo': 'get_user_info:$id'
+          });
+        }),
         itemCount: _messages.length,
         controller: _scrollController,
       ),
@@ -391,8 +392,7 @@ class _ChatWidgetState extends State<ChatWidget>
             // 返回上一页
             Navigator.of(context).pop();
             if (widget.directlyClose) {
-              // 离开整个程序，模拟返回键
-              // TODO
+              // TODO:离开整个程序，模拟返回键
             }
           },
           icon: Icon(widget.directlyClose ? Icons.close : Icons.arrow_back)),

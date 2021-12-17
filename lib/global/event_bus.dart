@@ -13,7 +13,8 @@ enum Event {
   refreshState, // 刷新界面
   groupMember, // 群成员
   messageRecall,
-  newChat // 打开对话框
+  newChat, // 打开聊天对话框
+  userInfo // 用户信息
 }
 
 class EventFn {

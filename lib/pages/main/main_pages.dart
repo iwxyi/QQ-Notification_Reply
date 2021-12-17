@@ -114,6 +114,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         if (mounted) {
           setState(() {});
         }
+      } else if (event.event == Event.userInfo) {
+        showUserInfo(event.data);
       }
     });
 
@@ -208,6 +210,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         G.rt.currentChatPage.setUnreadCount(sum);
       }
       // print('--------设置数量：' + sum.toString());
+    };
+
+    G.rt.showUserInfo = (json) {
+
+    };
+
+    G.rt.showGroupInfo = (json) {
+
     };
   }
 
@@ -966,5 +976,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             contentPadding: EdgeInsets.all(5),
           );
         });
+  }
+
+  void showUserInfo(json) {
+    print('-----------showUserInfo------------');
   }
 }

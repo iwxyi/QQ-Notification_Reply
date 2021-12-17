@@ -11,6 +11,8 @@ class LoginWidget extends StatelessWidget {
   TextEditingController _tokenController;
   TextEditingController _serverController;
 
+  bool _showPassword = false;
+
   LoginWidget() {
     _hostController = new TextEditingController(text: host);
     _tokenController = new TextEditingController(text: token);
@@ -47,6 +49,7 @@ class LoginWidget extends StatelessWidget {
                   child: TextField(
                     controller: _hostController,
                     decoration: InputDecoration(
+                      icon: Icon(Icons.domain),
                       hintText: 'ws://domain:port',
                       labelText: 'host',
                     ),
@@ -63,13 +66,22 @@ class LoginWidget extends StatelessWidget {
                   child: TextField(
                     controller: _tokenController,
                     decoration: InputDecoration(
+                      icon: Icon(Icons.password),
                       hintText: 'access token (可空)',
                       labelText: 'token',
+                      /* suffixIcon: new IconButton(
+                            icon: new Icon(
+                              Icons.remove_red_eye,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                                _showPassword = !_showPassword;
+                            }) */
                     ),
                     onChanged: (String text) {
                       token = text;
                     },
-                    obscureText: true,
+                    obscureText: !_showPassword,
                   ),
                 ),
                 Container(
@@ -80,6 +92,7 @@ class LoginWidget extends StatelessWidget {
                   child: TextField(
                     controller: _serverController,
                     decoration: InputDecoration(
+                      icon: Icon(Icons.computer),
                       hintText: '后台服务地址 (可空)',
                       labelText: 'server',
                     ),

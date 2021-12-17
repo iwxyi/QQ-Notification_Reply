@@ -10,6 +10,8 @@ class AppRuntime {
   var showChatPage;
   var mainContext;
   var updateChatPageUnreadCount;
+  var showUserInfo;
+  var showGroupInfo;
 
   bool horizontal = false;
   bool enableNotification = true;

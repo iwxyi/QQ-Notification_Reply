@@ -28,6 +28,7 @@ class MessageView extends StatefulWidget {
   final sendMessageCallback;
   final deleteMessageCallback;
   final unfocusEditorCallback;
+  final showUserProfileCallback;
 
   MessageView(this.msg, this.isNext, Key key,
       {this.loadFinishedCallback,
@@ -35,7 +36,8 @@ class MessageView extends StatefulWidget {
       this.addMessageCallback,
       this.sendMessageCallback,
       this.deleteMessageCallback,
-      this.unfocusEditorCallback})
+      this.unfocusEditorCallback,
+      this.showUserProfileCallback})
       : super(key: key);
 
   @override
@@ -118,7 +120,8 @@ class _MessageViewState extends State<MessageView> {
     return GestureDetector(
         child: container,
         onTap: () {
-          // TODO: 头像单击
+          // 头像单击
+          widget.showUserProfileCallback(msg.senderId);
         },
         onLongPress: () {
           widget.addMessageCallback('[CQ:at,qq=${msg.senderId}] ');
