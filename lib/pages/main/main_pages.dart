@@ -769,7 +769,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       }
 
       // 重要群组消息，强制设置为重要
-      if (G.st.importantGroups.contains(msg.groupId)) {
+      if (G.st.importantGroups.contains(msg.groupId) ||
+          G.st.specialGroupMember.contains(msg.senderId)) {
         channelKey = 'important_group_chats';
       }
 

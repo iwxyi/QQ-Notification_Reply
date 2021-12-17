@@ -7,6 +7,8 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
+enum UserMenuItems { SpecialAttention }
+
 class UserProfileWidget extends StatefulWidget {
   final MsgBean chatObj;
 
@@ -89,7 +91,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // 头信息
+    // 头像昵称等基础信息
     Widget headerView = Row(children: [
       new CircleAvatar(
         backgroundImage: NetworkImage(API.userHeader(userId)),
@@ -109,8 +111,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
                   msg: "已复制QQ号：$userId",
                   gravity: ToastGravity.CENTER,
                   textColor: Colors.grey);
-            })
-      ], crossAxisAlignment: CrossAxisAlignment.start)
+            }),
+      ], crossAxisAlignment: CrossAxisAlignment.start),
+      Expanded(child: SizedBox(width: 16)),
+      _buildMenu(context)
     ]);
 
     // 列表
@@ -188,6 +192,40 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceAround,
       ),
+    );
+  }
+
+  Widget _buildMenu(BuildContext context) {
+    List<PopupMenuEntry<UserMenuItems>> menus = [];
+    menus.add(PopupMenuItem<UserMenuItems>(
+      value: UserMenuItems.SpecialAttention,
+      child: Text(
+          G.st.specialGroupMember.contains(userId) ? '取消群内特别关注' : '设为群内特别关注'),
+      enabled: widget.chatObj.isGroup(),
+    ));
+
+    return PopupMenuButton<UserMenuItems>(
+      icon: Icon(Icons.more_vert, color: Theme.of(context).iconTheme.color),
+      tooltip: '菜单',
+      itemBuilder: (BuildContext context) => menus,
+      onSelected: (UserMenuItems result) {
+        switch (result) {
+          case UserMenuItems.SpecialAttention:
+            {
+              setState(() {
+                if (G.st.specialGroupMember.contains(userId)) {
+                  G.st.specialGroupMember.remove(userId);
+                } else {
+                  G.st.specialGroupMember.add(userId);
+                }
+                G.st.setList(
+                    'notification/specialGroupMember', G.st.specialGroupMember);
+                print('群内特别关注人数：${G.st.specialGroupMember.length}');
+              });
+            }
+            break;
+        }
+      },
     );
   }
 }

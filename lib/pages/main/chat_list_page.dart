@@ -33,7 +33,6 @@ class _ChatListPageState extends State<ChatListPage>
         messageReceived(event.data);
       } else if (event.event == Event.refreshState) {
         if (mounted) {
-          // 这里报错了，但实际上也是能用
           setState(() {});
         }
       } else if (event.event == Event.groupMember) {

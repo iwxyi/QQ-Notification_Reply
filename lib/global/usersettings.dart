@@ -18,6 +18,7 @@ class UserSettings extends MySettings {
   List<int> importantGroups = []; // 设为重要的群组
   Map<int, int> friendImportance = {}; // 好友的重要性
   Map<int, int> groupImportance = {}; // 群组的重要性
+  List<int> specialGroupMember = []; // 群内特别关注（全部群）
 
   // 功能选项
   bool enableSelfChats = true; // 启用本身的聊天功能
@@ -111,6 +112,9 @@ class UserSettings extends MySettings {
 
     // 读取重要的群组数组
     importantGroups = getIntList('notification/importantGroups');
+
+    // 读取群内特别关注
+    specialGroupMember = getIntList('notification/specialGroupMember');
 
     // 读取本地名字
     List<String> sl = getStringList('display/localNickname', strSplit);
