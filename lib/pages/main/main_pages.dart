@@ -142,7 +142,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         // 判断旧页面
         if (G.rt.horizontal != G.rt.currentChatPage.innerMode) {
           // 如果状态不一致，得删除
-          // MsgBean obj = G.rt.currentChatPage.chatObj;
+          MsgBean obj = G.rt.currentChatPage.chatObj;
           G.rt.currentChatPage = null;
 
           /* if (G.rt.horizontal == true) {
@@ -270,44 +270,45 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     return PopupMenuButton<AppBarMenuItems>(
-        icon: Icon(Icons.more_vert,
-            color: Theme.of(context).textTheme.bodyText2.color),
-        tooltip: '菜单',
-        itemBuilder: (BuildContext context) => menus,
-        onSelected: (AppBarMenuItems result) {
-          switch (result) {
-            case AppBarMenuItems.AllReaded:
-              setState(() {
-                _markAllReaded();
-              });
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(const SnackBar(content: Text('全部已读')));
-              G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
-              break;
-            case AppBarMenuItems.Contacts:
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return createScaffoldPage(context, new ContactsPage(), '联系人');
-                },
-              ));
-              break;
-            case AppBarMenuItems.Settings:
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return createScaffoldPage(
-                      context, new MySettingsWidget(), '设置');
-                },
-              ));
-              break;
-            case AppBarMenuItems.Search:
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return SearchPage();
-                },
-              ));
-              break;
-          }
-        });
+      icon: Icon(Icons.more_vert,
+          color: Theme.of(context).textTheme.bodyText2.color),
+      tooltip: '菜单',
+      itemBuilder: (BuildContext context) => menus,
+      onSelected: (AppBarMenuItems result) {
+        switch (result) {
+          case AppBarMenuItems.AllReaded:
+            setState(() {
+              _markAllReaded();
+            });
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('全部已读')));
+            G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+            break;
+          case AppBarMenuItems.Contacts:
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return createScaffoldPage(context, new ContactsPage(), '联系人');
+              },
+            ));
+            break;
+          case AppBarMenuItems.Settings:
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return createScaffoldPage(
+                    context, new MySettingsWidget(), '设置');
+              },
+            ));
+            break;
+          case AppBarMenuItems.Search:
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return SearchPage();
+              },
+            ));
+            break;
+        }
+      }
+    );
   }
 
   // ignore: unused_element

@@ -121,7 +121,7 @@ class _MessageViewState extends State<MessageView> {
         child: container,
         onTap: () {
           // 头像单击
-          widget.showUserInfoCallback(msg);
+          widget.showUserInfoCallback(msg.senderId, msg.nickname);
         },
         onLongPress: () {
           widget.addMessageCallback('[CQ:at,qq=${msg.senderId}] ');
