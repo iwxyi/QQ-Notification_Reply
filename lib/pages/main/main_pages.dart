@@ -307,7 +307,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             ));
             break;
         }
-      },
+      }
     );
   }
 
@@ -618,6 +618,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       /* bottomNavigationBar:
           G.rt.horizontal ? null : _buildBottomNavigationBar(context), */
       drawer: _buildDrawer(),
+      onDrawerChanged: (e) {
+        if (G.rt.currentChatPage != null) {
+          G.rt.currentChatPage.unfocusEditor();
+        }
+      },
     );
     /* // 自定义滑块视图
     return AppRetainWidget(

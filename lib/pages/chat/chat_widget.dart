@@ -28,6 +28,7 @@ class ChatWidget extends StatefulWidget {
   var setObject;
   bool innerMode;
   var buildChatMenu;
+  var unfocusEditor;
   var focusEditor;
   var setUnreadCount;
   var setDirectlyClose;
@@ -90,6 +91,10 @@ class _ChatWidgetState extends State<ChatWidget>
 
     widget.buildChatMenu = () {
       return buildMenu();
+    };
+
+    widget.unfocusEditor = () {
+      _removeEditorFocus();
     };
 
     widget.focusEditor = () {
@@ -434,6 +439,7 @@ class _ChatWidgetState extends State<ChatWidget>
       elevation: 0,
       automaticallyImplyLeading: false,
       flexibleSpace: Container(
+          margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
           // 整个区域，包括leading等
           child: Row(
             children: widgets,
@@ -500,6 +506,9 @@ class _ChatWidgetState extends State<ChatWidget>
       tooltip: '菜单',
       itemBuilder: (BuildContext context) => menus,
       onSelected: (ChatMenuItems result) {
+        if (G.rt.currentChatPage != null) {
+          G.rt.currentChatPage.unfocusEditor();
+        }
         switch (result) {
           case ChatMenuItems.Info:
             break;
@@ -560,6 +569,11 @@ class _ChatWidgetState extends State<ChatWidget>
                   );
                 });
             break;
+        }
+      },
+      onCanceled: () {
+        if (G.rt.currentChatPage != null) {
+          G.rt.currentChatPage.unfocusEditor();
         }
       },
     );
