@@ -7,6 +7,8 @@ import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/utils/color_util.dart';
 
+List<MsgBean> timedMsgs = []; // 需要显示的列表
+
 class ChatListPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -18,8 +20,6 @@ class _ChatListPageState extends State<ChatListPage>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-
-  List<MsgBean> timedMsgs = []; // 需要显示的列表
 
   var eventBusFn;
   FocusNode fastReplyFocusNode;

@@ -223,7 +223,7 @@ class _ChatWidgetState extends State<ChatWidget>
   void _scrollToLatest(bool ani) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
-        return ;
+        return;
       }
       if (ani) {
         _scrollController.animateTo(_scrollController.position.minScrollExtent,
@@ -406,15 +406,19 @@ class _ChatWidgetState extends State<ChatWidget>
               // 栈对象
               List<Widget> widgets = [
                 Container(
-                    margin: EdgeInsets.symmetric(horizontal: 4),
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  child: Opacity(
                     child: headerView,
-                    decoration: BoxDecoration(
+                    opacity: widget.chatObj.isObj(msg) ? 1.0 : 0.5,
+                  ),
+                  /* decoration: BoxDecoration(
                         border: Border.all(
                             color: widget.chatObj.isObj(msg)
                                 ? Theme.of(context).primaryColor
                                 : Colors.transparent,
                             width: 2),
-                        borderRadius: BorderRadius.circular(22)))
+                        borderRadius: BorderRadius.circular(22)) */
+                )
               ];
               // 未读计数
               if (G.ac.unreadMessageCount.containsKey(msg.keyId())) {
@@ -500,7 +504,7 @@ class _ChatWidgetState extends State<ChatWidget>
     ];
 
     // 显示快速切换框
-    if (G.st.enableQuickSwitcher) {
+    if (G.st.enableQuickSwitcher && !widget.innerMode) {
       Widget w = _buildQuickSwitcher(context, true);
       if (w != null) {
         widgets.add(w);
