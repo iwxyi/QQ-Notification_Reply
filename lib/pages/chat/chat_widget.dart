@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -75,6 +76,7 @@ class _ChatWidgetState extends State<ChatWidget>
       if (widget.chatObj != null) {
         // 去掉正在获取群成员的flag
         G.ac.gettingGroupMembers.remove(widget.chatObj.keyId());
+        // G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
       }
       widget.jumpMsg = null;
 
@@ -213,12 +215,16 @@ class _ChatWidgetState extends State<ChatWidget>
     _scrollToLatest(false);
     _textController.text = "";
 
+    G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     G.rt.updateChatPageUnreadCount();
   }
 
   /// 跳转到最新的位置
   void _scrollToLatest(bool ani) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return ;
+      }
       if (ani) {
         _scrollController.animateTo(_scrollController.position.minScrollExtent,
             duration: Duration(milliseconds: 400),
@@ -372,32 +378,116 @@ class _ChatWidgetState extends State<ChatWidget>
     ));
   }
 
-  Widget _buildQuickSwitcher(BuildContext context) {
+  Widget _buildQuickSwitcher(BuildContext context, bool horizontal) {
     List<MsgBean> timedMsgs = G.rt.chatObjList;
     if (timedMsgs == null || timedMsgs.length == 0) {
       return null;
     }
     return Container(
-      height: 48,
-      padding: EdgeInsets.only(bottom: 8, left: 8),
-      child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: timedMsgs.length,
-          itemBuilder: (context, index) {
-            MsgBean msg = timedMsgs[index];
-            return new ClipOval(
+        height: 56,
+        padding: EdgeInsets.only(bottom: 8, left: 8),
+        child: ListView.builder(
+            scrollDirection: horizontal ? Axis.horizontal : Axis.vertical,
+            itemCount: timedMsgs.length,
+            itemBuilder: (context, index) {
+              // 消息对象
+              MsgBean msg = timedMsgs[index];
               // 圆形头像
-              child: new FadeInImage.assetNetwork(
-                placeholder: "assets/icons/default_header.png",
-                //预览图
-                fit: BoxFit.contain,
-                image: API.header(msg),
-                width: 40.0,
-                height: 40.0,
-              ),
-            );
-          }),
-    );
+              Widget headerView = ClipOval(
+                child: new FadeInImage.assetNetwork(
+                  placeholder: "assets/icons/default_header.png",
+                  //预览图
+                  fit: BoxFit.contain,
+                  image: API.header(msg),
+                  width: 40.0,
+                  height: 40.0,
+                ),
+              );
+              // 栈对象
+              List<Widget> widgets = [
+                Container(
+                    margin: EdgeInsets.symmetric(horizontal: 4),
+                    child: headerView,
+                    decoration: BoxDecoration(
+                        border: Border.all(
+                            color: widget.chatObj.isObj(msg)
+                                ? Theme.of(context).primaryColor
+                                : Colors.transparent,
+                            width: 2),
+                        borderRadius: BorderRadius.circular(22)))
+              ];
+              // 未读计数
+              if (G.ac.unreadMessageCount.containsKey(msg.keyId())) {
+                int count = G.ac.unreadMessageCount[msg.keyId()];
+                if (count > 0) {
+                  Color c = Colors.blue; // 重要消息：红色
+                  bool showNum = true;
+                  if (msg.isGroup()) {
+                    if (G.st.importantGroups.contains(msg.groupId)) {
+                      // 重要群组，也是红色
+                      c = Colors.blue;
+                    } else if (G.st.enabledGroups.contains(msg.groupId)) {
+                      // 通知群组，橙色
+                      c = Colors.grey;
+                    } else {
+                      // 不通知的群组，淡蓝色
+                      c = Colors.grey;
+                      showNum = false;
+                    }
+                  }
+
+                  // 添加未读消息计数
+                  Widget container;
+                  if (showNum) {
+                    container = new Container(
+                      padding: EdgeInsets.all(2),
+                      decoration: new BoxDecoration(
+                        color: c,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
+                      ),
+                      child: new Text(
+                        count.toString(), //通知数量
+                        style: new TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  } else {
+                    // 只添加一个点
+                    container = new Container(
+                        padding: EdgeInsets.all(2),
+                        margin: EdgeInsets.all(6),
+                        decoration: new BoxDecoration(
+                          color: c,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        constraints: BoxConstraints(
+                          minWidth: 8,
+                          minHeight: 8,
+                        ),
+                        child: SizedBox());
+                  }
+
+                  Widget position = Positioned(right: 0, child: container);
+                  widgets.add(position);
+                }
+              }
+
+              // 构造可点击区域
+              return GestureDetector(
+                  child: Stack(
+                    children: widgets,
+                  ),
+                  onTap: () {
+                    G.rt.showChatPage(msg);
+                  });
+            }));
   }
 
   Widget _buildBody(BuildContext context) {
@@ -411,7 +501,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
     // 显示快速切换框
     if (G.st.enableQuickSwitcher) {
-      Widget w = _buildQuickSwitcher(context);
+      Widget w = _buildQuickSwitcher(context, true);
       if (w != null) {
         widgets.add(w);
       }

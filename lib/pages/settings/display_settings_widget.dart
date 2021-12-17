@@ -185,6 +185,31 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.switch_account,
+                    color: Colors.blue,
+                  ),
+                  title: Text('快速切换'),
+                  subtitle: Text('聊天页面中显示所有会话头像，点击切换'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableQuickSwitcher = !G.st.enableQuickSwitcher;
+                        G.st.setConfig('function/enableQuickSwitcher',
+                            G.st.enableQuickSwitcher);
+                      });
+                    },
+                    value: G.st.enableQuickSwitcher,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableQuickSwitcher = !G.st.enableQuickSwitcher;
+                      G.st.setConfig('function/enableQuickSwitcher',
+                          G.st.enableQuickSwitcher);
+                    });
+                  },
+                ),
               ],
             ),
           ),
@@ -210,7 +235,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
-                        G.st.enableColorfulChatList = !G.st.enableColorfulChatList;
+                        G.st.enableColorfulChatList =
+                            !G.st.enableColorfulChatList;
                         G.st.setConfig('display/enableColorfulChatList',
                             G.st.enableColorfulChatList);
                       });
@@ -219,7 +245,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   ),
                   onTap: () {
                     setState(() {
-                      G.st.enableColorfulChatList = !G.st.enableColorfulChatList;
+                      G.st.enableColorfulChatList =
+                          !G.st.enableColorfulChatList;
                       G.st.setConfig('display/enableColorfulChatList',
                           G.st.enableColorfulChatList);
                     });
@@ -235,7 +262,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
-                        G.st.enableColorfulChatName = !G.st.enableColorfulChatName;
+                        G.st.enableColorfulChatName =
+                            !G.st.enableColorfulChatName;
                         G.st.setConfig('display/enableColorfulChatName',
                             G.st.enableColorfulChatName);
                       });
@@ -244,7 +272,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   ),
                   onTap: () {
                     setState(() {
-                      G.st.enableColorfulChatName = !G.st.enableColorfulChatName;
+                      G.st.enableColorfulChatName =
+                          !G.st.enableColorfulChatName;
                       G.st.setConfig('display/enableColorfulChatName',
                           G.st.enableColorfulChatName);
                     });
@@ -260,7 +289,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
-                        G.st.enableColorfulChatBubble = !G.st.enableColorfulChatBubble;
+                        G.st.enableColorfulChatBubble =
+                            !G.st.enableColorfulChatBubble;
                         G.st.setConfig('display/enableColorfulChatBubble',
                             G.st.enableColorfulChatBubble);
                       });
@@ -269,7 +299,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   ),
                   onTap: () {
                     setState(() {
-                      G.st.enableColorfulChatBubble = !G.st.enableColorfulChatBubble;
+                      G.st.enableColorfulChatBubble =
+                          !G.st.enableColorfulChatBubble;
                       G.st.setConfig('display/enableColorfulChatBubble',
                           G.st.enableColorfulChatBubble);
                     });
@@ -285,7 +316,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
-                        G.st.enableColorfulReplyBubble = !G.st.enableColorfulReplyBubble;
+                        G.st.enableColorfulReplyBubble =
+                            !G.st.enableColorfulReplyBubble;
                         G.st.setConfig('display/enableColorfulReplyBubble',
                             G.st.enableColorfulReplyBubble);
                       });
@@ -294,7 +326,8 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                   ),
                   onTap: () {
                     setState(() {
-                      G.st.enableColorfulReplyBubble = !G.st.enableColorfulReplyBubble;
+                      G.st.enableColorfulReplyBubble =
+                          !G.st.enableColorfulReplyBubble;
                       G.st.setConfig('display/enableColorfulReplyBubble',
                           G.st.enableColorfulReplyBubble);
                     });

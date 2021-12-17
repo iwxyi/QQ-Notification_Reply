@@ -94,6 +94,8 @@ class UserSettings extends MySettings {
     showRecursionReply =
         getBool('display/showRecursionReply', showRecursionReply);
     inputEnterSend = getBool('display/inputEnterSend', inputEnterSend);
+    enableQuickSwitcher =
+        getBool('function/enableQuickSwitcher', enableQuickSwitcher);
 
     enableColorfulChatList =
         getBool('display/enableColorfulChatList', enableColorfulChatList);
