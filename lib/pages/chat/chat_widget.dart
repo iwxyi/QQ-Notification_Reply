@@ -613,7 +613,7 @@ class _ChatWidgetState extends State<ChatWidget>
     menus.add(PopupMenuItem<ChatMenuItems>(
       value: ChatMenuItems.Info,
       child: Text(widget.chatObj.isPrivate() ? '用户资料' : '群组资料'),
-      enabled: false,
+      enabled: widget.chatObj.isPrivate(),
     ));
 
     if (widget.chatObj.isGroup()) {
@@ -645,6 +645,12 @@ class _ChatWidgetState extends State<ChatWidget>
         }
         switch (result) {
           case ChatMenuItems.Info:
+            if (widget.chatObj.isPrivate()) {
+              // 显示用户信息
+              showUserInfo(widget.chatObj);
+            } else if (widget.chatObj.isGroup()) {
+              // TODO:显示群组信息
+            }
             break;
           case ChatMenuItems.EnableNotification:
             setState(() {

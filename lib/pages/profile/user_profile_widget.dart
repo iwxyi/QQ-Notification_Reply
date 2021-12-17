@@ -7,7 +7,7 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
-enum UserMenuItems { SpecialAttention }
+enum UserMenuItems { SpecialAttention, MessageHistory }
 
 class UserProfileWidget extends StatefulWidget {
   final MsgBean chatObj;
@@ -54,7 +54,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       }
     });
 
-    this.userId = widget.chatObj.senderId;
+    this.userId = widget.chatObj.friendId ??
+        widget.chatObj.senderId ??
+        widget.chatObj.targetId;
     this.nickname = widget.chatObj.nickname;
     if (widget.chatObj.groupId != null && widget.chatObj.groupId != 0) {
       G.cs.send({
@@ -203,6 +205,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
           G.st.specialGroupMember.contains(userId) ? '取消群内特别关注' : '设为群内特别关注'),
       enabled: widget.chatObj.isGroup(),
     ));
+    menus.add(PopupMenuItem<UserMenuItems>(
+      value: UserMenuItems.SpecialAttention,
+      child: Text('消息历史'),
+      enabled: false,
+    ));
 
     return PopupMenuButton<UserMenuItems>(
       icon: Icon(Icons.more_vert, color: Theme.of(context).iconTheme.color),
@@ -211,18 +218,19 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       onSelected: (UserMenuItems result) {
         switch (result) {
           case UserMenuItems.SpecialAttention:
-            {
-              setState(() {
-                if (G.st.specialGroupMember.contains(userId)) {
-                  G.st.specialGroupMember.remove(userId);
-                } else {
-                  G.st.specialGroupMember.add(userId);
-                }
-                G.st.setList(
-                    'notification/specialGroupMember', G.st.specialGroupMember);
-                print('群内特别关注人数：${G.st.specialGroupMember.length}');
-              });
-            }
+            setState(() {
+              if (G.st.specialGroupMember.contains(userId)) {
+                G.st.specialGroupMember.remove(userId);
+              } else {
+                G.st.specialGroupMember.add(userId);
+              }
+              G.st.setList(
+                  'notification/specialGroupMember', G.st.specialGroupMember);
+              print('群内特别关注人数：${G.st.specialGroupMember.length}');
+            });
+            break;
+          case UserMenuItems.MessageHistory:
+            // TODO:用户消息历史
             break;
         }
       },
