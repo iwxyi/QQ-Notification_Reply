@@ -384,8 +384,8 @@ class _ChatWidgetState extends State<ChatWidget>
       return null;
     }
     return Container(
-        height: 56,
-        padding: EdgeInsets.only(bottom: 8, left: 8),
+        height: 48,
+        padding: EdgeInsets.symmetric(horizontal: 8),
         child: ListView.builder(
             scrollDirection: horizontal ? Axis.horizontal : Axis.vertical,
             itemCount: timedMsgs.length,
@@ -406,7 +406,7 @@ class _ChatWidgetState extends State<ChatWidget>
               // 栈对象
               List<Widget> widgets = [
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  margin: EdgeInsets.symmetric(horizontal: 4), // 每个头像的间距
                   child: Opacity(
                     child: headerView,
                     opacity: widget.chatObj.isObj(msg) ? 1.0 : 0.5,
@@ -509,9 +509,9 @@ class _ChatWidgetState extends State<ChatWidget>
       if (w != null) {
         widgets.add(w);
       }
-    } else {
-      widgets.add(SizedBox(height: 8));
     }
+    // 全面屏底部必须要添加一些空白，否则很难点到
+    widgets.add(SizedBox(height: 8));
 
     return new Column(
       children: widgets,
