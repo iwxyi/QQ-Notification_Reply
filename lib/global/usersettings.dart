@@ -29,6 +29,7 @@ class UserSettings extends MySettings {
   int keepMsgHistoryCount = 100; // 保留多少消息记录
   int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
   bool showRecursionReply = true; // 回复中允许再显示回复
+  bool enableQuickSwitcher = true; // 页面底部显示聊天对象快速切换
 
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身

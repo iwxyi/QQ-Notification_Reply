@@ -9,6 +9,7 @@ class AppRuntime {
   var currentChatPage;
   var showChatPage;
   var mainContext;
+  var chatObjList;
   var updateChatPageUnreadCount;
   var showUserInfo;
   var showGroupInfo;

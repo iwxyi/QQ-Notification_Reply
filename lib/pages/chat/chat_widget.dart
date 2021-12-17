@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_pickers/image_pickers.dart';
+import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
@@ -371,16 +372,55 @@ class _ChatWidgetState extends State<ChatWidget>
     ));
   }
 
+  Widget _buildQuickSwitcher(BuildContext context) {
+    List<MsgBean> timedMsgs = G.rt.chatObjList;
+    if (timedMsgs == null || timedMsgs.length == 0) {
+      return null;
+    }
+    return Container(
+      height: 48,
+      padding: EdgeInsets.only(bottom: 8, left: 8),
+      child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: timedMsgs.length,
+          itemBuilder: (context, index) {
+            MsgBean msg = timedMsgs[index];
+            return new ClipOval(
+              // 圆形头像
+              child: new FadeInImage.assetNetwork(
+                placeholder: "assets/icons/default_header.png",
+                //预览图
+                fit: BoxFit.contain,
+                image: API.header(msg),
+                width: 40.0,
+                height: 40.0,
+              ),
+            );
+          }),
+    );
+  }
+
   Widget _buildBody(BuildContext context) {
+    List<Widget> widgets = [
+      // 消息列表
+      _buildListStack(context),
+      SizedBox(height: 8),
+      // 输入框
+      widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
+    ];
+
+    // 显示快速切换框
+    if (G.st.enableQuickSwitcher) {
+      Widget w = _buildQuickSwitcher(context);
+      if (w != null) {
+        widgets.add(w);
+      }
+    } else {
+      widgets.add(SizedBox(height: 8));
+    }
+
     return new Column(
-      children: <Widget>[
-        // 消息列表
-        _buildListStack(context),
-        SizedBox(height: 8),
-        // 输入框
-        widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
-        SizedBox(height: 8),
-      ],
+      children: widgets,
     );
   }
 

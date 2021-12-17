@@ -1,14 +1,11 @@
 import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/utils/color_util.dart';
-
-List<MsgBean> timedMsgs = []; // 需要显示的列表
 
 class ChatListPage extends StatefulWidget {
   @override
@@ -21,6 +18,8 @@ class _ChatListPageState extends State<ChatListPage>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+
+  List<MsgBean> timedMsgs = []; // 需要显示的列表
 
   var eventBusFn;
   FocusNode fastReplyFocusNode;
@@ -47,6 +46,8 @@ class _ChatListPageState extends State<ChatListPage>
         }
       }
     });
+
+    G.rt.chatObjList = timedMsgs; // 这个应该是传引用吧
 
     fastReplyFocusNode = new FocusNode();
 
