@@ -409,7 +409,7 @@ class _ChatListPageState extends State<ChatListPage>
 
   void _getChatObjColor(MsgBean msg) {
     G.ac.gettingChatObjColor.add(msg.keyId());
-    String url = API.header(msg);
+    String url = API.chatObjHeader(msg);
     getColorFromUrl(url).then((v) {
       print('主题色：' + msg.title() + ": " + v.toString());
       G.ac.gettingChatObjColor.remove(msg.keyId());

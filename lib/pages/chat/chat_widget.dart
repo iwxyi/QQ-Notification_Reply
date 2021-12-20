@@ -398,7 +398,7 @@ class _ChatWidgetState extends State<ChatWidget>
                   placeholder: "assets/icons/default_header.png",
                   //预览图
                   fit: BoxFit.contain,
-                  image: API.header(msg),
+                  image: API.chatObjHeader(msg),
                   width: 40.0,
                   height: 40.0,
                 ),
@@ -1069,6 +1069,7 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   void showUserInfo(MsgBean msg) {
+    _removeEditorFocus();
     showDialog(
         context: context,
         builder: (context) {

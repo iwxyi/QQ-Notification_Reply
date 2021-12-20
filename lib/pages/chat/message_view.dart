@@ -136,8 +136,7 @@ class _MessageViewState extends State<MessageView> {
             G.st.colorfulChatNameFont - 0.1, G.st.colorfulChatNameFont + 0.1);
       } else {
         G.ac.gettingChatObjColor.add(keyId);
-        String url =
-            API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
+        String url = API.userHeader(msg.senderId);
         getColorFromUrl(url).then((v) {
           if (v == null) {
             // 一直保持获取状态，就不使用了
@@ -203,8 +202,7 @@ class _MessageViewState extends State<MessageView> {
             G.ac.chatObjColor[msg.senderKeyId()], G.st.colorfulChatBubbleBg);
       } else {
         G.ac.gettingChatObjColor.add(msg.senderKeyId());
-        String url =
-            API.header(MsgBean(senderId: msg.senderId, friendId: msg.senderId));
+        String url = API.userHeader(msg.senderId);
         getColorFromUrl(url).then((v) {
           print('主题色：' + msg.username() + ": " + v.toString());
           G.ac.gettingChatObjColor.remove(msg.senderKeyId());
