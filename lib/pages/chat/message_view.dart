@@ -6,6 +6,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -597,27 +598,33 @@ class _MessageViewState extends State<MessageView> {
               },
             style: TextStyle(
                 fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
-      } else if (false &&
-          (RegExp(r"^\d{5,}$").firstMatch(matchedText)) != null) {
+      } else if ((RegExp(r"^\d{5,}$").firstMatch(matchedText)) != null) {
         // 号码
         span = TextSpan(
             text: matchedText,
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                print('launch number: $matchedText');
-                // TODO: 号码选项
+                print('number: $matchedText');
+                Clipboard.setData(ClipboardData(text: matchedText));
+                Fluttertoast.showToast(
+                    msg: "已复制：$matchedText",
+                    gravity: ToastGravity.CENTER,
+                    textColor: Colors.grey);
               },
             style: TextStyle(
                 fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
-      } else if (false &&
-          (RegExp(r"^\w+@[\w\.]+$").firstMatch(matchedText)) != null) {
+      } else if ((RegExp(r"^\w+@[\w\.]+$").firstMatch(matchedText)) != null) {
         // 邮箱
         span = TextSpan(
             text: matchedText,
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                print('launch email: $matchedText');
-                // TODO: 邮箱选项
+                print('email: $matchedText');
+                Clipboard.setData(ClipboardData(text: matchedText));
+                Fluttertoast.showToast(
+                    msg: "已复制：$matchedText",
+                    gravity: ToastGravity.CENTER,
+                    textColor: Colors.grey);
               },
             style: TextStyle(
                 fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
