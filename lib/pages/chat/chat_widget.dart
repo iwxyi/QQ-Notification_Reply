@@ -329,7 +329,7 @@ class _ChatWidgetState extends State<ChatWidget>
         style: TextStyle(fontSize: G.st.msgFontSize),
       );
       stack.add(Positioned(
-        top: -4, // 因为上面有几个像素阴影，会露出后面的
+        top: -6, // 因为上面有几个像素阴影，会露出后面的
         child: FlatButton(
           color: Color.fromARGB(255, 230, 230, 255),
           child: Container(
@@ -357,7 +357,7 @@ class _ChatWidgetState extends State<ChatWidget>
         style: TextStyle(fontSize: G.st.msgFontSize),
       );
       stack.add(Positioned(
-        bottom: -4,
+        bottom: -6,
         child: FlatButton(
           color: Color.fromARGB(255, 230, 230, 255),
           child: Container(
@@ -498,7 +498,7 @@ class _ChatWidgetState extends State<ChatWidget>
     List<Widget> widgets = [
       // 消息列表
       _buildListStack(context),
-      SizedBox(height: 8),
+      SizedBox(height: 0),
       // 输入框
       widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
     ];
