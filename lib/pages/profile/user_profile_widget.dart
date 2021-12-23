@@ -27,7 +27,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   String sex; // male/demale/unknow
   int age;
   String qid;
-  String level;
+  var level; // 因为我也不确定是string还是int
   int loginDays;
 
   // 群成员信息
@@ -93,6 +93,23 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> headerWidgets = [
+      Text(nickname, style: TextStyle(fontSize: 25)),
+      GestureDetector(
+          child: Text(userId.toString()),
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: userId.toString()));
+            Fluttertoast.showToast(
+                msg: "已复制QQ号：$userId",
+                gravity: ToastGravity.CENTER,
+                textColor: Colors.grey);
+          }),
+    ];
+
+    if (title != null && title != "") {
+      headerWidgets.insert(1, Text("【$title】"));
+    }
+
     // 头像昵称等基础信息
     Widget headerView = Row(children: [
       new CircleAvatar(
@@ -103,18 +120,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       SizedBox(
         width: 16,
       ),
-      Column(children: [
-        Text(nickname, style: TextStyle(fontSize: 25)),
-        GestureDetector(
-            child: Text(userId.toString()),
-            onTap: () {
-              Clipboard.setData(ClipboardData(text: userId.toString()));
-              Fluttertoast.showToast(
-                  msg: "已复制QQ号：$userId",
-                  gravity: ToastGravity.CENTER,
-                  textColor: Colors.grey);
-            }),
-      ], crossAxisAlignment: CrossAxisAlignment.start),
+      Column(
+          children: headerWidgets,
+          crossAxisAlignment: CrossAxisAlignment.start),
       Expanded(child: SizedBox(width: 16)),
       _buildMenu(context)
     ]);
@@ -124,6 +132,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
     // 基本信息
     {
       List<String> infos = [];
+
+      // 群身份
+      if (role == 'owner') {
+        infos.add('【群主】');
+      } else if (role == 'admin') {
+        infos.add('【管理员】');
+      }
+      
       // 性别
       if (sex != null) {
         if (sex == 'male') {
