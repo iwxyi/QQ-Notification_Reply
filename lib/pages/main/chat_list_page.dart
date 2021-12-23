@@ -118,12 +118,14 @@ class _ChatListPageState extends State<ChatListPage>
                   text = G.cs.getMessageDisplay(msg);
                 } else if (msg.isGroup()) {
                   // 群聊还是需要显示昵称的
-                  text = (msg.senderId == null
-                          ? ''
-                          : G.st.getLocalNickname(msg.senderKeyId(),
-                                  msg.usernameSimplify() ?? '') +
-                              ": ") +
-                      G.cs.getMessageDisplay(msg);
+                  if (msg.senderId != null) {
+                    String nickname =
+                        G.st.getLocalNickname(msg.senderKeyId(), null) ??
+                            msg.usernameSimplify();
+                    if (nickname != null) {
+                      text = nickname + ": " + G.cs.getMessageDisplay(msg);
+                    }
+                  }
                 } else {
                   print('未知的消息类型');
                 }

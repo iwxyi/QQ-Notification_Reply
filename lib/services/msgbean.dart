@@ -9,7 +9,7 @@ enum ActionType {
 
 class MsgBean {
   int senderId;
-  String nickname;
+  String nickname; // 用户昵称
   String message;
   String rawMessage;
   int messageId;
@@ -89,7 +89,7 @@ class MsgBean {
     if (groupCard != null && groupCard.isNotEmpty) {
       s = groupCard;
     }
-    if (remark != null && remark.isNotEmpty) {
+    else if (remark != null && remark.isNotEmpty) {
       s = remark;
     }
     s = s.replaceAllMapped(RegExp(r'(.+)（.+?）$'), (match) => match[1]);
