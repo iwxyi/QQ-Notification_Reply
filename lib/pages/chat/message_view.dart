@@ -64,7 +64,7 @@ class _MessageViewState extends State<MessageView> {
 
     // 消息列的上下控件，是否显示昵称
     List<Widget> vWidgets = [];
-    if (!isSelf && !isNext) {
+    if (!isSelf && !isNext && msg.isGroup()) {
       vWidgets.add(_buildNicknameView());
     }
     vWidgets.add(_buildMessageContainer());
