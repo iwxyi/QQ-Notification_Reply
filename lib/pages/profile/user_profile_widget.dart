@@ -203,8 +203,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
         padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         onPressed: () {
           Navigator.of(context).pop();
+          String name = nickname;
+          if (G.ac.friendList.containsKey(userId)) {
+            name = G.ac.friendList[userId].remark ?? name;
+          }
+          name = G.st.getLocalNickname(userId, name);
           G.rt.showChatPage(
-              MsgBean(friendId: userId, targetId: userId, nickname: nickname));
+              MsgBean(friendId: userId, targetId: userId, nickname: name));
         },
         color: Theme.of(context).primaryColor,
       )
