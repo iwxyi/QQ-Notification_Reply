@@ -165,7 +165,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       }
     }
 
-    if (card != null) {
+    if (card != null && card.isNotEmpty) {
       columns.add(Text('群昵称：' + card));
     }
 
