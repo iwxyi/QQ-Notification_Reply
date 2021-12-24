@@ -77,12 +77,12 @@ class _ChatListPageState extends State<ChatListPage>
           String headerUrl;
           if (msg.isGroup()) {
             titleStr = G.st.getLocalNickname(msg.keyId(), msg.groupName);
-            subTitleStr = (msg.senderId == null
-                    ? ''
-                    : G.st.getLocalNickname(
-                            msg.senderKeyId(), msg.username() ?? '') +
-                        ": ") +
-                G.cs.getMessageDisplay(msg);
+            String name = msg.senderId == null
+                ? ''
+                : G.st.getLocalNickname(
+                        msg.senderKeyId(), msg.usernameSimplify() ?? '') +
+                    ": ";
+            subTitleStr = (name ?? '') + G.cs.getMessageDisplay(msg);
             headerUrl = API.groupHeader(msg.groupId);
           } else {
             titleStr = G.st.getLocalNickname(msg.keyId(), msg.username());

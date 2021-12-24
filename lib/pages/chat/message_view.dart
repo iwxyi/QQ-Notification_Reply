@@ -1036,8 +1036,8 @@ class _MessageViewState extends State<MessageView> {
             );
           });
     } else if (value == 'repeat') {
-      // widget.sendMessageCallback(msg.message);
-      widget.addMessageCallback(msg.message);
+      widget.sendMessageCallback(msg.message);
+      // widget.addMessageCallback(msg.message);
     } else if (value == 'cq') {
       _showCopyTextDialog(
           'CQ码',
