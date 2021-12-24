@@ -7,7 +7,7 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
-enum UserMenuItems { SpecialAttention, MessageHistory }
+enum UserMenuItems { SpecialAttention, LocalNickname, MessageHistory }
 
 class UserProfileWidget extends StatefulWidget {
   final MsgBean chatObj;
@@ -139,7 +139,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       } else if (role == 'admin') {
         infos.add('【管理员】');
       }
-      
+
       // 性别
       if (sex != null) {
         if (sex == 'male') {
@@ -214,18 +214,23 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   }
 
   Widget _buildMenu(BuildContext context) {
-    List<PopupMenuEntry<UserMenuItems>> menus = [];
-    menus.add(PopupMenuItem<UserMenuItems>(
-      value: UserMenuItems.SpecialAttention,
-      child: Text(
-          G.st.specialGroupMember.contains(userId) ? '取消群内特别关注' : '设为群内特别关注'),
-      enabled: widget.chatObj.isGroup(),
-    ));
-    menus.add(PopupMenuItem<UserMenuItems>(
-      value: UserMenuItems.SpecialAttention,
-      child: Text('消息历史'),
-      enabled: false,
-    ));
+    List<PopupMenuEntry<UserMenuItems>> menus = [
+      PopupMenuItem<UserMenuItems>(
+        value: UserMenuItems.SpecialAttention,
+        child: Text(
+            G.st.specialGroupMember.contains(userId) ? '取消群内特别关注' : '设为群内特别关注'),
+        enabled: widget.chatObj.isGroup(),
+      ),
+      PopupMenuItem<UserMenuItems>(
+        value: UserMenuItems.LocalNickname,
+        child: Text('本地昵称'),
+      ),
+      PopupMenuItem<UserMenuItems>(
+        value: UserMenuItems.MessageHistory,
+        child: Text('消息历史'),
+        enabled: false,
+      )
+    ];
 
     return PopupMenuButton<UserMenuItems>(
       icon: Icon(Icons.more_vert, color: Theme.of(context).iconTheme.color),
@@ -245,11 +250,66 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
               print('群内特别关注人数：${G.st.specialGroupMember.length}');
             });
             break;
+          case UserMenuItems.LocalNickname:
+            editCustomName();
+            break;
           case UserMenuItems.MessageHistory:
             // TODO:用户消息历史
             break;
         }
       },
     );
+  }
+
+  void editCustomName() {
+    int keyId = widget.chatObj.senderKeyId();
+    String curName = G.st.getLocalNickname(keyId, widget.chatObj.username());
+
+    TextEditingController controller = TextEditingController();
+    controller.text = curName;
+    if (curName.isNotEmpty) {
+      controller.selection =
+          TextSelection(baseOffset: 0, extentOffset: curName.length);
+    }
+
+    var confirm = () {
+      setState(() {
+        G.st.setLocalNickname(keyId, controller.text);
+        Navigator.pop(context);
+        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+      });
+    };
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('请输入本地昵称'),
+            content: TextField(
+              decoration: InputDecoration(
+                hintText: '不影响真实昵称',
+              ),
+              controller: controller,
+              autofocus: true,
+              onSubmitted: (text) {
+                confirm();
+              },
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  confirm();
+                },
+                child: Text('确定'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('取消'),
+              ),
+            ],
+          );
+        });
   }
 }

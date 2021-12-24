@@ -162,10 +162,11 @@ class _MessageViewState extends State<MessageView> {
   /// 自己发的没有昵称
   Widget _buildNicknameView() {
     Color c = _getColorfulNickname(msg.senderKeyId(), G.st.msgNicknameColor);
+    String nickname = G.st.getLocalNickname(msg.senderId, msg.username());
     return new Container(
       margin: const EdgeInsets.only(top: 5.0),
       child: new Text(
-        msg.username(), // 用户昵称
+        nickname,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: c, fontSize: 16),
