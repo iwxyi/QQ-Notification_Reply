@@ -31,6 +31,7 @@ class UserSettings extends MySettings {
   int loadMsgHistoryCount = 20; // 默认加载多少条消息记录
   bool showRecursionReply = true; // 回复中允许再显示回复
   bool enableQuickSwitcher = false; // 页面底部显示聊天对象快速切换
+  bool enableNonsenseMode = false; // 启用胡说八道模式
 
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
@@ -97,6 +98,8 @@ class UserSettings extends MySettings {
     inputEnterSend = getBool('display/inputEnterSend', inputEnterSend);
     enableQuickSwitcher =
         getBool('function/enableQuickSwitcher', enableQuickSwitcher);
+    enableNonsenseMode =
+        getBool('function/enableNonsenseMode', enableNonsenseMode);
 
     enableColorfulChatList =
         getBool('display/enableColorfulChatList', enableColorfulChatList);

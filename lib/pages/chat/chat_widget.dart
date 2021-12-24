@@ -22,7 +22,13 @@ import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.d
 import 'emoji_grid.dart';
 import 'message_view.dart';
 
-enum ChatMenuItems { Info, EnableNotification, CustomName }
+enum ChatMenuItems {
+  Info,
+  EnableNotification,
+  CustomName,
+  InsertFakeLeft,
+  InsertFakeRight
+}
 
 // ignore: must_be_immutable
 class ChatWidget extends StatefulWidget {
@@ -498,7 +504,7 @@ class _ChatWidgetState extends State<ChatWidget>
     List<Widget> widgets = [
       // 消息列表
       _buildListStack(context),
-      SizedBox(height: 0),
+      SizedBox(height: 2),
       // 输入框
       widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
     ];
@@ -630,6 +636,21 @@ class _ChatWidgetState extends State<ChatWidget>
       child: Text('本地昵称'),
     ));
 
+    if (G.st.enableNonsenseMode) {
+      // 插入自己的消息
+      menus.add(PopupMenuItem<ChatMenuItems>(
+        value: ChatMenuItems.InsertFakeRight,
+        child: Text('发送假消息'),
+      ));
+      if (widget.chatObj.isPrivate()) {
+        // 插入私聊对方的消息
+        menus.add(PopupMenuItem<ChatMenuItems>(
+          value: ChatMenuItems.InsertFakeLeft,
+          child: Text('接收假消息'),
+        ));
+      }
+    }
+
     return PopupMenuButton<ChatMenuItems>(
       icon: Icon(Icons.more_vert,
           color: !mounted
@@ -659,55 +680,13 @@ class _ChatWidgetState extends State<ChatWidget>
             });
             break;
           case ChatMenuItems.CustomName:
-            TextEditingController controller = TextEditingController();
-            int keyId = widget.chatObj.keyId();
-            String curName =
-                G.st.getLocalNickname(keyId, widget.chatObj.title());
-            controller.text = curName;
-            if (curName.isNotEmpty) {
-              controller.selection =
-                  TextSelection(baseOffset: 0, extentOffset: curName.length);
-            }
-
-            var confirm = () {
-              setState(() {
-                G.st.setLocalNickname(keyId, controller.text);
-                Navigator.pop(context);
-                G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
-              });
-            };
-
-            showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text('请输入本地昵称'),
-                    content: TextField(
-                      decoration: InputDecoration(
-                        hintText: '不影响真实昵称',
-                      ),
-                      controller: controller,
-                      autofocus: true,
-                      onSubmitted: (text) {
-                        confirm();
-                      },
-                    ),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text('取消'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          confirm();
-                        },
-                        child: Text('确定'),
-                      ),
-                    ],
-                  );
-                });
+            editCustomName();
+            break;
+          case ChatMenuItems.InsertFakeRight:
+            insertFakeMessage(G.ac.myId);
+            break;
+          case ChatMenuItems.InsertFakeLeft:
+            insertFakeMessage(widget.chatObj.friendId);
             break;
         }
       },
@@ -1080,6 +1059,139 @@ class _ChatWidgetState extends State<ChatWidget>
               child: UserProfileWidget(chatObj: msg),
             ),
             contentPadding: EdgeInsets.all(5),
+          );
+        });
+  }
+
+  void editCustomName() {
+    int keyId = widget.chatObj.keyId();
+    String curName = G.st.getLocalNickname(keyId, widget.chatObj.title());
+
+    TextEditingController controller = TextEditingController();
+    controller.text = curName;
+    if (curName.isNotEmpty) {
+      controller.selection =
+          TextSelection(baseOffset: 0, extentOffset: curName.length);
+    }
+
+    var confirm = () {
+      setState(() {
+        G.st.setLocalNickname(keyId, controller.text);
+        Navigator.pop(context);
+        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+      });
+    };
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('请输入本地昵称'),
+            content: TextField(
+              decoration: InputDecoration(
+                hintText: '不影响真实昵称',
+              ),
+              controller: controller,
+              autofocus: true,
+              onSubmitted: (text) {
+                confirm();
+              },
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                onPressed: () {
+                  confirm();
+                },
+                child: Text('确定'),
+              ),
+            ],
+          );
+        });
+  }
+
+  void insertFakeMessage(int senderId) {
+    var createFakePrivateMsg = (String str) {
+      bool isMe = senderId == G.ac.myId;
+      int friendId = widget.chatObj.friendId;
+      int targetId = isMe ? friendId : G.ac.myId;
+      String senderName = isMe ? G.ac.myNickname : widget.chatObj.nickname;
+      var fakeMsg = {
+        'post_type': isMe ? 'message_sent' : 'message',
+        'message_type': 'private',
+        'sub_type': 'friend',
+        'message': str,
+        'raw_message': str,
+        'message_id': DateTime.now().millisecondsSinceEpoch,
+        'target_id': targetId,
+        'self_id': G.ac.myId,
+        'sender': {
+          'user_id': senderId,
+          'nickname': senderName,
+          'remark': isMe ? null : G.ac.friendList[friendId].remark
+        },
+        'timestamp': DateTime.now().millisecondsSinceEpoch / 1000
+      };
+      print(fakeMsg);
+      G.cs.parsePrivateMessage(fakeMsg);
+    };
+
+    var createFakeGroupMsg = (String str) {
+      G.cs.parseGroupMessage({});
+    };
+
+    TextEditingController controller = TextEditingController();
+
+    var confirm = () {
+      setState(() {
+        Navigator.pop(context);
+        String text = controller.text;
+        if (text == null || text.isEmpty) {
+          return;
+        }
+        // 创建对应的消息
+        if (widget.chatObj.isPrivate()) {
+          createFakePrivateMsg(text);
+        } else if (widget.chatObj.isGroup()) {
+          createFakeGroupMsg(text);
+        }
+      });
+    };
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('请输入虚拟消息，只在本地显示，不会真正发送'),
+            content: TextField(
+              decoration: InputDecoration(
+                hintText: '消息内容',
+              ),
+              controller: controller,
+              autofocus: true,
+              onSubmitted: (text) {
+                confirm();
+              },
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                onPressed: () {
+                  confirm();
+                },
+                child: Text('确定'),
+              ),
+            ],
           );
         });
   }

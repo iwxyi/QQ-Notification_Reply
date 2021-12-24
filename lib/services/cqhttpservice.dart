@@ -209,14 +209,15 @@ class CqhttpService {
       }
       lastHeartTime = DateTime.now().millisecondsSinceEpoch;
     } else if (postType == 'message' || postType == 'message_sent') {
+      print(obj);
       // 自己发送的群消息是 message_sent 类型
       String messageType = obj['message_type'];
       if (messageType == 'private') {
         // 私聊消息
-        _parsePrivateMessage(obj);
+        parsePrivateMessage(obj);
       } else if (messageType == 'group') {
         // 群聊消息
-        _parseGroupMessage(obj);
+        parseGroupMessage(obj);
       } else {
         print('未处理的消息：' + obj.toString());
       }
@@ -365,8 +366,8 @@ class CqhttpService {
     }
   }
 
-  void _parsePrivateMessage(final obj) {
-    String subType = obj['sub_type'];
+  void parsePrivateMessage(final obj) {
+    String subType = obj['sub_type']; // friend
     String message = obj['message'];
     String rawMessage = obj['raw_message'];
     int messageId = obj['message_id'];
@@ -397,7 +398,7 @@ class CqhttpService {
     _notifyOuter(msg);
   }
 
-  void _parseGroupMessage(final obj) {
+  void parseGroupMessage(final obj) {
     String subType = obj['sub_type'];
     String message = obj['message'];
     String rawMessage = obj['raw_message'];
@@ -616,7 +617,10 @@ class CqhttpService {
       ac.allMessages[msg.keyId()].forEach((element) {
         if (element.messageId == msg.messageId) repeat = true;
       });
-      if (repeat) return;
+      if (repeat) {
+        print('warning: 去除重复消息');
+        return;
+      }
     }
 
     ac.allMessages[msg.keyId()].add(msg);
