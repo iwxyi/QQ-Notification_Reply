@@ -1027,7 +1027,7 @@ class _ChatWidgetState extends State<ChatWidget>
   void showEmojiList() {
     final size = MediaQuery.of(context).size;
     final twidth = size.width / 2;
-    final theight = size.height * 7 / 10;
+    final theight = size.height * 3 / 5;
 
     showDialog(
         context: context,
@@ -1060,7 +1060,7 @@ class _ChatWidgetState extends State<ChatWidget>
           return AlertDialog(
             content: Container(
               constraints:
-                  BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 220),
+                  BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 250),
               child: UserProfileWidget(chatObj: msg),
             ),
             contentPadding: EdgeInsets.all(5),

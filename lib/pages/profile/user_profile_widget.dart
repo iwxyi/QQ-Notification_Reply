@@ -31,6 +31,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   int loginDays;
 
   // 群成员信息
+  String card;
   String area; // 地区
   int joinTime;
   int lastSentTime;
@@ -81,6 +82,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
     qid = data['qid'];
     level = data['level'];
     loginDays = data['login_days'];
+
+    card = data['card'];
     area = data['area'];
     joinTime = data['join_time'];
     lastSentTime = data['last_sent_time'];
@@ -162,6 +165,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       }
     }
 
+    if (card != null) {
+      columns.add(Text('群昵称：' + card));
+    }
+
     if (joinTime != null && joinTime > 0) {
       DateTime dt = DateTime.fromMillisecondsSinceEpoch(joinTime * 1000);
       String s =
@@ -179,7 +186,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
     if (shutUpTimestamp != null &&
         shutUpTimestamp > DateTime.now().millisecondsSinceEpoch) {
       DateTime dt = DateTime.fromMillisecondsSinceEpoch(lastSentTime * 1000);
-      String s = formatDate(dt, ['mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
+      String s =
+          formatDate(dt, ['yyyy', '-', 'mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
       columns.add(Text('禁言至：' + s));
     }
 

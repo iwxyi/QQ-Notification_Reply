@@ -419,8 +419,9 @@ class _MessageViewState extends State<MessageView> {
                   style: TextStyle(fontSize: G.st.msgFontSize, color: c));
             } else if (match.start != replyEndPos) {
               // @qq，已经判断了不是reply自带的at
-              String username =
-                  G.ac.getGroupMemberName(int.parse(id), msg.groupId);
+              int userId = int.parse(id);
+              String username = G.ac.getGroupMemberName(userId, msg.groupId);
+              username = G.st.getLocalNickname(userId, username);
               if (username == null) {
                 username = id;
                 if (msg.isGroup()) {
@@ -678,6 +679,7 @@ class _MessageViewState extends State<MessageView> {
         replyMsg = G.ac.allMessages[msg.keyId()].elementAt(index);
         String username =
             G.ac.getGroupMemberName(replyMsg.senderId, replyMsg.groupId);
+        username = G.st.getLocalNickname(replyMsg.senderId, username);
         if (username == null || username.isEmpty) {
           username = replyMsg.senderId.toString();
           G.cs.refreshGroupMembers(replyMsg.groupId, userId: replyMsg.senderId);
