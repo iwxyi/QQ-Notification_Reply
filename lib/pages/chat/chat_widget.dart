@@ -313,6 +313,8 @@ class _ChatWidgetState extends State<ChatWidget>
           _removeEditorFocus();
         }, showUserInfoCallback: (MsgBean msg) {
           showUserInfo(msg);
+        }, fakeSendCallback: (int senderId) {
+          insertFakeMessage(senderId);
         }),
         itemCount: _messages.length,
         controller: _scrollController,
@@ -504,10 +506,13 @@ class _ChatWidgetState extends State<ChatWidget>
     List<Widget> widgets = [
       // 消息列表
       _buildListStack(context),
-      SizedBox(height: 2),
-      // 输入框
-      widget.innerMode ? _buildTextEditor() : _buildLineEditor(),
     ];
+    if (widget.innerMode) {
+      widgets.add(SizedBox(height: 8));
+      widgets.add(_buildTextEditor());
+    } else {
+      widgets.add(_buildLineEditor());
+    }
 
     // 显示快速切换框
     if (G.st.enableQuickSwitcher && !widget.innerMode) {
@@ -1100,15 +1105,15 @@ class _ChatWidgetState extends State<ChatWidget>
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('取消'),
-              ),
-              TextButton(
-                onPressed: () {
                   confirm();
                 },
                 child: Text('确定'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('取消'),
               ),
             ],
           );
@@ -1142,7 +1147,41 @@ class _ChatWidgetState extends State<ChatWidget>
     };
 
     var createFakeGroupMsg = (String str) {
-      G.cs.parseGroupMessage({});
+      bool isMe = senderId == G.ac.myId;
+      int groupId = widget.chatObj.groupId;
+      int keyId = widget.chatObj.keyId();
+      // 获取这个人旧的信息（如果不是自己的，则肯定有）
+      MsgBean oldMsg;
+      G.ac.allMessages[keyId].forEach((element) {
+        if (element.senderId == senderId) {
+          oldMsg = element;
+        }
+      });
+      if (!isMe && oldMsg == null) {
+        print('error: 未找到该用户的旧信息：$senderId');
+        return;
+      }
+
+      var fakeMsg = {
+        'post_type': 'message',
+        'message_type': 'group',
+        'sub_type': 'normal',
+        'group_id': groupId,
+        'message_seq': 0,
+        'message': str,
+        'raw_message': str,
+        'message_id': DateTime.now().millisecondsSinceEpoch,
+        'self_id': G.ac.myId,
+        'sender': {
+          'user_id': senderId,
+          'card': oldMsg != null ? oldMsg.groupCard : G.ac.myId,
+          'nickname': oldMsg != null ? oldMsg.nickname : G.ac.myId,
+          'remark': isMe ? null : oldMsg.remark,
+          'role': oldMsg != null ? oldMsg.role : null,
+        },
+        'timestamp': DateTime.now().millisecondsSinceEpoch / 1000
+      };
+      G.cs.parseGroupMessage(fakeMsg);
     };
 
     TextEditingController controller = TextEditingController();
@@ -1181,15 +1220,15 @@ class _ChatWidgetState extends State<ChatWidget>
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('取消'),
-              ),
-              TextButton(
-                onPressed: () {
                   confirm();
                 },
                 child: Text('确定'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('取消'),
               ),
             ],
           );

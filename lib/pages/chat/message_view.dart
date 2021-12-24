@@ -30,6 +30,7 @@ class MessageView extends StatefulWidget {
   final deleteMessageCallback;
   final unfocusEditorCallback;
   final showUserInfoCallback;
+  final fakeSendCallback;
 
   MessageView(this.msg, this.isNext, Key key,
       {this.loadFinishedCallback,
@@ -38,7 +39,8 @@ class MessageView extends StatefulWidget {
       this.sendMessageCallback,
       this.deleteMessageCallback,
       this.unfocusEditorCallback,
-      this.showUserInfoCallback})
+      this.showUserInfoCallback,
+      this.fakeSendCallback})
       : super(key: key);
 
   @override
@@ -986,6 +988,23 @@ class _MessageViewState extends State<MessageView> {
           insertPos++, PopupMenuItem(value: 'addEmoji', child: Text('存表情')));
     }
 
+    // 胡说八道模式
+    if (G.st.enableNonsenseMode) {
+      insertPos = items.length - 1;
+      items.insert(
+          insertPos++,
+          PopupMenuItem(
+            value: 'edit',
+            child: Text('编辑'),
+          ));
+      items.insert(
+          insertPos++,
+          PopupMenuItem(
+            value: 'fake_send',
+            child: Text('假消息'),
+          ));
+    }
+
     return items;
   }
 
@@ -1036,6 +1055,14 @@ class _MessageViewState extends State<MessageView> {
       G.st.emojiList.insert(0, msg.message); // 添加到开头
       G.st.setList('emoji/list', G.st.emojiList, split: ';');
       print('存表情：' + msg.message + ', 总数量：' + G.st.emojiList.length.toString());
+    } else if (value == 'edit') {
+      // 编辑内容
+      editMsgContent();
+    } else if (value == 'fake_send') {
+      // 发送假消息
+      if (widget.fakeSendCallback != null) {
+        widget.fakeSendCallback(msg.senderId);
+      }
     }
   }
 
@@ -1069,6 +1096,56 @@ class _MessageViewState extends State<MessageView> {
         );
       },
     );
+  }
+
+  void editMsgContent() {
+    TextEditingController controller = TextEditingController();
+    controller.text = msg.message;
+    controller.selection =
+        TextSelection(baseOffset: 0, extentOffset: controller.text.length);
+
+    var confirm = () {
+      setState(() {
+        Navigator.pop(context);
+        String text = controller.text;
+        if (text == null || text.isEmpty) {
+          return;
+        }
+        msg.message = text;
+      });
+    };
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('请输入虚拟消息，只在本地显示，不会真正发送'),
+            content: TextField(
+              decoration: InputDecoration(
+                hintText: '消息内容',
+              ),
+              controller: controller,
+              autofocus: true,
+              onSubmitted: (text) {
+                confirm();
+              },
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  confirm();
+                },
+                child: Text('确定'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('取消'),
+              ),
+            ],
+          );
+        });
   }
 
   @override

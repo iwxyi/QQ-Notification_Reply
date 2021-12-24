@@ -209,7 +209,7 @@ class CqhttpService {
       }
       lastHeartTime = DateTime.now().millisecondsSinceEpoch;
     } else if (postType == 'message' || postType == 'message_sent') {
-      print(obj);
+      // print(obj); // 输出所有消息
       // 自己发送的群消息是 message_sent 类型
       String messageType = obj['message_type'];
       if (messageType == 'private') {
