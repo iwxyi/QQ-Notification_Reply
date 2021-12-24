@@ -212,11 +212,11 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.switch_account,
+                    Icons.remove_red_eye,
                     color: Colors.blue,
                   ),
                   title: Text('胡说八道模式'),
-                  subtitle: Text('自由编辑消息文字（因此产生的任何后果请自负）'),
+                  subtitle: Text('自由编辑消息文字、发送假消息（后果自负）'),
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -234,7 +235,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return Row(
           children: [
             Container(
-                constraints: BoxConstraints(maxWidth: G.rt.chatListFixedWidth),
+                constraints: BoxConstraints(
+                    maxWidth: max(G.rt.chatListFixedWidth,
+                        MediaQuery.of(context).size.width / 3)),
                 child: allPages[_selectedIndex].contentWidget),
             Expanded(child: _buildChatObjView(context))
           ],

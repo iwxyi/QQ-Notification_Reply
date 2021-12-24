@@ -1027,7 +1027,7 @@ class _ChatWidgetState extends State<ChatWidget>
   void showEmojiList() {
     final size = MediaQuery.of(context).size;
     final twidth = size.width / 2;
-    final theight = size.height * 4 / 5;
+    final theight = size.height * 7 / 10;
 
     showDialog(
         context: context,
