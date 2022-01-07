@@ -844,7 +844,7 @@ class _MessageViewState extends State<MessageView> {
                 children: <Widget>[
                   Image.asset(
                     "assets/images/failed.jpg",
-                    fit: BoxFit.fill,
+                    // fit: BoxFit.fill,
                   ),
                   Positioned(
                     bottom: 0.0,
@@ -1122,7 +1122,7 @@ class _MessageViewState extends State<MessageView> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('请输入虚拟消息，只在本地显示，不会真正发送'),
+            title: Text('请编辑消息内容，只在本地修改'),
             content: TextField(
               decoration: InputDecoration(
                 hintText: '消息内容',
