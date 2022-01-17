@@ -33,6 +33,7 @@ class MsgBean {
   String display; // 显示的纯文本
   int timestamp; // 毫秒级时间戳
   bool recalled = false; // 是否已撤回
+  int operatorId; // 操作者ID
 
   MsgBean(
       {this.senderId,
@@ -53,6 +54,7 @@ class MsgBean {
       this.fileUrl,
       this.role,
       this.timestamp = 0,
+      this.operatorId,
       this.action = ActionType.Message});
 
   MsgBean deepCopy() {
@@ -88,8 +90,7 @@ class MsgBean {
     String s = nickname;
     if (groupCard != null && groupCard.isNotEmpty) {
       s = groupCard;
-    }
-    else if (remark != null && remark.isNotEmpty) {
+    } else if (remark != null && remark.isNotEmpty) {
       s = remark;
     }
     s = s.replaceAllMapped(RegExp(r'(.+)（.+?）$'), (match) => match[1]);

@@ -517,9 +517,35 @@ class CqhttpService {
     _markRecalled(msg);
   }
 
-  void _parseGroupIncrease(final obj) {}
+  void _parseGroupIncrease(final obj) {
+    String subType = obj['sub_type']; // approve / invite
+    int groupId = obj['group_id'];
+    int operatorId = obj['operator_id']; // 操作者
+    int userId = obj['user_id']; // 用户ID
 
-  void _parseGroupDecrease(final obj) {}
+    MsgBean msg = new MsgBean(
+        groupId: groupId,
+        operatorId: operatorId,
+        senderId: userId,
+        subType: subType,
+        action: ActionType.JoinAction);
+    _notifyOuter(msg);
+  }
+
+  void _parseGroupDecrease(final obj) {
+    String subType = obj['sub_type']; // 退群leave/被踢kick/登录号被踢kick_me
+    int groupId = obj['group_id'];
+    int operatorId = obj['operator_id']; // 操作者（如果主动退群，则和userId相同）
+    int userId = obj['user_id']; // 用户ID
+
+    MsgBean msg = new MsgBean(
+        groupId: groupId,
+        operatorId: operatorId,
+        senderId: userId,
+        subType: subType,
+        action: ActionType.JoinAction);
+    _notifyOuter(msg);
+  }
 
   void _parseGroupCard(final obj) {}
 
@@ -615,7 +641,9 @@ class CqhttpService {
       // 去除重复消息，可能是bug，有时候会发两遍一样的消息
       bool repeat = false;
       ac.allMessages[msg.keyId()].forEach((element) {
-        if (element.messageId == msg.messageId) repeat = true;
+        if (element.messageId != null &&
+            element.messageId != 0 &&
+            element.messageId == msg.messageId) repeat = true;
       });
       if (repeat) {
         print('warning: 去除重复消息');
