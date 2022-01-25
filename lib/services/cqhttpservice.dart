@@ -723,6 +723,7 @@ class CqhttpService {
   void refreshGroupMembers(int groupId, {int userId}) {
     if (ac.gettingGroupMembers.contains(groupId)) {
       // 有其他线程获取了
+      // print('已经有线程在获取群 $groupId 成员了');
       return;
     }
     if (userId != null) {
@@ -730,10 +731,13 @@ class CqhttpService {
         ac.groupList[groupId].ignoredMembers = {};
       } else if (ac.groupList[groupId].ignoredMembers.contains(userId)) {
         // 已经获取过这个用户了
+        // print('已经获取过这个群 $groupId 的成员 $userId 了');
         return;
       }
       ac.groupList[groupId].ignoredMembers.add(userId);
     }
+
+    // print('刷新群成员：$groupId');
     ac.gettingGroupMembers.add(groupId);
     send({
       'action': 'get_group_member_list',

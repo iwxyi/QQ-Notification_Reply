@@ -731,6 +731,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
               print('群消息.疑问聚焦');
             } else if (group.focusAt != null &&
                 group.focusAt.contains(msg.senderId)) {
+              // 艾特聚焦
               contains = true;
               print('群消息.艾特聚焦');
             }
@@ -753,12 +754,12 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           int rCount = G.ac.receivedCountAfterMySent[msg.keyId()] ?? 0;
           rCount--; // 自己发送消息后的收到的别人的消息数量
           if (delta <= 60 || rCount <= 3) {
-            // 一分钟内：重要
+            // 一分钟内、3条消息：重要
             channelKey = 'important_group_chats';
             isDynamicImportance = true;
             print('群消息.动态重要性.重要  $delta  $rCount');
           } else if (delta <= 180 || rCount <= 10) {
-            // 一分钟内：普通通知，且忽视不通知
+            // 三分钟内、10条消息：普通通知，且忽视不通知
             if (channelKey != 'important_group_chats') {
               channelKey = 'normal_group_chats';
               print('群消息.动态重要性.普通  $delta  $rCount');
@@ -811,9 +812,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         id: id,
         channelKey: channelKey,
         groupKey: msg.keyId().toString(),
-        summary: msg.isGroup()
-            ? msg.groupName
-            : msg.nickname ?? msg.username(),
+        summary: msg.isGroup() ? msg.groupName : msg.nickname ?? msg.username(),
         title: G.st.getLocalNickname(msg.senderKeyId(), msg.username()),
         body: G.cs.getMessageDisplay(msg),
         notificationLayout: NotificationLayout.Messaging,

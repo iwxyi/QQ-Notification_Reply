@@ -80,8 +80,12 @@ class _ChatWidgetState extends State<ChatWidget>
     widget.setObject = (MsgBean msg) {
       // 取消旧的
       if (widget.chatObj != null) {
-        // 去掉正在获取群成员的flag
-        G.ac.gettingGroupMembers.remove(widget.chatObj.keyId());
+        if (widget.chatObj.isGroup()) {
+          // 去掉正在获取群成员的flag
+          G.ac.gettingGroupMembers.remove(widget.chatObj.groupId);
+          // G.ac.groupList[widget.chatObj.groupId]?.ignoredMembers?.clear();
+          // print('取消群成员的获取：${widget.chatObj.groupId}');
+        }
         // G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
       }
       widget.jumpMsg = null;
@@ -924,7 +928,11 @@ class _ChatWidgetState extends State<ChatWidget>
   void dispose() {
     G.ac.gettingChatObjColor.clear();
     if (widget.chatObj != null) {
-      G.ac.gettingGroupMembers.remove(widget.chatObj.keyId());
+      if (widget.chatObj.isGroup()) {
+        G.ac.gettingGroupMembers.remove(widget.chatObj.groupId);
+        // G.ac.groupList[widget.chatObj.groupId]?.ignoredMembers?.clear();
+        // print('取消获取群成员');
+      }
       G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     }
     super.dispose();
