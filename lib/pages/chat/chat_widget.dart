@@ -253,6 +253,7 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   Widget _buildListStack(BuildContext context) {
+    // 消息列表
     List<Widget> stack = [
       new ListView.separated(
         separatorBuilder: (BuildContext context, int index) {
@@ -336,7 +337,10 @@ class _ChatWidgetState extends State<ChatWidget>
         ((DateTime.now().millisecondsSinceEpoch - widget.jumpMsgTimestamp) <
             G.st.chatTopMsgDisplayMSecond)) {
       MsgBean msg = widget.jumpMsg;
-      String title = msg.username() + "：" + G.cs.getMessageDisplay(msg);
+      String title = G.cs.getMessageDisplay(msg);
+      if (msg.action == MessageType.Message) {
+        title = msg.username() + "：" + title;
+      }
       if (msg.isGroup()) {
         String gn = G.st.getLocalNickname(msg.keyId(), msg.groupName);
         title = '[$gn] ' + title;
@@ -367,7 +371,9 @@ class _ChatWidgetState extends State<ChatWidget>
       MsgBean msg = _messages.first;
       String title = G.cs.getMessageDisplay(msg);
       if (msg.isGroup()) {
-        title = msg.username() + "：" + title;
+        if (msg.action == MessageType.Message) {
+          title = msg.username() + "：" + title;
+        }
       }
       Widget label = Text(
         title,
