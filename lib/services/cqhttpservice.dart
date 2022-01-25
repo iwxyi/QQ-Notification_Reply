@@ -904,6 +904,7 @@ class CqhttpService {
           text = text.replaceAllMapped(RegExp(r"\[CQ:at,qq=(\d+)\]"), (match) {
             var id = int.parse(match[1]);
             String username = ac.getGroupMemberName(id, msg.groupId);
+            username = st.getLocalNickname(id, username);
             if (username != null) return '@' + username;
             // 未获取到昵称
             if (msg.isGroup()) {

@@ -699,10 +699,10 @@ class _ChatWidgetState extends State<ChatWidget>
       child: Text('本地昵称'),
     ));
 
-    menus.add(PopupMenuItem<ChatMenuItems>(
+    /* menus.add(PopupMenuItem<ChatMenuItems>(
       value: ChatMenuItems.MessageHistories,
       child: Text('历史消息'),
-    ));
+    )); */
 
     if (G.st.enableNonsenseMode) {
       // 插入自己的消息
