@@ -403,7 +403,8 @@ class CqhttpService {
           // 插入到list的开头
           MsgBean msg = createGroupMsgFromJson(messageObj);
           if (msg.messageSeq == earliestId) {
-            print('遇到重复ID，已退出：$i in ${data.length}');
+            // print('遇到重复ID，已退出：$i in ${data.length}');
+            // 一般拿到20条，第19条的时候就重复了，实际上多了18条
             break;
           }
           list.insert(insertPos++, msg);

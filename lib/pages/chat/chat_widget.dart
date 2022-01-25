@@ -163,6 +163,7 @@ class _ChatWidgetState extends State<ChatWidget>
         if (chatObj.isGroup() && chatObj.groupId == event.data['group_id']) {
           print('收到群消息历史，刷新状态');
           if (mounted) {
+            _blankHistory = false;
             _loadMsgHistory();
             setState(() {});
           }
