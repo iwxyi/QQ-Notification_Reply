@@ -343,7 +343,7 @@ class _ChatWidgetState extends State<ChatWidget>
           child: Container(
             padding: EdgeInsets.all(6),
             child: label,
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery.of(context).size.width - 12,
           ),
           onPressed: () {
             widget.setObject(widget.jumpMsg);
@@ -371,7 +371,7 @@ class _ChatWidgetState extends State<ChatWidget>
           child: Container(
             padding: EdgeInsets.all(6),
             child: label,
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery.of(context).size.width - 12,
           ),
           onPressed: () {
             _scrollToLatest(true);
