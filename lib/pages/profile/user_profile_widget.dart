@@ -242,7 +242,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       PopupMenuItem<UserMenuItems>(
           value: UserMenuItems.ModifyNickname,
           child: Text('修改昵称'),
-          enabled: cardChangeable),
+          enabled: cardChangeable ?? false),
       PopupMenuItem<UserMenuItems>(
         value: UserMenuItems.LocalNickname,
         child: Text('本地昵称'),

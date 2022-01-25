@@ -252,104 +252,124 @@ class _ChatWidgetState extends State<ChatWidget>
     });
   }
 
+  Widget _buildMessageList(BuildContext context) {
+    return new ListView.separated(
+      separatorBuilder: (BuildContext context, int index) {
+        if (index >= 0) {
+          int ts0 = _messages[index].timestamp;
+          int ts1 = 0;
+          if (index < _messages.length - 1) {
+            ts1 = _messages[index + 1].timestamp;
+          }
+          int delta = ts0 - ts1;
+          int maxDelta = 120 * 1000;
+          // int maxDelta = 0;
+          if (delta > maxDelta) {
+            // 超过一分钟，显示时间
+            DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
+            String str = formatDate(dt, ['HH', ':', 'nn']);
+            return new Row(
+              children: [new Text(str, style: TextStyle(color: Colors.grey))],
+              mainAxisAlignment: MainAxisAlignment.center,
+            );
+          }
+        }
+
+        return Divider(
+          color: Colors.transparent,
+          height: 0.0,
+          indent: 0,
+        );
+      },
+      reverse: true,
+      // padding: new EdgeInsets.all(8.0),
+      itemBuilder: (context, int index) {
+        // 点击加载历史消息
+        if (index >= _messages.length) {
+          return Container(
+            alignment: Alignment.center,
+            child: FlatButton(
+                child: Container(
+                    padding: new EdgeInsets.all(6),
+                    child:
+                        Text('查看历史消息', style: TextStyle(color: Colors.grey))),
+                onPressed: () {
+                  _loadMsgHistory();
+                }),
+          );
+        }
+
+        return MessageView(
+            _messages[index],
+            index >= _messages.length - 1
+                ? false
+                : _messages[index + 1].senderId == _messages[index].senderId,
+            ValueKey(_messages[index].messageId), loadFinishedCallback: () {
+          // 图片加载完毕，会影响大小
+          if (_keepScrollBottom) {
+            if (!hasToBottom.containsKey(_messages[index].messageId)) {
+              // 重复判断，避免不知道哪来的多次complete
+              hasToBottom[_messages[index].messageId] = true;
+              _scrollToLatest(true);
+            }
+          }
+        }, jumpMessageCallback: (int messageId) {
+          // 跳转到指定消息（如果有）
+          int index = _messages.lastIndexWhere((element) {
+            return element.messageId == messageId;
+          });
+          if (index > -1) {
+            // TODO: 滚动到index
+          }
+        }, addMessageCallback: (String text) {
+          // 添加消息到发送框
+          _insertMessage(text);
+          FocusScope.of(context).requestFocus(_editorFocus);
+        }, sendMessageCallback: (String text) {
+          // 直接发送消息
+          MsgBean msg = _messages[index];
+          G.cs.sendMsg(msg, text);
+        }, deleteMessageCallback: (MsgBean msg) {
+          // 本地删除消息
+          setState(() {
+            _messages
+                .removeWhere((element) => element.messageId == msg.messageId);
+            G.ac.allMessages[msg.keyId()]
+                .removeWhere((element) => element.messageId == msg.messageId);
+          });
+        }, unfocusEditorCallback: () {
+          _removeEditorFocus();
+        }, showUserInfoCallback: (MsgBean msg) {
+          showUserInfo(msg);
+        }, fakeSendCallback: (int senderId) {
+          insertFakeMessage(senderId);
+        });
+      },
+      itemCount: _messages.length + 1,
+      controller: _scrollController,
+    );
+  }
+
+  double _pointMoveX = 0, _pointMoveY = 0;
   Widget _buildListStack(BuildContext context) {
     // 消息列表
     List<Widget> stack = [
-      new ListView.separated(
-        separatorBuilder: (BuildContext context, int index) {
-          if (index >= 0) {
-            int ts0 = _messages[index].timestamp;
-            int ts1 = 0;
-            if (index < _messages.length - 1) {
-              ts1 = _messages[index + 1].timestamp;
-            }
-            int delta = ts0 - ts1;
-            int maxDelta = 120 * 1000;
-            // int maxDelta = 0;
-            if (delta > maxDelta) {
-              // 超过一分钟，显示时间
-              DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
-              String str = formatDate(dt, ['HH', ':', 'nn']);
-              return new Row(
-                children: [new Text(str, style: TextStyle(color: Colors.grey))],
-                mainAxisAlignment: MainAxisAlignment.center,
-              );
-            }
-          }
-
-          return Divider(
-            color: Colors.transparent,
-            height: 0.0,
-            indent: 0,
-          );
-        },
-        reverse: true,
-        // padding: new EdgeInsets.all(8.0),
-        itemBuilder: (context, int index) {
-          // 点击加载历史消息
-          if (index >= _messages.length) {
-            return Container(
-              alignment: Alignment.center,
-              child: FlatButton(
-                  child: Container(
-                      padding: new EdgeInsets.all(6),
-                      child:
-                          Text('查看历史消息', style: TextStyle(color: Colors.grey))),
-                  onPressed: () {
-                    _loadMsgHistory();
-                  }),
-            );
-          }
-
-          return MessageView(
-              _messages[index],
-              index >= _messages.length - 1
-                  ? false
-                  : _messages[index + 1].senderId == _messages[index].senderId,
-              ValueKey(_messages[index].messageId), loadFinishedCallback: () {
-            // 图片加载完毕，会影响大小
-            if (_keepScrollBottom) {
-              if (!hasToBottom.containsKey(_messages[index].messageId)) {
-                // 重复判断，避免不知道哪来的多次complete
-                hasToBottom[_messages[index].messageId] = true;
-                _scrollToLatest(true);
-              }
-            }
-          }, jumpMessageCallback: (int messageId) {
-            // 跳转到指定消息（如果有）
-            int index = _messages.lastIndexWhere((element) {
-              return element.messageId == messageId;
-            });
-            if (index > -1) {
-              // TODO: 滚动到index
-            }
-          }, addMessageCallback: (String text) {
-            // 添加消息到发送框
-            _insertMessage(text);
-            FocusScope.of(context).requestFocus(_editorFocus);
-          }, sendMessageCallback: (String text) {
-            // 直接发送消息
-            MsgBean msg = _messages[index];
-            G.cs.sendMsg(msg, text);
-          }, deleteMessageCallback: (MsgBean msg) {
-            // 本地删除消息
-            setState(() {
-              _messages
-                  .removeWhere((element) => element.messageId == msg.messageId);
-              G.ac.allMessages[msg.keyId()]
-                  .removeWhere((element) => element.messageId == msg.messageId);
-            });
-          }, unfocusEditorCallback: () {
-            _removeEditorFocus();
-          }, showUserInfoCallback: (MsgBean msg) {
-            showUserInfo(msg);
-          }, fakeSendCallback: (int senderId) {
-            insertFakeMessage(senderId);
-          });
-        },
-        itemCount: _messages.length + 1,
-        controller: _scrollController,
-      ),
+      widget.innerMode
+          ? _buildMessageList(context)
+          : Listener(
+              onPointerDown: (dowPointEvent) {
+                _pointMoveX = dowPointEvent.position.dx;
+                _pointMoveY = dowPointEvent.position.dy;
+              },
+              onPointerMove: (movePointEvent) {
+                var deltaX = movePointEvent.position.dx - _pointMoveX;
+                var deltaY = movePointEvent.position.dy - _pointMoveY;
+                // 右滑
+                if (deltaY > -30 && deltaY < 30 && deltaX > 80) {
+                  Navigator.pop(context);
+                }
+              },
+              child: _buildMessageList(context))
     ];
 
     // 显示跳转的消息
@@ -539,10 +559,12 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   Widget _buildBody(BuildContext context) {
+    // 消息列表
     List<Widget> widgets = [
-      // 消息列表
       _buildListStack(context),
     ];
+
+    // 显示输入框
     if (widget.innerMode) {
       widgets.add(SizedBox(height: 8));
       widgets.add(_buildTextEditor());
