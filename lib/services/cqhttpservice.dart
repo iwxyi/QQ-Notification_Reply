@@ -409,7 +409,7 @@ class CqhttpService {
           }
           list.insert(insertPos++, msg);
         }
-        print('加载群消息历史：${data.length}');
+        print('加载云端群消息历史：${data.length}');
         ac.eventBus
             .fire(EventFn(Event.groupMessageHistories, {'group_id': groupId}));
       } else {

@@ -1057,9 +1057,9 @@ class _MessageViewState extends State<MessageView> {
       _showCopyTextDialog(
           'CQ码',
           'id: ' +
-              msg.messageId.toString() +
+              (msg.messageId ?? 0).toString() +
               '\n--------------------\n' +
-              msg.message);
+              (msg.message ?? ''));
     } else if (value == 'delete') {
       widget.deleteMessageCallback(msg);
     } else if (value == 'recall') {

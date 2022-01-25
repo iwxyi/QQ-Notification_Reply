@@ -465,6 +465,9 @@ class _ChatWidgetState extends State<ChatWidget>
                   image: API.chatObjHeader(msg),
                   width: 40.0,
                   height: 40.0,
+                  placeholderErrorBuilder: (context, error, stackTrace) {
+                    return Text('Null');
+                  },
                 ),
               );
               // 栈对象
@@ -1058,20 +1061,36 @@ class _ChatWidgetState extends State<ChatWidget>
     }
 
     // 获取需要加载的位置
-    List<MsgBean> list = G.ac.allMessages[widget.chatObj.keyId()];
-    int endIndex = list.length; // 最后一个需要加载的位置+1（不包括）
+    List<MsgBean> totalList = G.ac.allMessages[widget.chatObj.keyId()];
+    int endIndex = totalList.length; // 最后一个需要加载的位置+1（不包括）
     int startIndex = 0;
     if (_messages != null && _messages.length > 0) {
       // 判断最老消息的位置
       int messageId = _messages.last.messageId;
-      while (endIndex-- > 0 && list[endIndex].messageId != messageId) {}
-      if (endIndex <= 0) {
-        print('已加载完消息：${list.length}>=${_messages.length}');
-        _blankHistory = true;
-        _loadNetMsgHistory();
-        return;
+      if (messageId == null) {
+        int i = _messages.length;
+        while (--i >= 0) {
+          messageId = _messages[i].messageId;
+          if (messageId != null) {
+            break;
+          }
+        }
       }
-    } else if (list == null || list.length == 0) {
+
+      // 理论上来讲，_message.length = totalList后半段
+      while (endIndex-- > 0 && totalList[endIndex].messageId != messageId) {}
+      if (endIndex <= 0) {
+        print('已加载完消息：${_messages.length}>=${totalList.length}');
+        if (_messages.length >= totalList.length) {
+          _blankHistory = true;
+          _loadNetMsgHistory();
+          return;
+        } else {
+          // 这里可能是出问题了
+          endIndex = totalList.length - _messages.length - 1;
+        }
+      }
+    } else if (totalList == null || totalList.length == 0) {
       _blankHistory = true;
       _loadNetMsgHistory();
       return;
@@ -1083,10 +1102,10 @@ class _ChatWidgetState extends State<ChatWidget>
     // 进行加载操作
     var deltaBottom = _scrollController.position.extentAfter; // 距离底部的位置
     print(
-        '加载历史记录，${_messages.length} in ${list.length} margin_bottom:$deltaBottom, $_keepScrollBottom');
+        '加载历史记录，${_messages.length} in ${totalList.length} margin_bottom:$deltaBottom, $_keepScrollBottom');
     setState(() {
       for (int i = endIndex - 1; i >= startIndex; i--) {
-        _messages.add(list[i]);
+        _messages.add(totalList[i]);
       }
     });
     // 恢复底部位置

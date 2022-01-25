@@ -262,6 +262,9 @@ class _ChatListPageState extends State<ChatListPage>
                 image: headerUrl,
                 width: 40.0,
                 height: 40.0,
+                placeholderErrorBuilder: (context, error, stackTrace) {
+                  return Text('Null');
+                },
               ),
             ),
             title: Text(titleStr ?? "Error Title"),
