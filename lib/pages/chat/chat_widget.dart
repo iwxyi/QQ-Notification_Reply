@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +25,7 @@ enum ChatMenuItems {
   Info,
   EnableNotification,
   CustomName,
+  MessageHistories,
   InsertFakeLeft,
   InsertFakeRight
 }
@@ -141,6 +141,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
+      MsgBean chatObj = widget.chatObj;
       if (event.event == Event.messageRaw) {
         _messageReceived(event.data);
       } else if (event.event == Event.groupMember) {
@@ -149,7 +150,7 @@ class _ChatWidgetState extends State<ChatWidget>
         }
       } else if (event.event == Event.messageRecall) {
         if (widget.chatObj.isObj(event.data)) {
-          print('message recall, refresh state');
+          print('监听到消息撤回，刷新状态');
           if (mounted) {
             setState(() {});
           }
@@ -157,6 +158,15 @@ class _ChatWidgetState extends State<ChatWidget>
       } else if (event.event == Event.refreshState) {
         if (mounted) {
           setState(() {});
+        }
+      } else if (event.event == Event.groupMessageHistories) {
+        if (chatObj.isGroup() && chatObj.groupId == event.data['group_id']) {
+          print('收到群消息历史，刷新状态');
+          if (mounted) {
+            _blankHistory = false;
+            _loadMsgHistory();
+            setState(() {});
+          }
         }
       }
     });
@@ -205,7 +215,7 @@ class _ChatWidgetState extends State<ChatWidget>
     if (G.ac.allMessages.containsKey(msg.keyId())) {
       List<MsgBean> list = G.ac.allMessages[msg.keyId()];
       // _messages = list.sublist(max(0, list.length - G.st.loadMsgHistoryCount));
-      // 逆序
+      // 逆序，最新消息是0，最旧消息是len-1
       _messages.clear();
       int start = max(0, list.length - G.st.loadMsgHistoryCount);
       for (int i = list.length - 1; i >= start; --i) {
@@ -242,36 +252,54 @@ class _ChatWidgetState extends State<ChatWidget>
     });
   }
 
-  Widget _buildListStack(BuildContext context) {
-    List<Widget> stack = [
-      new ListView.separated(
-        separatorBuilder: (BuildContext context, int index) {
+  Widget _buildMessageList(BuildContext context) {
+    return new ListView.separated(
+      separatorBuilder: (BuildContext context, int index) {
+        if (index >= 0) {
+          int ts0 = _messages[index].timestamp;
+          int ts1 = 0;
           if (index < _messages.length - 1) {
-            int ts0 = _messages[index].timestamp;
-            int ts1 = _messages[index + 1].timestamp;
-            int delta = ts0 - ts1;
-            int maxDelta = 120 * 1000;
-            // int maxDelta = 0;
-            if (delta > maxDelta) {
-              // 超过一分钟，显示时间
-              DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
-              String str = formatDate(dt, ['HH', ':', 'nn']);
-              return new Row(
-                children: [new Text(str, style: TextStyle(color: Colors.grey))],
-                mainAxisAlignment: MainAxisAlignment.center,
-              );
-            }
+            ts1 = _messages[index + 1].timestamp;
           }
+          int delta = ts0 - ts1;
+          int maxDelta = 120 * 1000;
+          // int maxDelta = 0;
+          if (delta > maxDelta) {
+            // 超过一分钟，显示时间
+            DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
+            String str = formatDate(dt, ['HH', ':', 'nn']);
+            return new Row(
+              children: [new Text(str, style: TextStyle(color: Colors.grey))],
+              mainAxisAlignment: MainAxisAlignment.center,
+            );
+          }
+        }
 
-          return Divider(
-            color: Colors.transparent,
-            height: 0.0,
-            indent: 0,
+        return Divider(
+          color: Colors.transparent,
+          height: 0.0,
+          indent: 0,
+        );
+      },
+      reverse: true,
+      // padding: new EdgeInsets.all(8.0),
+      itemBuilder: (context, int index) {
+        // 点击加载历史消息
+        if (index >= _messages.length) {
+          return Container(
+            alignment: Alignment.center,
+            child: FlatButton(
+                child: Container(
+                    padding: new EdgeInsets.all(6),
+                    child:
+                        Text('查看历史消息', style: TextStyle(color: Colors.grey))),
+                onPressed: () {
+                  _loadMsgHistory();
+                }),
           );
-        },
-        reverse: true,
-        // padding: new EdgeInsets.all(8.0),
-        itemBuilder: (context, int index) => MessageView(
+        }
+
+        return MessageView(
             _messages[index],
             index >= _messages.length - 1
                 ? false
@@ -315,10 +343,39 @@ class _ChatWidgetState extends State<ChatWidget>
           showUserInfo(msg);
         }, fakeSendCallback: (int senderId) {
           insertFakeMessage(senderId);
-        }),
-        itemCount: _messages.length,
-        controller: _scrollController,
-      ),
+        });
+      },
+      itemCount: _messages.length + 1,
+      controller: _scrollController,
+    );
+  }
+
+  double _pointMoveX = 0, _pointMoveY = 0;
+  bool _movedLarge = false;
+  Widget _buildListStack(BuildContext context) {
+    // 消息列表
+    List<Widget> stack = [
+      widget.innerMode
+          ? _buildMessageList(context)
+          : Listener(
+              onPointerDown: (dowPointEvent) {
+                _pointMoveX = dowPointEvent.position.dx;
+                _pointMoveY = dowPointEvent.position.dy;
+                _movedLarge = false;
+              },
+              onPointerMove: (movePointEvent) {
+                const MAX_X = 80;
+                const MAX_Y = 30;
+                var deltaX = movePointEvent.position.dx - _pointMoveX;
+                var deltaY = movePointEvent.position.dy - _pointMoveY;
+                // 右滑
+                if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
+                  _movedLarge = true;
+                } else if (!_movedLarge && deltaX > MAX_X) {
+                  Navigator.pop(context);
+                }
+              },
+              child: _buildMessageList(context))
     ];
 
     // 显示跳转的消息
@@ -326,7 +383,10 @@ class _ChatWidgetState extends State<ChatWidget>
         ((DateTime.now().millisecondsSinceEpoch - widget.jumpMsgTimestamp) <
             G.st.chatTopMsgDisplayMSecond)) {
       MsgBean msg = widget.jumpMsg;
-      String title = msg.username() + "：" + G.cs.getMessageDisplay(msg);
+      String title = G.cs.getMessageDisplay(msg);
+      if (msg.action == MessageType.Message) {
+        title = msg.username() + "：" + title;
+      }
       if (msg.isGroup()) {
         String gn = G.st.getLocalNickname(msg.keyId(), msg.groupName);
         title = '[$gn] ' + title;
@@ -357,7 +417,9 @@ class _ChatWidgetState extends State<ChatWidget>
       MsgBean msg = _messages.first;
       String title = G.cs.getMessageDisplay(msg);
       if (msg.isGroup()) {
-        title = msg.username() + "：" + title;
+        if (msg.action == MessageType.Message) {
+          title = msg.username() + "：" + title;
+        }
       }
       Widget label = Text(
         title,
@@ -409,6 +471,9 @@ class _ChatWidgetState extends State<ChatWidget>
                   image: API.chatObjHeader(msg),
                   width: 40.0,
                   height: 40.0,
+                  placeholderErrorBuilder: (context, error, stackTrace) {
+                    return Text('Null');
+                  },
                 ),
               );
               // 栈对象
@@ -503,10 +568,12 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   Widget _buildBody(BuildContext context) {
+    // 消息列表
     List<Widget> widgets = [
-      // 消息列表
       _buildListStack(context),
     ];
+
+    // 显示输入框
     if (widget.innerMode) {
       widgets.add(SizedBox(height: 8));
       widgets.add(_buildTextEditor());
@@ -641,6 +708,11 @@ class _ChatWidgetState extends State<ChatWidget>
       child: Text('本地昵称'),
     ));
 
+    /* menus.add(PopupMenuItem<ChatMenuItems>(
+      value: ChatMenuItems.MessageHistories,
+      child: Text('历史消息'),
+    )); */
+
     if (G.st.enableNonsenseMode) {
       // 插入自己的消息
       menus.add(PopupMenuItem<ChatMenuItems>(
@@ -686,6 +758,9 @@ class _ChatWidgetState extends State<ChatWidget>
             break;
           case ChatMenuItems.CustomName:
             editCustomName();
+            break;
+          case ChatMenuItems.MessageHistories:
+            _loadNetMsgHistory();
             break;
           case ChatMenuItems.InsertFakeRight:
             insertFakeMessage(G.ac.myId);
@@ -988,22 +1063,43 @@ class _ChatWidgetState extends State<ChatWidget>
     if (!G.ac.allMessages.containsKey(widget.chatObj.keyId())) {
       print('warning: 未找到该聊天对象的消息记录列表');
       _blankHistory = true;
-      return;
+      G.ac.allMessages[widget.chatObj.keyId()] = [];
     }
 
     // 获取需要加载的位置
-    List<MsgBean> list = G.ac.allMessages[widget.chatObj.keyId()];
-    int endIndex = list.length; // 最后一个需要加载的位置+1（不包括）
+    List<MsgBean> totalList = G.ac.allMessages[widget.chatObj.keyId()];
+    int endIndex = totalList.length; // 最后一个需要加载的位置+1（不包括）
     int startIndex = 0;
     if (_messages != null && _messages.length > 0) {
       // 判断最老消息的位置
       int messageId = _messages.last.messageId;
-      while (endIndex-- > 0 && list[endIndex].messageId != messageId) {}
-      if (endIndex <= 0) {
-        print('没有历史消息，${list.length}>=${_messages.length}');
-        _blankHistory = true;
-        return;
+      if (messageId == null) {
+        int i = _messages.length;
+        while (--i >= 0) {
+          messageId = _messages[i].messageId;
+          if (messageId != null) {
+            break;
+          }
+        }
       }
+
+      // 理论上来讲，_message.length = totalList后半段
+      while (endIndex-- > 0 && totalList[endIndex].messageId != messageId) {}
+      if (endIndex <= 0) {
+        print('已加载完消息：${_messages.length}>=${totalList.length}');
+        if (_messages.length >= totalList.length) {
+          _blankHistory = true;
+          _loadNetMsgHistory();
+          return;
+        } else {
+          // 这里可能是出问题了
+          endIndex = totalList.length - _messages.length - 1;
+        }
+      }
+    } else if (totalList == null || totalList.length == 0) {
+      _blankHistory = true;
+      _loadNetMsgHistory();
+      return;
     } else {
       // 加载最新的
     }
@@ -1011,10 +1107,11 @@ class _ChatWidgetState extends State<ChatWidget>
 
     // 进行加载操作
     var deltaBottom = _scrollController.position.extentAfter; // 距离底部的位置
-    print('加载历史记录，margin_bottom:$deltaBottom, $_keepScrollBottom');
+    print(
+        '加载历史记录，${_messages.length} in ${totalList.length} margin_bottom:$deltaBottom, $_keepScrollBottom');
     setState(() {
       for (int i = endIndex - 1; i >= startIndex; i--) {
-        _messages.add(list[i]);
+        _messages.add(totalList[i]);
       }
     });
     // 恢复底部位置
@@ -1022,6 +1119,28 @@ class _ChatWidgetState extends State<ChatWidget>
       _scrollController
           .jumpTo(_scrollController.position.maxScrollExtent - deltaBottom);
     }); */
+  }
+
+  void _loadNetMsgHistory() {
+    print("加载云端消息历史");
+    List<MsgBean> list = G.ac.allMessages[widget.chatObj.keyId()];
+    int earliestId;
+    if (list != null) {
+      int i = -1;
+      while (++i < list.length) {
+        if (list[i].action == MessageType.Message) {
+          earliestId = list[i].messageSeq;
+          break;
+        }
+      }
+    }
+
+    if (widget.chatObj.isPrivate()) {
+      // TODO: 加载私聊消息
+    } else if (widget.chatObj.isGroup()) {
+      // 加载群聊消息
+      G.cs.getGroupMessageHistories(widget.chatObj.groupId, earliestId);
+    }
   }
 
   void showEmojiList() {

@@ -1,22 +1,22 @@
 import 'package:date_format/date_format.dart';
 
-enum ActionType {
+enum MessageType {
   Message,
-  JoinAction,
-  ExitAction,
+  Action,
   SystemLog,
 }
 
 class MsgBean {
   int senderId;
   String nickname; // 用户昵称
-  String message;
+  String message; // 消息内容，或者显示格式
   String rawMessage;
   int messageId;
   String subType;
   String remark; // 好友备注
   int targetId; // 准备发给谁，给对方还是给自己
-  ActionType action = ActionType.Message;
+  MessageType action = MessageType.Message;
+  int messageSeq;
 
   int friendId;
   int groupId;
@@ -33,6 +33,7 @@ class MsgBean {
   String display; // 显示的纯文本
   int timestamp; // 毫秒级时间戳
   bool recalled = false; // 是否已撤回
+  int operatorId; // 操作者ID
 
   MsgBean(
       {this.senderId,
@@ -40,6 +41,7 @@ class MsgBean {
       this.message,
       this.messageId,
       this.rawMessage,
+      this.messageSeq,
       this.subType,
       this.remark,
       this.targetId,
@@ -53,7 +55,8 @@ class MsgBean {
       this.fileUrl,
       this.role,
       this.timestamp = 0,
-      this.action = ActionType.Message});
+      this.operatorId,
+      this.action = MessageType.Message});
 
   MsgBean deepCopy() {
     return new MsgBean(
@@ -82,20 +85,22 @@ class MsgBean {
       ? groupCard
       : (remark != null && remark.isNotEmpty)
           ? remark
-          : nickname;
+          : nickname ?? "$senderId";
 
   String usernameSimplify() {
     String s = nickname;
     if (groupCard != null && groupCard.isNotEmpty) {
       s = groupCard;
-    }
-    else if (remark != null && remark.isNotEmpty) {
+    } else if (remark != null && remark.isNotEmpty) {
       s = remark;
+    }
+    if (s == null) {
+      return "$senderId";
     }
     s = s.replaceAllMapped(RegExp(r'(.+)（.+?）$'), (match) => match[1]);
     s = s.replaceAllMapped(
         RegExp(r'^(?:id|Id|ID)[:：](.+)'), (match) => match[1]);
-    return s;
+    return s ?? senderId;
   }
 
   int keyId() => groupId != null && groupId != 0 ? -groupId : friendId;
@@ -114,7 +119,7 @@ class MsgBean {
 
   bool isFile() => fileId != null && fileId.isNotEmpty;
 
-  bool isMessage() => action == ActionType.Message;
+  bool isMessage() => action == MessageType.Message;
 
   bool isPureMessage() => isMessage() && message != null;
 
@@ -132,7 +137,7 @@ class MsgBean {
         RegExp(r"\[CQ:(\w+),.*\]"), (match) => "[${match[1]}]");
     String ts = formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp),
         ['HH', ':', 'nn', ':', 'ss']);
-    if (action == ActionType.SystemLog) {
+    if (action == MessageType.SystemLog) {
       return "$ts $showed";
     } else {
       if (isPrivate()) {

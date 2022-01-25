@@ -60,7 +60,12 @@ class _MessageViewState extends State<MessageView> {
 
   _MessageViewState(this.msg, this.isNext);
 
-  /// 一整行
+  /// 一整行通知
+  Widget _buildActionLine() {
+    return Text(G.cs.getMessageDisplay(msg));
+  }
+
+  /// 一整行用户消息
   Widget _buildMessageLine() {
     // 判断左右
     bool isSelf = msg.senderId == G.ac.myId;
@@ -479,7 +484,6 @@ class _MessageViewState extends State<MessageView> {
           if ((mat = re.firstMatch(mAll)) != null) {
             String url = mat.group(2);
             url = url.replaceAll('&amp;', '&');
-            print('播放语音：' + url);
             span = new TextSpan(
                 text: "[语音]",
                 recognizer: TapGestureRecognizer()
@@ -844,7 +848,7 @@ class _MessageViewState extends State<MessageView> {
                 children: <Widget>[
                   Image.asset(
                     "assets/images/failed.jpg",
-                    fit: BoxFit.fill,
+                    // fit: BoxFit.fill,
                   ),
                   Positioned(
                     bottom: 0.0,
@@ -894,8 +898,18 @@ class _MessageViewState extends State<MessageView> {
 
   @override
   Widget build(BuildContext context) {
+    // 用户消息
+    if (msg.action == MessageType.Message) {
+      return new Container(
+        child: _buildMessageLine(),
+      );
+    }
+
+    // 普通通知
     return new Container(
-      child: _buildMessageLine(),
+      alignment: Alignment.center,
+      margin: EdgeInsets.all(6),
+      child: _buildActionLine(),
     );
   }
 
@@ -985,8 +999,9 @@ class _MessageViewState extends State<MessageView> {
       }
     }
 
-    if (RegExp(r'^\[CQ:image,[^\]]+\]$').hasMatch(msg.message) ||
-        RegExp(r'^\[CQ:face,[^\]]+\]$').hasMatch(msg.message)) {
+    if (msg.message != null &&
+        (RegExp(r'^\[CQ:image,[^\]]+\]$').hasMatch(msg.message) ||
+            RegExp(r'^\[CQ:face,[^\]]+\]$').hasMatch(msg.message))) {
       items.insert(
           insertPos++, PopupMenuItem(value: 'addEmoji', child: Text('存表情')));
     }
@@ -1042,9 +1057,9 @@ class _MessageViewState extends State<MessageView> {
       _showCopyTextDialog(
           'CQ码',
           'id: ' +
-              msg.messageId.toString() +
+              (msg.messageId ?? 0).toString() +
               '\n--------------------\n' +
-              msg.message);
+              (msg.message ?? ''));
     } else if (value == 'delete') {
       widget.deleteMessageCallback(msg);
     } else if (value == 'recall') {
@@ -1122,7 +1137,7 @@ class _MessageViewState extends State<MessageView> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('请输入虚拟消息，只在本地显示，不会真正发送'),
+            title: Text('请编辑消息内容，只在本地修改'),
             content: TextField(
               decoration: InputDecoration(
                 hintText: '消息内容',

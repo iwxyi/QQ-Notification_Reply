@@ -15,7 +15,7 @@ class _AllMessageListWidgetState extends State<AllMessageListWidget> {
   @override
   void initState() {
     G.ac.allLogs.reversed.forEach((element) {
-      if (element.action == ActionType.SystemLog) {
+      if (element.action == MessageType.SystemLog) {
         initList.add(element.simpleString());
       }
     });
