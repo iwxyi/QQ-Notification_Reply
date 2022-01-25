@@ -12,6 +12,7 @@ enum Event {
   messageRaw, // 获取到消息本身
   refreshState, // 刷新界面
   groupMember, // 群成员
+  groupMessageHistories, // 群历史
   messageRecall,
   newChat, // 打开聊天对话框
   userInfo // 用户信息

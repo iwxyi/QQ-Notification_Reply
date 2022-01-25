@@ -7,7 +7,12 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
-enum UserMenuItems { SpecialAttention, LocalNickname, MessageHistory }
+enum UserMenuItems {
+  SpecialAttention,
+  LocalNickname,
+  MessageHistory,
+  ModifyNickname
+}
 
 class UserProfileWidget extends StatefulWidget {
   final MsgBean chatObj;
@@ -235,6 +240,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
         enabled: widget.chatObj.isGroup(),
       ),
       PopupMenuItem<UserMenuItems>(
+          value: UserMenuItems.ModifyNickname,
+          child: Text('修改昵称'),
+          enabled: cardChangeable),
+      PopupMenuItem<UserMenuItems>(
         value: UserMenuItems.LocalNickname,
         child: Text('本地昵称'),
       ),
@@ -268,6 +277,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
             break;
           case UserMenuItems.MessageHistory:
             // TODO:用户消息历史
+            break;
+          case UserMenuItems.ModifyNickname:
+            // TODO:修改名片（但好像一直都是不可修改的状态）
             break;
         }
       },

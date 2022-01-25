@@ -62,6 +62,7 @@ class UserAccount {
   // 多线程Flag
   Set<int> gettingGroupMembers = {};
   Set<int> gettingChatObjColor = {};
+  Set<int> gettingGroupHistories = {};
 
   // QQ号增加至11位，与QQ群分开
   static int getNotificationId(MsgBean msg) {

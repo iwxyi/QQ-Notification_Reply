@@ -25,6 +25,7 @@ enum ChatMenuItems {
   Info,
   EnableNotification,
   CustomName,
+  MessageHistories,
   InsertFakeLeft,
   InsertFakeRight
 }
@@ -140,6 +141,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
     // 注册监听器，订阅 eventBus
     eventBusFn = G.ac.eventBus.on<EventFn>().listen((event) {
+      MsgBean chatObj = widget.chatObj;
       if (event.event == Event.messageRaw) {
         _messageReceived(event.data);
       } else if (event.event == Event.groupMember) {
@@ -148,7 +150,7 @@ class _ChatWidgetState extends State<ChatWidget>
         }
       } else if (event.event == Event.messageRecall) {
         if (widget.chatObj.isObj(event.data)) {
-          print('message recall, refresh state');
+          print('监听到消息撤回，刷新状态');
           if (mounted) {
             setState(() {});
           }
@@ -156,6 +158,14 @@ class _ChatWidgetState extends State<ChatWidget>
       } else if (event.event == Event.refreshState) {
         if (mounted) {
           setState(() {});
+        }
+      } else if (event.event == Event.groupMessageHistories) {
+        if (chatObj.isGroup() && chatObj.groupId == event.data['group_id']) {
+          print('收到群消息历史，刷新状态');
+          if (mounted) {
+            _loadMsgHistory();
+            setState(() {});
+          }
         }
       }
     });
@@ -204,7 +214,7 @@ class _ChatWidgetState extends State<ChatWidget>
     if (G.ac.allMessages.containsKey(msg.keyId())) {
       List<MsgBean> list = G.ac.allMessages[msg.keyId()];
       // _messages = list.sublist(max(0, list.length - G.st.loadMsgHistoryCount));
-      // 逆序
+      // 逆序，最新消息是0，最旧消息是len-1
       _messages.clear();
       int start = max(0, list.length - G.st.loadMsgHistoryCount);
       for (int i = list.length - 1; i >= start; --i) {
@@ -640,6 +650,11 @@ class _ChatWidgetState extends State<ChatWidget>
       child: Text('本地昵称'),
     ));
 
+    menus.add(PopupMenuItem<ChatMenuItems>(
+      value: ChatMenuItems.MessageHistories,
+      child: Text('历史消息'),
+    ));
+
     if (G.st.enableNonsenseMode) {
       // 插入自己的消息
       menus.add(PopupMenuItem<ChatMenuItems>(
@@ -685,6 +700,9 @@ class _ChatWidgetState extends State<ChatWidget>
             break;
           case ChatMenuItems.CustomName:
             editCustomName();
+            break;
+          case ChatMenuItems.MessageHistories:
+            _loadNetMsgHistory();
             break;
           case ChatMenuItems.InsertFakeRight:
             insertFakeMessage(G.ac.myId);
@@ -999,8 +1017,9 @@ class _ChatWidgetState extends State<ChatWidget>
       int messageId = _messages.last.messageId;
       while (endIndex-- > 0 && list[endIndex].messageId != messageId) {}
       if (endIndex <= 0) {
-        print('没有历史消息，${list.length}>=${_messages.length}');
+        print('已加载完消息：${list.length}>=${_messages.length}');
         _blankHistory = true;
+        _loadNetMsgHistory();
         return;
       }
     } else {
@@ -1010,7 +1029,8 @@ class _ChatWidgetState extends State<ChatWidget>
 
     // 进行加载操作
     var deltaBottom = _scrollController.position.extentAfter; // 距离底部的位置
-    print('加载历史记录，margin_bottom:$deltaBottom, $_keepScrollBottom');
+    print(
+        '加载历史记录，${_messages.length} in ${list.length} margin_bottom:$deltaBottom, $_keepScrollBottom');
     setState(() {
       for (int i = endIndex - 1; i >= startIndex; i--) {
         _messages.add(list[i]);
@@ -1021,6 +1041,28 @@ class _ChatWidgetState extends State<ChatWidget>
       _scrollController
           .jumpTo(_scrollController.position.maxScrollExtent - deltaBottom);
     }); */
+  }
+
+  void _loadNetMsgHistory() {
+    print("加载云端消息历史");
+    List<MsgBean> list = G.ac.allMessages[widget.chatObj.keyId()];
+    int earliestId;
+    if (list != null) {
+      int i = -1;
+      while (++i < list.length) {
+        if (list[i].action == MessageType.Message) {
+          earliestId = list[i].messageSeq;
+          break;
+        }
+      }
+    }
+
+    if (widget.chatObj.isPrivate()) {
+      // TODO: 加载私聊消息
+    } else if (widget.chatObj.isGroup()) {
+      // 加载群聊消息
+      G.cs.getGroupMessageHistories(widget.chatObj.groupId, earliestId);
+    }
   }
 
   void showEmojiList() {

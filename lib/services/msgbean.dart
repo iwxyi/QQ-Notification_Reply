@@ -16,6 +16,7 @@ class MsgBean {
   String remark; // 好友备注
   int targetId; // 准备发给谁，给对方还是给自己
   MessageType action = MessageType.Message;
+  int messageSeq;
 
   int friendId;
   int groupId;
@@ -40,6 +41,7 @@ class MsgBean {
       this.message,
       this.messageId,
       this.rawMessage,
+      this.messageSeq,
       this.subType,
       this.remark,
       this.targetId,
