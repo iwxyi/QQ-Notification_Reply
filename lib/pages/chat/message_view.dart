@@ -60,7 +60,12 @@ class _MessageViewState extends State<MessageView> {
 
   _MessageViewState(this.msg, this.isNext);
 
-  /// 一整行
+  /// 一整行通知
+  Widget _buildActionLine() {
+    return Text(G.cs.getMessageDisplay(msg));
+  }
+
+  /// 一整行用户消息
   Widget _buildMessageLine() {
     // 判断左右
     bool isSelf = msg.senderId == G.ac.myId;
@@ -894,7 +899,16 @@ class _MessageViewState extends State<MessageView> {
 
   @override
   Widget build(BuildContext context) {
+    // 用户消息
+    if (msg.action == MessageType.Message) {
+      return new Container(
+        child: _buildMessageLine(),
+      );
+    }
+
+    // 普通通知
     return new Container(
+      alignment: Alignment.center,
       child: _buildMessageLine(),
     );
   }

@@ -83,7 +83,9 @@ class CqhttpService {
     // 连接成功，监听消息
     channel.stream.listen((message) {
       if (debugMode) {
-        print(log('ws收到数据:' + message.toString().substring(0, 1000)));
+        int length = message.toString().length;
+        if (length > 1000) length = 1000;
+        print(log('ws收到数据:' + message.toString().substring(0, length)));
         wsReceives.insert(0, message.toString());
       }
 
@@ -418,10 +420,7 @@ class CqhttpService {
       nickname = anonymous['name'];
     }
 
-    String groupName = ac.groupList.containsKey(groupId)
-        ? ac.groupList[groupId].name
-        : groupId.toString();
-
+    String groupName = getGroupName(groupId);
     print('收到群消息：$groupName - $nickname  : $message');
 
     MsgBean msg = MsgBean(
@@ -452,9 +451,7 @@ class CqhttpService {
     String fileName = file['name'];
     int fileSize = file['size'];
 
-    String groupName = ac.groupList.containsKey(groupId)
-        ? ac.groupList[groupId].name
-        : groupId.toString();
+    String groupName = getGroupName(groupId);
     String nickname = ac.getGroupMemberName(userId, groupId);
 
     print('收到群文件：$groupName - $nickname  : $fileName');
@@ -499,9 +496,14 @@ class CqhttpService {
     int userId = obj['user_id']; // 发送者ID
     int operatorId = obj['operator_id']; // 操作者ID（发送者或者群管理员）
 
+    String groupName = getGroupName(groupId);
+
     print('群消息撤回：[$groupId] $messageId($userId)');
     MsgBean msg = new MsgBean(
-        groupId: groupId, messageId: messageId, senderId: operatorId);
+        groupId: groupId,
+        groupName: groupName,
+        messageId: messageId,
+        senderId: operatorId);
     _markRecalled(msg);
   }
 
@@ -523,12 +525,18 @@ class CqhttpService {
     int operatorId = obj['operator_id']; // 操作者
     int userId = obj['user_id']; // 用户ID
 
+    String groupName = getGroupName(groupId);
+
+    print("新成员进入：$userId");
     MsgBean msg = new MsgBean(
         groupId: groupId,
+        groupName: groupName,
         operatorId: operatorId,
         senderId: userId,
         subType: subType,
-        action: ActionType.JoinAction);
+        action: MessageType.Action,
+        message: "{{username}} 加入本群",
+        timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
   }
 
@@ -538,18 +546,89 @@ class CqhttpService {
     int operatorId = obj['operator_id']; // 操作者（如果主动退群，则和userId相同）
     int userId = obj['user_id']; // 用户ID
 
+    String groupName = getGroupName(groupId);
+
+    print("成员退群：$userId");
     MsgBean msg = new MsgBean(
         groupId: groupId,
+        groupName: groupName,
         operatorId: operatorId,
         senderId: userId,
         subType: subType,
-        action: ActionType.JoinAction);
+        action: MessageType.Action,
+        message: "{{username}} 退出本群",
+        timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
   }
 
-  void _parseGroupCard(final obj) {}
+  /// 修改群名片（不保证时效性，且名片任意时刻都有可能为空）
+  void _parseGroupCard(final obj) {
+    String subType = obj['sub_type']; // 退群leave/被踢kick/登录号被踢kick_me
+    int groupId = obj['group_id'];
+    int userId = obj['user_id']; // 用户ID
+    String cardNew = obj['card_new'];
+    // ignore: unused_local_variable
+    String cardOld = obj['card_old'];
 
-  void _parseGroupBan(final obj) {}
+    String groupName = getGroupName(groupId);
+
+    print("修改群名片：$cardOld -> $cardNew");
+    MsgBean msg = new MsgBean(
+        groupId: groupId,
+        groupName: groupName,
+        senderId: userId,
+        subType: subType,
+        action: MessageType.Action,
+        message: "{{username}} 修改名片为 $cardNew",
+        timestamp: DateTime.now().millisecondsSinceEpoch);
+    _notifyOuter(msg);
+  }
+
+  /// 群禁言
+  void _parseGroupBan(final obj) {
+    String subType = obj['sub_type']; // 禁言ban/解除禁言lift_ban
+    int groupId = obj['group_id'];
+    int operatorId = obj['operator_id']; // 操作者
+    int userId = obj['user_id']; // 用户ID
+    int duration = obj['duration']; // 禁言几秒
+
+    String groupName = getGroupName(groupId);
+
+    String message;
+    if (subType == "lift_ban") {
+      // 解除禁言
+      message = "{{username}} 被 {{operator_name}} 解除禁言";
+      print("$userId 被解除禁言");
+    } else {
+      // 禁言
+      String time = "$duration 秒";
+      if (duration > 60) {
+        duration ~/= 60;
+        time = "$duration 分钟";
+      }
+      if (duration > 60) {
+        duration ~/= 60;
+        time = "$duration 小时";
+      }
+      if (duration > 24) {
+        duration ~/= 24;
+        time = "$duration 天";
+      }
+      message = "{{username}} 被 {{operator_name}} 禁言 $time";
+      print("$userId 被禁言 $time");
+    }
+
+    MsgBean msg = new MsgBean(
+        groupId: groupId,
+        groupName: groupName,
+        operatorId: operatorId,
+        senderId: userId,
+        subType: subType,
+        action: MessageType.Action,
+        message: message,
+        timestamp: DateTime.now().millisecondsSinceEpoch);
+    _notifyOuter(msg);
+  }
 
   /// 加好友请求
   void _parseRequestFriend(final obj) {}
@@ -690,8 +769,26 @@ class CqhttpService {
     ac.allLogs.add(new MsgBean(
         timestamp: DateTime.now().millisecondsSinceEpoch,
         message: text,
-        action: ActionType.SystemLog));
+        action: MessageType.SystemLog));
     return text;
+  }
+
+  String getGroupName(int groupId) {
+    return ac.groupList.containsKey(groupId)
+        ? ac.groupList[groupId].name
+        : groupId.toString();
+  }
+
+  String getUserName(int userId) {
+    return st.getLocalNickname(
+        userId,
+        ac.friendList.containsKey(userId)
+            ? ac.friendList[userId].remark ?? ac.friendList[userId].nickname
+            : "$userId");
+  }
+
+  String getGroupMemberName(int userId, int groupId) {
+    return ac.getGroupMemberName(userId, groupId);
   }
 
   /// 简易版数据展示
@@ -699,7 +796,7 @@ class CqhttpService {
   String getMessageDisplay(MsgBean msg) {
     String text = msg.message ?? '';
     switch (msg.action) {
-      case ActionType.Message:
+      case MessageType.Message:
         if (msg.isFile()) {
           text = '[${msg.fileName}]';
         } else {
@@ -743,17 +840,15 @@ class CqhttpService {
               .replaceAll('&amp;', '&');
         }
         break;
-      case ActionType.JoinAction:
+      case MessageType.Action:
         {
-          text = '[${msg.username()} 加入本群]';
+          String format = msg.message;
+          text = format.replaceAll("{{username}}", msg.username()).replaceAll(
+              "{{operator_name}}",
+              ac.getGroupMemberName(msg.operatorId, msg.groupId));
         }
         break;
-      case ActionType.ExitAction:
-        {
-          text = '[${msg.username()} 退出本群]';
-        }
-        break;
-      case ActionType.SystemLog:
+      case MessageType.SystemLog:
         {
           text = '${msg.simpleString()}';
         }

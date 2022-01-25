@@ -95,6 +95,10 @@ class UserAccount {
   }
 
   String getGroupMemberName(int userId, int groupId) {
+    if (userId == null || userId == 0) {
+      return "";
+    }
+
     if (groupId != null && groupId != 0) {
       // 艾特群成员
       if (groupList.containsKey(groupId)) {

@@ -257,7 +257,7 @@ class _ChatListPageState extends State<ChatListPage>
                 height: 40.0,
               ),
             ),
-            title: Text(titleStr),
+            title: Text(titleStr ?? "Error Title"),
             subtitle: subTitleWidget,
             trailing: gd,
             onTap: () {

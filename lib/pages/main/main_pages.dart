@@ -644,7 +644,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   /// 所有msg raw都会到这里来
   /// 进行数据的处理操作，例如准备头像的显示
   void _messageReceived(MsgBean msg) {
-    if (msg.action == ActionType.SystemLog) {
+    if (msg.action == MessageType.SystemLog) {
       return;
     }
 
