@@ -526,6 +526,10 @@ class CqhttpService {
     int userId = obj['user_id']; // 用户ID
 
     String groupName = getGroupName(groupId);
+    String message = "{{username}} 加入本群";
+    if (subType == "invite") {
+      message = "{{username}} 被邀请入群";
+    }
 
     print("新成员进入：$userId");
     MsgBean msg = new MsgBean(
@@ -535,7 +539,8 @@ class CqhttpService {
         senderId: userId,
         subType: subType,
         action: MessageType.Action,
-        message: "{{username}} 加入本群",
+        message: message,
+        messageId: DateTime.now().millisecondsSinceEpoch,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
   }
@@ -563,6 +568,7 @@ class CqhttpService {
         subType: subType,
         action: MessageType.Action,
         message: message,
+        messageId: DateTime.now().millisecondsSinceEpoch,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
   }
@@ -586,6 +592,7 @@ class CqhttpService {
         subType: subType,
         action: MessageType.Action,
         message: "{{username}} 修改名片为 $cardNew",
+        messageId: DateTime.now().millisecondsSinceEpoch,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
   }
@@ -632,6 +639,7 @@ class CqhttpService {
         subType: subType,
         action: MessageType.Action,
         message: message,
+        messageId: DateTime.now().millisecondsSinceEpoch,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
   }
@@ -797,7 +805,12 @@ class CqhttpService {
     if (groupId == null || groupId == 0) {
       return getUserName(userId);
     }
-    return ac.getGroupMemberName(userId, groupId);
+    String name = ac.getGroupMemberName(userId, groupId);
+    if (name != null) {
+      return name;
+    }
+    refreshGroupMembers(groupId);
+    return "$userId";
   }
 
   /// 简易版数据展示
@@ -851,7 +864,7 @@ class CqhttpService {
         break;
       case MessageType.Action:
         {
-          String format = msg.message;
+          String format = msg.message ?? "Error Message Format";
           text = format
               .replaceAll(
                   "{{username}}", getGroupMemberName(msg.senderId, msg.groupId))

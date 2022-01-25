@@ -484,7 +484,6 @@ class _MessageViewState extends State<MessageView> {
           if ((mat = re.firstMatch(mAll)) != null) {
             String url = mat.group(2);
             url = url.replaceAll('&amp;', '&');
-            print('播放语音：' + url);
             span = new TextSpan(
                 text: "[语音]",
                 recognizer: TapGestureRecognizer()
