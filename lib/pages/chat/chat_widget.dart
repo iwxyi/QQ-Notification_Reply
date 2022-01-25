@@ -351,6 +351,7 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   double _pointMoveX = 0, _pointMoveY = 0;
+  bool _movedLarge = false;
   Widget _buildListStack(BuildContext context) {
     // 消息列表
     List<Widget> stack = [
@@ -360,12 +361,17 @@ class _ChatWidgetState extends State<ChatWidget>
               onPointerDown: (dowPointEvent) {
                 _pointMoveX = dowPointEvent.position.dx;
                 _pointMoveY = dowPointEvent.position.dy;
+                _movedLarge = false;
               },
               onPointerMove: (movePointEvent) {
+                const MAX_X = 80;
+                const MAX_Y = 30;
                 var deltaX = movePointEvent.position.dx - _pointMoveX;
                 var deltaY = movePointEvent.position.dy - _pointMoveY;
                 // 右滑
-                if (deltaY > -30 && deltaY < 30 && deltaX > 80) {
+                if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
+                  _movedLarge = true;
+                } else if (!_movedLarge && deltaX > MAX_X) {
                   Navigator.pop(context);
                 }
               },
