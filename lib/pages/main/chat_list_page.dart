@@ -77,11 +77,14 @@ class _ChatListPageState extends State<ChatListPage>
           String headerUrl;
           if (msg.isGroup()) {
             titleStr = G.st.getLocalNickname(msg.keyId(), msg.groupName);
-            String name = msg.senderId == null
-                ? ''
-                : G.st.getLocalNickname(
-                        msg.senderKeyId(), msg.usernameSimplify() ?? '') +
-                    ": ";
+            String name;
+            if (msg.action == MessageType.Message) {
+              name = msg.senderId == null
+                  ? ''
+                  : G.st.getLocalNickname(
+                          msg.senderKeyId(), msg.usernameSimplify() ?? '') +
+                      ": ";
+            }
             subTitleStr = (name ?? '') + G.cs.getMessageDisplay(msg);
             headerUrl = API.groupHeader(msg.groupId);
           } else {
@@ -117,14 +120,18 @@ class _ChatListPageState extends State<ChatListPage>
                   // 私聊消息，只显示消息
                   text = G.cs.getMessageDisplay(msg);
                 } else if (msg.isGroup()) {
-                  // 群聊还是需要显示昵称的
-                  if (msg.senderId != null) {
-                    String nickname =
-                        G.st.getLocalNickname(msg.senderKeyId(), null) ??
-                            msg.usernameSimplify();
-                    if (nickname != null) {
-                      text = nickname + ": " + G.cs.getMessageDisplay(msg);
+                  if (msg.action == MessageType.Message) {
+                    // 群聊还是需要显示昵称的
+                    if (msg.senderId != null) {
+                      String nickname =
+                          G.st.getLocalNickname(msg.senderKeyId(), null) ??
+                              msg.usernameSimplify();
+                      if (nickname != null) {
+                        text = nickname + ": " + G.cs.getMessageDisplay(msg);
+                      }
                     }
+                  } else {
+                    text = G.cs.getMessageDisplay(msg);
                   }
                 } else {
                   print('未知的消息类型');

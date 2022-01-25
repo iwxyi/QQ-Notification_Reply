@@ -547,6 +547,12 @@ class CqhttpService {
     int userId = obj['user_id']; // 用户ID
 
     String groupName = getGroupName(groupId);
+    String message = "{{username}} 退出本群";
+    if (subType == "leave") {
+      message = "{{username}} 退出本群";
+    } else {
+      message = "{{username}} 被 {{operator_name}} 踢出本群";
+    }
 
     print("成员退群：$userId");
     MsgBean msg = new MsgBean(
@@ -556,7 +562,7 @@ class CqhttpService {
         senderId: userId,
         subType: subType,
         action: MessageType.Action,
-        message: "{{username}} 退出本群",
+        message: message,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
   }
@@ -788,6 +794,9 @@ class CqhttpService {
   }
 
   String getGroupMemberName(int userId, int groupId) {
+    if (groupId == null || groupId == 0) {
+      return getUserName(userId);
+    }
     return ac.getGroupMemberName(userId, groupId);
   }
 
@@ -843,9 +852,11 @@ class CqhttpService {
       case MessageType.Action:
         {
           String format = msg.message;
-          text = format.replaceAll("{{username}}", msg.username()).replaceAll(
-              "{{operator_name}}",
-              ac.getGroupMemberName(msg.operatorId, msg.groupId));
+          text = format
+              .replaceAll(
+                  "{{username}}", getGroupMemberName(msg.senderId, msg.groupId))
+              .replaceAll("{{operator_name}}",
+                  getGroupMemberName(msg.operatorId, msg.groupId));
         }
         break;
       case MessageType.SystemLog:

@@ -909,7 +909,8 @@ class _MessageViewState extends State<MessageView> {
     // 普通通知
     return new Container(
       alignment: Alignment.center,
-      child: _buildMessageLine(),
+      margin: EdgeInsets.all(6),
+      child: _buildActionLine(),
     );
   }
 
