@@ -586,6 +586,7 @@ class CqhttpService {
     int operatorId = obj['operator_id']; // 操作者
     int userId = obj['user_id']; // 用户ID
 
+    String nickname = getGroupMemberName(userId, groupId);
     String groupName = getGroupName(groupId);
     String message = "{{username}} 加入本群";
     if (subType == "invite") {
@@ -594,6 +595,7 @@ class CqhttpService {
 
     print("新成员进入：$userId");
     MsgBean msg = new MsgBean(
+        nickname: nickname,
         groupId: groupId,
         groupName: groupName,
         operatorId: operatorId,
@@ -612,6 +614,7 @@ class CqhttpService {
     int operatorId = obj['operator_id']; // 操作者（如果主动退群，则和userId相同）
     int userId = obj['user_id']; // 用户ID
 
+    String nickname = getGroupMemberName(userId, groupId);
     String groupName = getGroupName(groupId);
     String message = "{{username}} 退出本群";
     if (subType == "leave") {
@@ -622,6 +625,7 @@ class CqhttpService {
 
     print("成员退群：$userId");
     MsgBean msg = new MsgBean(
+        nickname: nickname,
         groupId: groupId,
         groupName: groupName,
         operatorId: operatorId,
@@ -643,10 +647,12 @@ class CqhttpService {
     // ignore: unused_local_variable
     String cardOld = obj['card_old'];
 
+    String nickname = getGroupMemberName(userId, groupId);
     String groupName = getGroupName(groupId);
 
     print("修改群名片：$cardOld -> $cardNew");
     MsgBean msg = new MsgBean(
+        nickname: nickname,
         groupId: groupId,
         groupName: groupName,
         senderId: userId,
@@ -666,6 +672,7 @@ class CqhttpService {
     int userId = obj['user_id']; // 用户ID
     int duration = obj['duration']; // 禁言几秒
 
+    String nickname = getGroupMemberName(userId, groupId);
     String groupName = getGroupName(groupId);
 
     String message;
@@ -693,6 +700,7 @@ class CqhttpService {
     }
 
     MsgBean msg = new MsgBean(
+        nickname: nickname,
         groupId: groupId,
         groupName: groupName,
         operatorId: operatorId,
