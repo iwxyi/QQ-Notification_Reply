@@ -183,7 +183,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           },
         )).then((value) {
           G.rt.currentChatPage = null;
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         });
       }
     };

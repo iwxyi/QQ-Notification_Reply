@@ -290,24 +290,29 @@ class _ChatWidgetState extends State<ChatWidget>
       itemBuilder: (context, int index) {
         // 点击加载历史消息
         if (index >= _messages.length) {
-          return Container(
-            alignment: Alignment.center,
-            child: FlatButton(
-                child: Container(
-                    padding: new EdgeInsets.all(6),
-                    child:
-                        Text('查看历史消息', style: TextStyle(color: Colors.grey))),
-                onPressed: () {
-                  _loadMsgHistory();
-                }),
-          );
+          Widget btn = FlatButton(
+              child: Container(
+                  padding: new EdgeInsets.all(6),
+                  child: Text('查看历史消息', style: TextStyle(color: Colors.grey))),
+              onPressed: () {
+                _loadMsgHistory();
+              });
+          if (!widget.chatObj.isGroup()) {
+            btn = new Divider(
+              color: Colors.transparent,
+              height: 0.0,
+              indent: 0,
+            );
+          }
+          return Container(alignment: Alignment.center, child: btn);
         }
 
         return MessageView(
             _messages[index],
             index >= _messages.length - 1
                 ? false
-                : _messages[index + 1].senderId == _messages[index].senderId,
+                : _messages[index + 1].senderId == _messages[index].senderId &&
+                    _messages[index + 1].action == MessageType.Message,
             ValueKey(_messages[index].messageId), loadFinishedCallback: () {
           // 图片加载完毕，会影响大小
           if (_keepScrollBottom) {
@@ -335,12 +340,11 @@ class _ChatWidgetState extends State<ChatWidget>
           G.cs.sendMsg(msg, text);
         }, deleteMessageCallback: (MsgBean msg) {
           // 本地删除消息
-          setState(() {
-            _messages
-                .removeWhere((element) => element.messageId == msg.messageId);
-            G.ac.allMessages[msg.keyId()]
-                .removeWhere((element) => element.messageId == msg.messageId);
-          });
+          _messages
+              .removeWhere((element) => element.messageId == msg.messageId);
+          G.ac.allMessages[msg.keyId()]
+              .removeWhere((element) => element.messageId == msg.messageId);
+          setState(() {});
         }, unfocusEditorCallback: () {
           _removeEditorFocus();
         }, showUserInfoCallback: (MsgBean msg) {
