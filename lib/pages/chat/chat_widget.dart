@@ -368,8 +368,8 @@ class _ChatWidgetState extends State<ChatWidget>
                 _movedLarge = false;
               },
               onPointerMove: (movePointEvent) {
-                const MAX_X = 50;
-                const MAX_Y = 30;
+                const MAX_X = 35;
+                const MAX_Y = 20;
                 var deltaX = movePointEvent.position.dx - _pointMoveX;
                 var deltaY = movePointEvent.position.dy - _pointMoveY;
                 // 右滑
