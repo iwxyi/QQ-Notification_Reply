@@ -55,10 +55,19 @@ class _EmojiGridState extends State<EmojiGrid> {
         }
         if (!local) {
           mat = RegExp(r'url=([^,\]]+)').firstMatch(cq);
-          if (mat == null) {
-            return Text(cq);
+          if (mat != null) {
+            url = mat[1];
           }
-          url = mat[1];
+        }
+        if (url == null) {
+          // 图片搜索结果只有file，没有url
+          mat = RegExp(r'file=([^,\]]+)').firstMatch(cq);
+          if (mat != null) {
+            url = mat[1];
+          }
+        }
+        if (url == null) {
+          return Text(cq);
         }
         ImageProvider itemWidget =
             local ? AssetImage(url) : CachedNetworkImageProvider(url);
@@ -235,7 +244,7 @@ class _EmojiGridState extends State<EmojiGrid> {
         }
         emojiList.clear();
         for (String imgUrl in list) {
-          String cq = "[CQ:image,url=$imgUrl]";
+          String cq = "[CQ:image,file=$imgUrl]";
           print(cq);
           emojiList.add(cq);
           setState(() {});
