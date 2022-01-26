@@ -79,15 +79,7 @@ class _ChatWidgetState extends State<ChatWidget>
     // 设置新的聊天对象
     widget.setObject = (MsgBean msg) {
       // 取消旧的
-      if (widget.chatObj != null) {
-        if (widget.chatObj.isGroup()) {
-          // 去掉正在获取群成员的flag
-          G.ac.gettingGroupMembers.remove(widget.chatObj.groupId);
-          // G.ac.groupList[widget.chatObj.groupId]?.ignoredMembers?.clear();
-          // print('取消群成员的获取：${widget.chatObj.groupId}');
-        }
-        // G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
-      }
+      _releaseData();
       widget.jumpMsg = null;
 
       // 设置为新的
@@ -356,6 +348,7 @@ class _ChatWidgetState extends State<ChatWidget>
 
   double _pointMoveX = 0, _pointMoveY = 0;
   bool _movedLarge = false;
+
   Widget _buildListStack(BuildContext context) {
     // 消息列表
     List<Widget> stack = [
@@ -483,7 +476,8 @@ class _ChatWidgetState extends State<ChatWidget>
               // 栈对象
               List<Widget> widgets = [
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4), // 每个头像的间距
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  // 每个头像的间距
                   child: Opacity(
                     child: headerView,
                     opacity: widget.chatObj.isObj(msg) ? 1.0 : 0.5,
@@ -924,8 +918,7 @@ class _ChatWidgetState extends State<ChatWidget>
     }
   }
 
-  @override
-  void dispose() {
+  void _releaseData() {
     G.ac.gettingChatObjColor.clear();
     if (widget.chatObj != null) {
       if (widget.chatObj.isGroup()) {
@@ -935,6 +928,11 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     }
+  }
+
+  @override
+  void dispose() {
+    _releaseData();
     super.dispose();
     eventBusFn.cancel();
   }
