@@ -3,10 +3,12 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/widgets/slide_images_page.dart';
 
 class EmojiGrid extends StatefulWidget {
   final sendEmojiCallback;
@@ -18,12 +20,12 @@ class EmojiGrid extends StatefulWidget {
 }
 
 class _EmojiGridState extends State<EmojiGrid> {
-  bool _editing = false;
   String searchKey;
-  String prevSearchKey;
   TextEditingController editingController = TextEditingController();
 
+  bool _editing = false;
   List<String> emojiList = []; // 数据源
+  bool _searching = false;
 
   @override
   void initState() {
@@ -60,65 +62,75 @@ class _EmojiGridState extends State<EmojiGrid> {
         }
         ImageProvider itemWidget =
             local ? AssetImage(url) : CachedNetworkImageProvider(url);
+
+        Widget imageInk = Ink(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: itemWidget,
+              fit: BoxFit.contain,
+            ),
+          ),
+          child: InkWell(
+            // child: Hero(tag: url, child: ExtendedImage.network(url)),
+            onTap: () {
+              if (_editing) {
+                setState(() {
+                  _editing = false;
+                });
+                return;
+              }
+              Navigator.pop(context);
+              widget.sendEmojiCallback(cq);
+            },
+            onLongPress: () {
+              setState(() {
+                if (_searching) {
+                  // 放大网络图片
+                  Navigator.of(context).push(PageRouteBuilder(
+                      opaque: false,
+                      pageBuilder: (_, __, ___) => new SlidePage(url: url)));
+                } else {
+                  // 编辑删除本地图片
+                  _editing = !_editing;
+                }
+              });
+            },
+          ),
+        );
+
+        Widget redPoint = Positioned(
+          right: 0,
+          child: Container(
+              clipBehavior: Clip.antiAlias,
+              constraints: BoxConstraints(
+                  minHeight: 24, maxHeight: 24, minWidth: 24, maxWidth: 24),
+              decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.all(Radius.circular(12))),
+              child: IconButton(
+                  icon: Icon(Icons.close),
+                  color: Colors.white,
+                  iconSize: 16,
+                  padding: EdgeInsets.all(2),
+                  onPressed: () {
+                    setState(() {
+                      emojiList.removeAt(i);
+                      G.st.emojiList.removeAt(i);
+                    });
+                  })),
+        );
+
+        if (_searching) {
+          imageInk = Hero(tag: url, child: imageInk);
+        }
+
         return new Card(
           elevation: 8.0,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8.0))),
           clipBehavior: Clip.antiAlias,
           child: Stack(
-            children: [
-              Ink(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: itemWidget,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                child: InkWell(
-                  onTap: () {
-                    if (_editing) {
-                      setState(() {
-                        _editing = false;
-                      });
-                      return;
-                    }
-                    Navigator.pop(context);
-                    widget.sendEmojiCallback(cq);
-                  },
-                  onLongPress: () {
-                    setState(() {
-                      _editing = !_editing;
-                    });
-                  },
-                ),
-              ),
-              !_editing
-                  ? Text('')
-                  : Positioned(
-                      right: 0,
-                      child: Container(
-                          clipBehavior: Clip.antiAlias,
-                          constraints: BoxConstraints(
-                              minHeight: 24,
-                              maxHeight: 24,
-                              minWidth: 24,
-                              maxWidth: 24),
-                          decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(12))),
-                          child: IconButton(
-                              icon: Icon(Icons.close),
-                              color: Colors.white,
-                              iconSize: 16,
-                              padding: EdgeInsets.all(2),
-                              onPressed: () {
-                                setState(() {
-                                  G.st.emojiList.removeAt(i);
-                                });
-                              })),
-                    )
-            ],
+            children: [imageInk, !_editing ? Text('') : redPoint],
           ),
         );
       },
@@ -184,44 +196,53 @@ class _EmojiGridState extends State<EmojiGrid> {
   }
 
   void searchImage(String key) {
+    searchKey = key;
     if (key == null || key.trim().isEmpty) {
       setState(() {
         emojiList.clear();
         emojiList.addAll(G.st.emojiList);
       });
+      _searching = false;
       return;
     }
+
     print('搜索图片：$key');
-    searchKey = key;
-    prevSearchKey = key;
     String token = "7hF09Osx9p9sltak"; // 改成你自己的
     int page = 1;
     String apiUrl =
         "https://v2.alapi.cn/api/doutu?token=$token&keyword=$key&page=$page&type=7";
-    Dio dio = new Dio();
-    Future<Response<String>> response = dio.post<String>(apiUrl);
-    response.then((Response<String> value) {
-      if (searchKey != searchKey) {
-        print('忽略旧的搜索结果');
-        return;
-      }
-      if (value.statusCode != 200) {
-        print('获取图片失败：' + key);
-        return;
-      }
+    print('搜索图片：' + apiUrl);
+    try {
+      Dio dio = new Dio();
+      Future<Response<String>> response = dio.get<String>(apiUrl);
+      response.then((Response<String> value) {
+        if (searchKey != searchKey) {
+          print('忽略旧的搜索结果');
+          return;
+        }
+        if (value.statusCode != 200) {
+          print('获取图片失败：' + key);
+          return;
+        }
 
-      var data = json.decode(value.data);
-      var list = data['data'];
-      if (list == null) {
-        return;
-      }
-      emojiList.clear();
-      for (String imgUrl in list) {
-        String cq = "[CQ:image,url=$imgUrl]";
-        print(cq);
-        emojiList.add(cq);
-        setState(() {});
-      }
-    });
+        _searching = true;
+        _editing = false;
+
+        var data = json.decode(value.data);
+        var list = data['data'];
+        if (list == null) {
+          return;
+        }
+        emojiList.clear();
+        for (String imgUrl in list) {
+          String cq = "[CQ:image,url=$imgUrl]";
+          print(cq);
+          emojiList.add(cq);
+          setState(() {});
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 }
