@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -140,11 +141,21 @@ class _EmojiGridState extends State<EmojiGrid> {
         TextField(
             controller: editingController,
             decoration: InputDecoration(
-              labelText: '搜索',
+              isDense: true,
               hintText: '表情包',
               prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
+              suffix: IconButton(
+                icon: Icon(Icons.close_sharp),
+                onPressed: () {
+                  editingController.text = "";
+                  searchImage(null);
+                },
+                padding: EdgeInsets.all(0),
+                constraints: BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                color: Theme.of(context).primaryColor,
               ),
             ),
             onChanged: (value) {
@@ -152,9 +163,17 @@ class _EmojiGridState extends State<EmojiGrid> {
                   value != null &&
                   searchKey.startsWith(value)) {
                 // 表示是逐字删除
+                searchImage(null);
                 return;
               }
-              searchImage(value);
+
+              String val = "";
+              val += value;
+              Timer(Duration(milliseconds: 500), () {
+                if (val == editingController.text) {
+                  searchImage(value);
+                }
+              });
             },
             onSubmitted: (value) {
               searchImage(value);
@@ -166,6 +185,10 @@ class _EmojiGridState extends State<EmojiGrid> {
 
   void searchImage(String key) {
     if (key == null || key.trim().isEmpty) {
+      setState(() {
+        emojiList.clear();
+        emojiList.addAll(G.st.emojiList);
+      });
       return;
     }
     print('搜索图片：$key');
