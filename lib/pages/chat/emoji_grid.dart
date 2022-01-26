@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -15,17 +18,29 @@ class EmojiGrid extends StatefulWidget {
 
 class _EmojiGridState extends State<EmojiGrid> {
   bool _editing = false;
+  String searchKey;
+  String prevSearchKey;
+  TextEditingController editingController = TextEditingController();
+
+  List<String> emojiList = []; // 数据源
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    emojiList.addAll(G.st.emojiList);
+    super.initState();
+  }
+
+  Widget _buildGride(BuildContext context) {
+    // 尺寸
     final size = MediaQuery.of(context).size;
     final twidth = size.width / 2;
     const int bsize = 48; // 图片边长（正方形）
+
     return StaggeredGridView.countBuilder(
       crossAxisCount: twidth ~/ bsize, //横轴单元格数量
-      itemCount: G.st.emojiList.length, //元素数量
+      itemCount: emojiList.length, //元素数量
       itemBuilder: (context, i) {
-        String cq = G.st.emojiList[i];
+        String cq = emojiList[i];
         bool local = false;
         String url;
 
@@ -36,7 +51,7 @@ class _EmojiGridState extends State<EmojiGrid> {
           url = "assets/qq_face/$id.gif";
         }
         if (!local) {
-          mat = RegExp(r'url=([^,]+)').firstMatch(cq);
+          mat = RegExp(r'url=([^,\]]+)').firstMatch(cq);
           if (mat == null) {
             return Text(cq);
           }
@@ -116,5 +131,74 @@ class _EmojiGridState extends State<EmojiGrid> {
       mainAxisSpacing: 8.0,
       crossAxisSpacing: 8.0,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(
+            controller: editingController,
+            decoration: InputDecoration(
+              labelText: '搜索',
+              hintText: '表情包',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+              ),
+            ),
+            onChanged: (value) {
+              if (searchKey != null &&
+                  value != null &&
+                  searchKey.startsWith(value)) {
+                // 表示是逐字删除
+                return;
+              }
+              searchImage(value);
+            },
+            onSubmitted: (value) {
+              searchImage(value);
+            }),
+        Expanded(child: _buildGride(context))
+      ],
+    );
+  }
+
+  void searchImage(String key) {
+    if (key == null || key.trim().isEmpty) {
+      return;
+    }
+    print('搜索图片：$key');
+    searchKey = key;
+    prevSearchKey = key;
+    String token = "7hF09Osx9p9sltak"; // 改成你自己的
+    int page = 1;
+    String apiUrl =
+        "https://v2.alapi.cn/api/doutu?token=$token&keyword=$key&page=$page&type=7";
+    Dio dio = new Dio();
+    Future<Response<String>> response = dio.post<String>(apiUrl);
+    response.then((Response<String> value) {
+      if (searchKey != searchKey) {
+        print('忽略旧的搜索结果');
+        return;
+      }
+      if (value.statusCode != 200) {
+        print('获取图片失败：' + key);
+        return;
+      }
+
+      var data = json.decode(value.data);
+      var list = data['data'];
+      if (list == null) {
+        return;
+      }
+      emojiList.clear();
+      for (String imgUrl in list) {
+        String cq = "[CQ:image,url=$imgUrl]";
+        print(cq);
+        emojiList.add(cq);
+        setState(() {});
+      }
+    });
   }
 }
