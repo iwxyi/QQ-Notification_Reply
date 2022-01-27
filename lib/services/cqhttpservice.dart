@@ -10,7 +10,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// WebSocket使用说明：https://zhuanlan.zhihu.com/p/133849780
 class CqhttpService {
-  bool debugMode = false;
   AppRuntime rt;
   UserSettings st;
   UserAccount ac;
@@ -82,7 +81,7 @@ class CqhttpService {
 
     // 连接成功，监听消息
     channel.stream.listen((message) {
-      if (debugMode) {
+      if (st.debugMode) {
         int length = message.toString().length;
         if (length > 1000) length = 1000;
         print(log('ws收到数据:' + message.toString().substring(0, length)));
@@ -815,6 +814,10 @@ class CqhttpService {
 
     // 保留每个对象的消息记录
     if (!ac.allMessages.containsKey(msg.keyId())) {
+      if (msg.action == MessageType.Action) {
+        // 一些不显示消息的群，却显示了进退群，没必要
+        return;
+      }
       ac.allMessages[msg.keyId()] = [];
     } else {
       // 去除重复消息，可能是bug，有时候会发两遍一样的消息
