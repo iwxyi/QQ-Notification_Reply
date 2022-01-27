@@ -7,6 +7,8 @@ import 'package:qqnotificationreply/pages/settings/display_settings_widget.dart'
 import 'package:qqnotificationreply/pages/settings/login_widget.dart';
 import 'package:qqnotificationreply/pages/settings/notification_settings_widget.dart';
 
+import 'interaction_settings_widget.dart';
+
 class MySettingsWidget extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _MySettingsWidgetState();
@@ -154,6 +156,28 @@ class _MySettingsWidgetState extends State<MySettingsWidget>
                           title: Text('显示设置'),
                         ),
                         body: DisplaySettingsWidget(),
+                      );
+                    })).then((value) {
+                      // 可能登录了，刷新一下界面
+                      setState(() {});
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.adb,
+                    color: Colors.blue,
+                  ),
+                  title: Text('交互设置'),
+                  trailing: Icon(Icons.arrow_right),
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return Scaffold(
+                        appBar: AppBar(
+                          title: Text('交互设置'),
+                        ),
+                        body: InteractionSettingsWidget(),
                       );
                     })).then((value) {
                       // 可能登录了，刷新一下界面

@@ -10,7 +10,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// WebSocket使用说明：https://zhuanlan.zhihu.com/p/133849780
 class CqhttpService {
-  bool debugMode = false;
   AppRuntime rt;
   UserSettings st;
   UserAccount ac;
@@ -82,7 +81,7 @@ class CqhttpService {
 
     // 连接成功，监听消息
     channel.stream.listen((message) {
-      if (debugMode) {
+      if (st.debugMode) {
         int length = message.toString().length;
         if (length > 1000) length = 1000;
         print(log('ws收到数据:' + message.toString().substring(0, length)));
@@ -365,6 +364,10 @@ class CqhttpService {
       // 获取用户信息
       print(obj['data']);
       ac.eventBus.fire(EventFn(Event.userInfo, obj['data']));
+    } else if (echo.startsWith('get_group_info')) {
+      // 获取群组信息
+      print(obj['data']);
+      ac.eventBus.fire(EventFn(Event.groupInfo, obj['data']));
     } else if (echo.startsWith('get_group_msg_history')) {
       // 获取群组，echo字段格式为：get_group_msg_history:123456
       RegExp re = RegExp(r'^get_group_msg_history:(\d+)$');
@@ -415,6 +418,42 @@ class CqhttpService {
       } else {
         print('无法识别的群成员echo: ' + echo);
       }
+    } else if (echo.startsWith('get_record')) {
+      // 获取转换后的音频（API尚未支持）
+      RegExp re = RegExp(r'^get_record:(-?\d+)_(.+)$');
+      Match match;
+      if ((match = re.firstMatch(echo)) != null) {
+        int keyId = int.parse(match.group(1));
+        String file = match.group(2);
+        var data = obj['data'];
+        if (data == null) {
+          print('warning: get_record is null: ' + obj['msg']);
+          return;
+        }
+        var url = data['file'];
+        ac.eventBus.fire(EventFn(
+            Event.playAudio, {'key_id': keyId, 'file': file, 'url': url}));
+      } else {
+        print('无法识别的音频echo: ' + echo);
+      }
+    } else if (echo.startsWith('get_forward_msg')) {
+      // 获取转发的信息
+      RegExp re = RegExp(r'^get_forward_msg:(.+)$');
+      Match match;
+      if ((match = re.firstMatch(echo)) != null) {
+        String forwardId = match.group(1);
+        var data = obj['data'];
+        if (data == null) {
+          print('warning: get_forward_msg is null: ' + obj['msg']);
+          return;
+        }
+        var messages = data['messages'];
+        print('读取到转发的消息：${messages.length}条');
+        ac.eventBus.fire(EventFn(Event.forwardMessages,
+            {'forward_id': forwardId, 'messages': messages}));
+      } else {
+        print('无法识别的音频echo: ' + echo);
+      }
     } else {
       print('未处理类型的echo: ' + echo);
     }
@@ -427,6 +466,7 @@ class CqhttpService {
     int messageId = obj['message_id'];
     int targetId = obj['target_id'];
     int messageSeq = obj['message_seq']; // 私聊是nullptr
+    int time = obj['time'];
 
     var sender = obj['sender'];
     int senderId = sender['user_id']; // 发送者QQ，大概率是别人，也可能是自己
@@ -447,7 +487,7 @@ class CqhttpService {
             ? ac.friendList[friendId].username()
             : null,
         friendId: friendId,
-        timestamp: DateTime.now().millisecondsSinceEpoch);
+        timestamp: time * 1000);
 
     print('收到私聊消息：${msg.username()} : $message');
 
@@ -473,6 +513,7 @@ class CqhttpService {
     String nickname = sender['nickname'];
     String card = sender['card']; // 群名片，可能为空
     String role = sender['role']; // 角色：owner/admin/member
+    int time = obj['time'];
 
     if (subType == 'anonymous') {
       // 匿名消息，不想作处理
@@ -499,7 +540,7 @@ class CqhttpService {
             ? ac.friendList[senderId].username()
             : null,
         role: role,
-        timestamp: DateTime.now().millisecondsSinceEpoch);
+        timestamp: time * 1000);
     return msg;
   }
 
@@ -759,6 +800,14 @@ class CqhttpService {
     });
   }
 
+  void getForwardMessages(String forwardId) {
+    send({
+      'action': 'get_forward_msg',
+      'params': {'message_id': forwardId},
+      'echo': 'get_forward_msg:$forwardId'
+    });
+  }
+
   void getFriendList() {
     send({'action': 'get_friend_list', 'echo': 'get_friend_list'});
   }
@@ -782,6 +831,16 @@ class CqhttpService {
     if (message == null || message.isEmpty) {
       return;
     }
+
+    // 表情包转网络图片
+    if (st.enableEmojiToImage) {
+      message = message
+          .replaceAllMapped(RegExp(r"\[CQ:image,file=.+?,url=(.+)\]"), (match) {
+        var url = match[1];
+        return "[CQ:image,file=$url]";
+      });
+    }
+
     send({
       'action': 'send_group_msg',
       'params': {'group_id': groupId, 'message': message},
@@ -815,6 +874,10 @@ class CqhttpService {
 
     // 保留每个对象的消息记录
     if (!ac.allMessages.containsKey(msg.keyId())) {
+      if (msg.action == MessageType.Action) {
+        // 一些不显示消息的群，却显示了进退群，没必要
+        return;
+      }
       ac.allMessages[msg.keyId()] = [];
     } else {
       // 去除重复消息，可能是bug，有时候会发两遍一样的消息

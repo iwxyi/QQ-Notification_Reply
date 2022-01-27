@@ -210,31 +210,6 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     });
                   },
                 ),
-                ListTile(
-                  leading: Icon(
-                    Icons.remove_red_eye,
-                    color: Colors.blue,
-                  ),
-                  title: Text('胡说八道模式'),
-                  subtitle: Text('自由编辑消息文字、发送假消息（后果自负）'),
-                  trailing: Checkbox(
-                    onChanged: (bool val) {
-                      setState(() {
-                        G.st.enableNonsenseMode = !G.st.enableNonsenseMode;
-                        G.st.setConfig('function/enableNonsenseMode',
-                            G.st.enableNonsenseMode);
-                      });
-                    },
-                    value: G.st.enableNonsenseMode,
-                  ),
-                  onTap: () {
-                    setState(() {
-                      G.st.enableNonsenseMode = !G.st.enableNonsenseMode;
-                      G.st.setConfig('function/enableNonsenseMode',
-                          G.st.enableNonsenseMode);
-                    });
-                  },
-                ),
               ],
             ),
           ),
@@ -355,6 +330,33 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                           !G.st.enableColorfulReplyBubble;
                       G.st.setConfig('display/enableColorfulReplyBubble',
                           G.st.enableColorfulReplyBubble);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.tv,
+                    color: Colors.blue,
+                  ),
+                  title: Text('窗口背景'),
+                  subtitle: Text('窗口背景使用头像主题色作为背景颜色（不好看）'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableColorfulBackground =
+                            !G.st.enableColorfulBackground;
+                        G.st.setConfig('display/enableColorfulBackground',
+                            G.st.enableColorfulBackground);
+                      });
+                    },
+                    value: G.st.enableColorfulBackground,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableColorfulBackground =
+                          !G.st.enableColorfulBackground;
+                      G.st.setConfig('display/enableColorfulBackground',
+                          G.st.enableColorfulBackground);
                     });
                   },
                 ),

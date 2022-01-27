@@ -68,13 +68,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       G.cs.send({
         'action': 'get_group_member_info',
         'params': {'user_id': userId, 'group_id': widget.chatObj.groupId},
-        'echo': 'get_user_info:$userId'
+        'echo': 'get_group_info:$userId'
       });
     } else {
       G.cs.send({
         'action': 'get_stranger_info',
         'params': {'user_id': userId},
-        'echo': 'get_user_info:$userId'
+        'echo': 'get_group_info:$userId'
       });
     }
   }
@@ -212,7 +212,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
           if (G.ac.friendList.containsKey(userId)) {
             name = G.ac.friendList[userId].remark ?? name;
           }
-          name = G.st.getLocalNickname(userId, name);
+          name = G.st.getLocalNickname(MsgBean(friendId: userId).keyId(), name);
           G.rt.showChatPage(
               MsgBean(friendId: userId, targetId: userId, nickname: name));
         },

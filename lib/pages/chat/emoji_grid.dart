@@ -155,50 +155,54 @@ class _EmojiGridState extends State<EmojiGrid> {
     );
   }
 
+  Widget _buildSearchEdit(BuildContext context) {
+    return TextField(
+        controller: editingController,
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: '表情包',
+          prefixIcon: Icon(Icons.search),
+          suffix: IconButton(
+            icon: Icon(Icons.close_sharp),
+            onPressed: () {
+              editingController.text = "";
+              searchImage(null);
+            },
+            padding: EdgeInsets.all(0),
+            constraints: BoxConstraints(
+              minWidth: 16,
+              minHeight: 16,
+            ),
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        onChanged: (value) {
+          if (searchKey != null &&
+              value != null &&
+              searchKey.startsWith(value)) {
+            // 表示是逐字删除
+            searchImage(null);
+            return;
+          }
+
+          String val = "";
+          val += value;
+          Timer(Duration(milliseconds: 500), () {
+            if (val == editingController.text) {
+              searchImage(value);
+            }
+          });
+        },
+        onSubmitted: (value) {
+          searchImage(value);
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextField(
-            controller: editingController,
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: '表情包',
-              prefixIcon: Icon(Icons.search),
-              suffix: IconButton(
-                icon: Icon(Icons.close_sharp),
-                onPressed: () {
-                  editingController.text = "";
-                  searchImage(null);
-                },
-                padding: EdgeInsets.all(0),
-                constraints: BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            onChanged: (value) {
-              if (searchKey != null &&
-                  value != null &&
-                  searchKey.startsWith(value)) {
-                // 表示是逐字删除
-                searchImage(null);
-                return;
-              }
-
-              String val = "";
-              val += value;
-              Timer(Duration(milliseconds: 500), () {
-                if (val == editingController.text) {
-                  searchImage(value);
-                }
-              });
-            },
-            onSubmitted: (value) {
-              searchImage(value);
-            }),
+        _buildSearchEdit(context),
         Expanded(child: _buildGride(context))
       ],
     );

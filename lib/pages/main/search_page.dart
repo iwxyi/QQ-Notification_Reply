@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
 class SearchPage extends StatefulWidget {
   final selectCallback;
+  final members;
 
-  const SearchPage({Key key, this.selectCallback}) : super(key: key);
+  const SearchPage({Key key, this.members, this.selectCallback})
+      : super(key: key);
 
   @override
   _SearchPageState createState() => _SearchPageState();
@@ -17,10 +18,13 @@ class FGInfo {
   int keyId;
   int id;
   String name;
+  String remark;
+  String localName;
   int time;
   bool isGroup;
 
-  FGInfo(this.keyId, this.id, this.name, this.time, this.isGroup);
+  FGInfo(this.keyId, this.id, this.name, this.remark, this.localName, this.time,
+      this.isGroup);
 }
 
 class _SearchPageState extends State<SearchPage> {
@@ -33,13 +37,25 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void initState() {
+    if (widget.members == null) {
+      initByFriendAndGroup();
+    } else {
+      initByGroupMember(widget.members);
+    }
+
+    super.initState();
+  }
+
+  void initByFriendAndGroup() {
     // 初始化好友内容
     Map<int, FriendInfo> friendList = G.ac.friendList;
     friendList.forEach((id, info) {
       int keyId = MsgBean.privateKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(keyId, id, info.username(), time, false));
+      String localName = G.st.getLocalNickname(keyId, "");
+      items.add(new FGInfo(
+          keyId, id, info.nickname, info.remark, localName, time, false));
     });
 
     // 初始化群组内容
@@ -48,7 +64,8 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.groupKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(keyId, id, info.name, time, true));
+      String localName = G.st.getLocalNickname(keyId, "");
+      items.add(new FGInfo(keyId, id, info.name, "", localName, time, true));
     });
     items.sort((FGInfo a, FGInfo b) {
       return b.time.compareTo(a.time);
@@ -56,14 +73,25 @@ class _SearchPageState extends State<SearchPage> {
 
     // 初始化搜索记录
     searchHistories = G.st.getIntList('recent/search');
-    print(searchHistories);
     items.forEach((element) {
       if (searchHistories.contains(element.keyId)) {
         showItemList.add(element);
       }
     });
+  }
 
-    super.initState();
+  void initByGroupMember(Map<int, FriendInfo> members) {
+    members.forEach((id, info) {
+      int keyId = MsgBean.privateKeyId(id);
+      String localName = G.st.getLocalNickname(keyId, "");
+      FGInfo fg = new FGInfo(
+          keyId, id, info.nickname, info.remark, localName, 0, false);
+      items.add(fg);
+      showItemList.add(fg);
+    });
+
+    // 初始化搜索记录
+    searchHistories = G.st.getIntList('recent/search');
   }
 
   Widget _buildBody(BuildContext context) {
@@ -106,8 +134,15 @@ class _SearchPageState extends State<SearchPage> {
             itemCount: showItemList.length,
             itemBuilder: (context, index) {
               FGInfo info = showItemList[index];
+              String name = info.localName;
+              if (name == null || name.isEmpty) {
+                name = info.remark;
+              }
+              if (name == null || name.isEmpty) {
+                name = info.name;
+              }
               return ListTile(
-                  title: Text('${info.name} (${info.id})'),
+                  title: Text('$name (${info.id})'),
                   onTap: () {
                     itemSelected(info);
                   },
@@ -123,12 +158,16 @@ class _SearchPageState extends State<SearchPage> {
                           nickname: info.name);
                     }
 
-                    // 取消搜索记录
-                    setState(() {
-                      searchHistories.remove(msg.keyId());
-                      G.st.setList('recent/search', searchHistories);
-                      showItemList.remove(info);
-                    });
+                    if (widget.members != null) {
+                      // 显示用户信息
+                    } else {
+                      // 取消搜索记录
+                      setState(() {
+                        searchHistories.remove(msg.keyId());
+                        G.st.setList('recent/search', searchHistories);
+                        showItemList.remove(info);
+                      });
+                    }
                   });
             },
           ),
@@ -152,10 +191,17 @@ class _SearchPageState extends State<SearchPage> {
   void itemSelected(FGInfo info) {
     // 封装为对象
     MsgBean msg;
+    String name = info.localName;
+    if (name == null || name.isEmpty) {
+      name = info.remark;
+    }
+    if (name == null || name.isEmpty) {
+      name = info.name;
+    }
     if (info.isGroup) {
-      msg = MsgBean(groupId: info.id, groupName: info.name);
+      msg = MsgBean(groupId: info.id, groupName: name);
     } else {
-      msg = MsgBean(targetId: info.id, friendId: info.id, nickname: info.name);
+      msg = MsgBean(targetId: info.id, friendId: info.id, nickname: name);
     }
 
     // 保存搜索记录
@@ -171,11 +217,13 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   filterSearch(String query) {
+    query = query.toLowerCase();
     if (query.isNotEmpty) {
       setState(() {
         showItemList.clear();
         for (int i = 0; i < items.length; i++) {
-          if (items[i].name.contains(query)) {
+          if (items[i].name.toLowerCase().contains(query) ||
+              items[i].remark.toLowerCase().contains(query)) {
             showItemList.add(items[i]);
           }
         }

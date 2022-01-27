@@ -14,6 +14,8 @@ import 'package:image_pickers/image_pickers.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/pages/main/search_page.dart';
+import 'package:qqnotificationreply/pages/profile/group_profile_widget.dart';
 import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.dart';
@@ -23,9 +25,11 @@ import 'message_view.dart';
 
 enum ChatMenuItems {
   Info,
+  Members,
   EnableNotification,
   CustomName,
   MessageHistories,
+  SendImage,
   InsertFakeLeft,
   InsertFakeRight
 }
@@ -164,6 +168,11 @@ class _ChatWidgetState extends State<ChatWidget>
             setState(() {});
           }
         }
+      } else if (event.event == Event.playAudio) {
+        if (event.data['key_id'] == chatObj.keyId()) {
+          String url = event.data['url'];
+          print('播放音频：$url');
+        }
       }
     });
 
@@ -249,6 +258,8 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   Widget _buildMessageList(BuildContext context) {
+    DateTime now = DateTime.now();
+    DateTime zero = DateTime(now.year, now.month, now.day);
     return new ListView.separated(
       separatorBuilder: (BuildContext context, int index) {
         if (index >= 0) {
@@ -263,7 +274,10 @@ class _ChatWidgetState extends State<ChatWidget>
           if (delta > maxDelta) {
             // 超过一分钟，显示时间
             DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
-            String str = formatDate(dt, ['HH', ':', 'nn']);
+            bool today = dt.isAfter(zero);
+            String str = today
+                ? formatDate(dt, ['HH', ':', 'nn'])
+                : formatDate(dt, ['mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
             return new Row(
               children: [new Text(str, style: TextStyle(color: Colors.grey))],
               mainAxisAlignment: MainAxisAlignment.center,
@@ -299,13 +313,16 @@ class _ChatWidgetState extends State<ChatWidget>
           return Container(alignment: Alignment.center, child: btn);
         }
 
-        return MessageView(
-            _messages[index],
-            index >= _messages.length - 1
-                ? false
-                : _messages[index + 1].senderId == _messages[index].senderId &&
-                    _messages[index + 1].action == MessageType.Message,
-            ValueKey(_messages[index].messageId), loadFinishedCallback: () {
+        // 是否是下一个
+        bool isNext = index >= _messages.length - 1
+            ? false
+            : _messages[index + 1].senderId == _messages[index].senderId &&
+                _messages[index + 1].action == MessageType.Message;
+
+        int valueKey = (_messages[index].messageId ?? 0) + (isNext ? 1 : 0);
+
+        return MessageView(_messages[index], isNext, ValueKey(valueKey),
+            loadFinishedCallback: () {
           // 图片加载完毕，会影响大小
           if (_keepScrollBottom) {
             if (!hasToBottom.containsKey(_messages[index].messageId)) {
@@ -331,12 +348,13 @@ class _ChatWidgetState extends State<ChatWidget>
           MsgBean msg = _messages[index];
           G.cs.sendMsg(msg, text);
         }, deleteMessageCallback: (MsgBean msg) {
-          // 本地删除消息
-          _messages
-              .removeWhere((element) => element.messageId == msg.messageId);
-          G.ac.allMessages[msg.keyId()]
-              .removeWhere((element) => element.messageId == msg.messageId);
-          setState(() {});
+          setState(() {
+            // 本地删除消息
+            _messages
+                .removeWhere((element) => element.messageId == msg.messageId);
+            G.ac.allMessages[msg.keyId()]
+                .removeWhere((element) => element.messageId == msg.messageId);
+          });
         }, unfocusEditorCallback: () {
           _removeEditorFocus();
         }, showUserInfoCallback: (MsgBean msg) {
@@ -613,13 +631,26 @@ class _ChatWidgetState extends State<ChatWidget>
           },
           icon: Icon(widget.directlyClose ? Icons.close : Icons.arrow_back)),
       Expanded(
-        child: Text(
-          title ?? '',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 20,
-              color: Theme.of(context).textTheme.bodyText2.color,
-              fontWeight: FontWeight.w500),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FlatButton(
+                child: Text(
+                  title ?? '',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 20,
+                      color: Theme.of(context).textTheme.bodyText2.color,
+                      fontWeight: FontWeight.w500),
+                ),
+                onPressed: () {
+                  if (widget.chatObj.isGroup()) {
+                    showGroupInfo(widget.chatObj);
+                  } else if (widget.chatObj.isPrivate()) {
+                    showUserInfo(widget.chatObj);
+                  }
+                })
+          ],
         ),
       ),
       buildMenu()
@@ -693,10 +724,14 @@ class _ChatWidgetState extends State<ChatWidget>
     menus.add(PopupMenuItem<ChatMenuItems>(
       value: ChatMenuItems.Info,
       child: Text(widget.chatObj.isPrivate() ? '用户资料' : '群组资料'),
-      enabled: widget.chatObj.isPrivate(),
     ));
 
     if (widget.chatObj.isGroup()) {
+      // menus.add(PopupMenuItem<ChatMenuItems>(
+      //   value: ChatMenuItems.Members,
+      //   child: Text('查看成员'),
+      // ));
+
       String t =
           G.st.enabledGroups.contains(widget.chatObj.groupId) ? '关闭通知' : '开启通知';
       menus.add(PopupMenuItem<ChatMenuItems>(
@@ -709,6 +744,13 @@ class _ChatWidgetState extends State<ChatWidget>
       value: ChatMenuItems.CustomName,
       child: Text('本地昵称'),
     ));
+
+    if (!widget.innerMode) {
+      menus.add(PopupMenuItem<ChatMenuItems>(
+        value: ChatMenuItems.SendImage,
+        child: Text('发送图片'),
+      ));
+    }
 
     /* menus.add(PopupMenuItem<ChatMenuItems>(
       value: ChatMenuItems.MessageHistories,
@@ -749,8 +791,11 @@ class _ChatWidgetState extends State<ChatWidget>
               // 显示用户信息
               showUserInfo(widget.chatObj);
             } else if (widget.chatObj.isGroup()) {
-              // TODO:显示群组信息
+              showGroupInfo(widget.chatObj);
             }
+            break;
+          case ChatMenuItems.Members:
+            showGroupMembers();
             break;
           case ChatMenuItems.EnableNotification:
             setState(() {
@@ -760,6 +805,9 @@ class _ChatWidgetState extends State<ChatWidget>
             break;
           case ChatMenuItems.CustomName:
             editCustomName();
+            break;
+          case ChatMenuItems.SendImage:
+            getImage();
             break;
           case ChatMenuItems.MessageHistories:
             _loadNetMsgHistory();
@@ -790,10 +838,10 @@ class _ChatWidgetState extends State<ChatWidget>
     return new Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: new Row(children: <Widget>[
-          new IconButton(
+          /* new IconButton(
               icon: new Icon(Icons.image),
               onPressed: getImage,
-              color: Theme.of(context).primaryColor),
+              color: Theme.of(context).primaryColor), */
           new IconButton(
               icon: new Icon(Icons.face),
               onPressed: showEmojiList,
@@ -932,13 +980,13 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     }
+    eventBusFn.cancel();
   }
 
   @override
   void dispose() {
     _releaseData();
     super.dispose();
-    eventBusFn.cancel();
   }
 
   ///发送信息
@@ -1162,6 +1210,7 @@ class _ChatWidgetState extends State<ChatWidget>
         context: context,
         builder: (context) {
           return AlertDialog(
+            contentPadding: EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 16.0),
             content: Container(
                 constraints: BoxConstraints(
                     minWidth: twidth,
@@ -1191,6 +1240,44 @@ class _ChatWidgetState extends State<ChatWidget>
               constraints:
                   BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 250),
               child: UserProfileWidget(chatObj: msg),
+            ),
+            contentPadding: EdgeInsets.all(5),
+          );
+        });
+  }
+
+  void showGroupInfo(MsgBean msg) {
+    G.cs.refreshGroupMembers(widget.chatObj.groupId);
+    _removeEditorFocus();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+              constraints:
+                  BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 300),
+              child: GroupProfileWidget(
+                  chatObj: msg, showGroupMembers: showGroupMembers),
+            ),
+            contentPadding: EdgeInsets.all(5),
+          );
+        });
+  }
+
+  void showGroupMembers() {
+    // G.cs.refreshGroupMembers(widget.chatObj.groupId);
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+              constraints: BoxConstraints(minWidth: 350, maxHeight: 500),
+              child: SearchPage(
+                members: G.ac.groupList[widget.chatObj.groupId].members,
+                selectCallback: (MsgBean msg) {
+                  G.rt.showChatPage(msg);
+                },
+              ),
             ),
             contentPadding: EdgeInsets.all(5),
           );

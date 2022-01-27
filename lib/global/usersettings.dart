@@ -32,6 +32,8 @@ class UserSettings extends MySettings {
   bool showRecursionReply = true; // 回复中允许再显示回复
   bool enableQuickSwitcher = false; // 页面底部显示聊天对象快速切换
   bool enableNonsenseMode = false; // 启用胡说八道模式
+  bool debugMode = false; // 调试模式
+  bool enableEmojiToImage = false; // 群消息表情包转网络图片格式
 
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
@@ -62,6 +64,8 @@ class UserSettings extends MySettings {
   double colorfulChatBubbleBg = 0.94;
   bool enableColorfulReplyBubble = false; // 使用彩色回复
   double colorfulReplyBubbleBg = 0.9;
+  bool enableColorfulBackground = false; // 使用彩色窗口背景
+  double colorfulBackgroundBg = 0.05;
 
   // 本地昵称
   Map<int, String> localNickname = {};
@@ -100,6 +104,9 @@ class UserSettings extends MySettings {
         getBool('function/enableQuickSwitcher', enableQuickSwitcher);
     enableNonsenseMode =
         getBool('function/enableNonsenseMode', enableNonsenseMode);
+    debugMode = getBool('function/enableDebugMode', debugMode);
+    enableEmojiToImage =
+        getBool('function/enableEmojiToImage', enableEmojiToImage);
 
     enableColorfulChatList =
         getBool('display/enableColorfulChatList', enableColorfulChatList);
@@ -109,6 +116,8 @@ class UserSettings extends MySettings {
         getBool('display/enableColorfulChatBubble', enableColorfulChatBubble);
     enableColorfulReplyBubble =
         getBool('display/enableColorfulReplyBubble', enableColorfulReplyBubble);
+    enableColorfulBackground =
+        getBool('display/enableColorfulBackground', enableColorfulBackground);
 
     // 读取启用的群组数组
     enabledGroups = getIntList('notification/enabledGroups');
