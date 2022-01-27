@@ -1201,6 +1201,7 @@ class _ChatWidgetState extends State<ChatWidget>
         context: context,
         builder: (context) {
           return AlertDialog(
+            contentPadding: EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 16.0),
             content: Container(
                 constraints: BoxConstraints(
                     minWidth: twidth,
