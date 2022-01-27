@@ -172,6 +172,11 @@ class _ChatWidgetState extends State<ChatWidget>
             setState(() {});
           }
         }
+      } else if (event.event == Event.playAudio) {
+        if (event.data['key_id'] == chatObj.keyId()) {
+          String url = event.data['url'];
+          print('播放音频：$url');
+        }
       }
     });
 

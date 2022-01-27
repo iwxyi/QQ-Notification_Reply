@@ -479,39 +479,69 @@ class _MessageViewState extends State<MessageView> {
           }
         } else if (cqCode == 'record') {
           // 语音播放
-          RegExp re = RegExp(
-              r'^\[CQ:record,file=(.+?)(?:\.(?:si?lk|amr))?,url=(.*)\]$');
+          RegExp re = RegExp(r'^\[CQ:record,file=(.+?),url=(.*)\]$');
           if ((mat = re.firstMatch(mAll)) != null) {
-            String url = mat.group(2);
+            String file = mat.group(1);
+            String url = mat.group(2); // 注意：这个url可能会是空的
             url = url.replaceAll('&amp;', '&');
             span = new TextSpan(
                 text: "[语音]",
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
-                    print('播放/暂停语音：$url');
-                    if (audioPlayer == null) {
-                      // 初始化音频播放
-                      audioPlayer = AudioPlayer();
-                      audioPlayer.onPlayerCompletion.listen((event) {
-                        print('audio complete');
-                        currentAudio = null;
+                    const enableGetRecord = false;
+                    if (enableGetRecord &&
+                        (url == null || url.trim().isEmpty)) {
+                      print('获取网络语音：$file');
+                      if (G.rt.currentAudioFile != null) {
+                        if (G.rt.currentAudioFile == file) {
+                          // 是自己的语音，暂停
+                        } else {
+                          // 先停止之前的语音
+                        }
+                        return;
+                      }
+                      // 需要先获取语音
+                      G.cs.send({
+                        'action': 'get_record',
+                        'params': {'file': file, 'out_format': 'mp3'},
+                        'echo': 'get_record:${msg.keyId()}_$file'
                       });
-                    }
-                    if (currentAudio != null && currentAudio == url) {
-                      // 是当前媒体：暂停/继续
-                      if (audioPlayer.state == PlayerState.PAUSED) {
-                        audioPlayer.resume().then((value) => print('语音.继续 结束'));
-                      } else if (audioPlayer.state == PlayerState.PLAYING) {
-                        audioPlayer.pause().then((value) => print('语音.暂停 结束'));
+                    } else {
+                      print('播放/暂停语音：$url');
+                      if (url == null || url.trim().isEmpty) {
+                        print('该语音无可使用的url');
+                        return;
+                      }
+                      if (audioPlayer == null) {
+                        // 初始化音频播放
+                        audioPlayer = AudioPlayer();
+                        audioPlayer.onPlayerCompletion.listen((event) {
+                          print('audio complete');
+                          currentAudio = null;
+                        });
+                      }
+                      if (currentAudio != null && currentAudio == url) {
+                        // 是当前媒体：暂停/继续
+                        if (audioPlayer.state == PlayerState.PAUSED) {
+                          audioPlayer
+                              .resume()
+                              .then((value) => print('语音.继续 结束'));
+                        } else if (audioPlayer.state == PlayerState.PLAYING) {
+                          audioPlayer
+                              .pause()
+                              .then((value) => print('语音.暂停 结束'));
+                        } else {
+                          audioPlayer
+                              .play(url)
+                              .then((value) => print('语音.重新开始 结束'));
+                        }
                       } else {
+                        // 不是当前媒体，或没在播放：从头开始播放
                         audioPlayer
                             .play(url)
-                            .then((value) => print('语音.重新开始 结束'));
+                            .then((value) => print('语音.播放 结束'));
+                        currentAudio = url;
                       }
-                    } else {
-                      // 不是当前媒体，或没在播放：从头开始播放
-                      audioPlayer.play(url).then((value) => print('语音.播放 结束'));
-                      currentAudio = url;
                     }
                   },
                 style: TextStyle(

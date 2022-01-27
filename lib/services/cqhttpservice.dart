@@ -414,6 +414,24 @@ class CqhttpService {
       } else {
         print('无法识别的群成员echo: ' + echo);
       }
+    } else if (echo.startsWith('get_record')) {
+      // 获取转换后的音频（API尚未支持）
+      RegExp re = RegExp(r'^get_record:(-?\d+)_(.+)$');
+      Match match;
+      if ((match = re.firstMatch(echo)) != null) {
+        int keyId = int.parse(match.group(1));
+        String file = match.group(2);
+        var data = obj['data'];
+        if (data == null) {
+          print('warning: ' + obj['msg']);
+          return;
+        }
+        var url = data['file'];
+        ac.eventBus.fire(EventFn(
+            Event.playAudio, {'key_id': keyId, 'file': file, 'url': url}));
+      } else {
+        print('无法识别的音频echo: ' + echo);
+      }
     } else {
       print('未处理类型的echo: ' + echo);
     }

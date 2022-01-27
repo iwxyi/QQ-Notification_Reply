@@ -6,13 +6,14 @@ class AppRuntime {
   String cachePath; // 缓存路径
   String storagePath; // 外部存储目录（没用）
 
-  var currentChatPage;
-  var showChatPage;
-  var mainContext;
+  var currentChatPage; // 当前聊天页面
+  var showChatPage; // 显示当前聊天页面的函数
+  var mainContext; // 当前上下文
   var chatObjList;
-  var updateChatPageUnreadCount;
+  var updateChatPageUnreadCount; // 刷新未读计数
   var showUserInfo;
   var showGroupInfo;
+  var currentAudioFile; // 当前正在播放音频的file（默认为null）
 
   bool horizontal = false;
   bool enableNotification = true;

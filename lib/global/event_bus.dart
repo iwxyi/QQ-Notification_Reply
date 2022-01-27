@@ -15,7 +15,8 @@ enum Event {
   groupMessageHistories, // 群历史
   messageRecall,
   newChat, // 打开聊天对话框
-  userInfo // 用户信息
+  userInfo, // 用户信息
+  playAudio
 }
 
 class EventFn {
