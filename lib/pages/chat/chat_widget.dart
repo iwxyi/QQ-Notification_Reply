@@ -327,7 +327,7 @@ class _ChatWidgetState extends State<ChatWidget>
             : _messages[index + 1].senderId == _messages[index].senderId &&
                 _messages[index + 1].action == MessageType.Message;
 
-        int valueKey = _messages[index].messageId + (isNext ? 1 : 0);
+        int valueKey = (_messages[index].messageId ?? 0) + (isNext ? 1 : 0);
 
         return MessageView(_messages[index], isNext, ValueKey(valueKey),
             loadFinishedCallback: () {
