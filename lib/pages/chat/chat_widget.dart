@@ -262,6 +262,8 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   Widget _buildMessageList(BuildContext context) {
+    DateTime now = DateTime.now();
+    DateTime zero = DateTime(now.year, now.month, now.day);
     return new ListView.separated(
       separatorBuilder: (BuildContext context, int index) {
         if (index >= 0) {
@@ -276,7 +278,10 @@ class _ChatWidgetState extends State<ChatWidget>
           if (delta > maxDelta) {
             // 超过一分钟，显示时间
             DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
-            String str = formatDate(dt, ['HH', ':', 'nn']);
+            bool today = dt.isAfter(zero);
+            String str = today
+                ? formatDate(dt, ['HH', ':', 'nn'])
+                : formatDate(dt, ['mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
             return new Row(
               children: [new Text(str, style: TextStyle(color: Colors.grey))],
               mainAxisAlignment: MainAxisAlignment.center,

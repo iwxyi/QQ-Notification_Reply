@@ -50,7 +50,6 @@ class _ForwardWidgetState extends State<ForwardWidget> {
           nickname: nickname,
           senderId: userId,
           timestamp: time * 1000);
-      print(message);
       msgs.add(msg);
     }
   }
@@ -58,6 +57,8 @@ class _ForwardWidgetState extends State<ForwardWidget> {
   @override
   Widget build(BuildContext context) {
     int count = msgs.length;
+    DateTime now = DateTime.now();
+    DateTime zero = DateTime(now.year, now.month, now.day);
     return ListView.separated(
         itemBuilder: (context, int index) {
           // 跳过第一个索引
@@ -71,19 +72,23 @@ class _ForwardWidgetState extends State<ForwardWidget> {
               msgs[index], false, ValueKey(msgs[index].messageId));
         },
         separatorBuilder: (BuildContext context, int index) {
-          if (false && index < count - 1) {
-            int ts0 = msgs[index].timestamp;
-            int ts1 = 0;
-            if (index < count - 1) {
-              ts1 = msgs[index + 1].timestamp;
+          if (index < count - 1) {
+            int ts0 = 0;
+            if (index > 0) {
+              ts0 = msgs[index - 1].timestamp;
             }
-            int delta = ts0 - ts1;
+            int ts1 = msgs[index].timestamp;
+            int delta = ts1 - ts0;
             int maxDelta = 120 * 1000;
             // int maxDelta = 0;
             if (delta > maxDelta) {
               // 超过一分钟，显示时间
-              DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts0);
-              String str = formatDate(dt, ['HH', ':', 'nn']);
+              DateTime dt = DateTime.fromMillisecondsSinceEpoch(ts1);
+              bool today = dt.isAfter(zero);
+              // 判断日期
+              String str = today
+                  ? formatDate(dt, ['HH', ':', 'nn'])
+                  : formatDate(dt, ['mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
               return new Row(
                 children: [new Text(str, style: TextStyle(color: Colors.grey))],
                 mainAxisAlignment: MainAxisAlignment.center,
