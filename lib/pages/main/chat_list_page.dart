@@ -277,6 +277,9 @@ class _ChatListPageState extends State<ChatListPage>
               });
 
               // 打开会话
+              if (!G.cs.isConnected() && G.cs.autoReconnect) {
+                G.cs.reconnect(G.cs.host, G.cs.token);
+              }
               G.rt.showChatPage(msg, directlyClose: false);
             },
           ));
@@ -289,10 +292,10 @@ class _ChatListPageState extends State<ChatListPage>
               replyControllers[msg.keyId()] = TextEditingController();
             }
             TextEditingController controller = replyControllers[msg.keyId()];
-            print('initinitnitnit:' + controller.text);
             bodyWidgets.add(new Container(
               child: new TextField(
-                autofocus: true, // 不加的话每次setState都会失去焦点
+                autofocus: true,
+                // 不加的话每次setState都会失去焦点
                 // focusNode: fastReplyFocusNode,
                 controller: controller,
                 key: ValueKey(msg.keyId().toString() + "_reply"),

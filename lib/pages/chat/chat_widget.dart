@@ -740,10 +740,10 @@ class _ChatWidgetState extends State<ChatWidget>
       ));
     }
 
-    menus.add(PopupMenuItem<ChatMenuItems>(
+    /* menus.add(PopupMenuItem<ChatMenuItems>(
       value: ChatMenuItems.CustomName,
       child: Text('本地昵称'),
-    ));
+    )); */
 
     if (!widget.innerMode) {
       menus.add(PopupMenuItem<ChatMenuItems>(

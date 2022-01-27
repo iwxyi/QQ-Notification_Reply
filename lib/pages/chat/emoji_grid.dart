@@ -40,8 +40,10 @@ class _EmojiGridState extends State<EmojiGrid> {
     const int bsize = 48; // 图片边长（正方形）
 
     return StaggeredGridView.countBuilder(
-      crossAxisCount: twidth ~/ bsize, //横轴单元格数量
-      itemCount: emojiList.length, //元素数量
+      crossAxisCount: twidth ~/ bsize,
+      //横轴单元格数量
+      itemCount: emojiList.length,
+      //元素数量
       itemBuilder: (context, i) {
         String cq = emojiList[i];
         bool local = false;
@@ -125,6 +127,7 @@ class _EmojiGridState extends State<EmojiGrid> {
                     setState(() {
                       emojiList.removeAt(i);
                       G.st.emojiList.removeAt(i);
+                      G.st.setList('emoji/list', G.st.emojiList, split: ';');
                     });
                   })),
         );

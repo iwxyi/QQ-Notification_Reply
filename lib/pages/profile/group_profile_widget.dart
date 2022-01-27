@@ -182,8 +182,8 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
   }
 
   void editCustomName() {
-    int keyId = widget.chatObj.keyId();
-    String curName = G.st.getLocalNickname(keyId, widget.chatObj.username());
+    int keyId = MsgBean.groupKeyId(widget.chatObj.groupId);
+    String curName = G.st.getLocalNickname(keyId, widget.chatObj.groupName);
 
     TextEditingController controller = TextEditingController();
     controller.text = curName;

@@ -23,6 +23,7 @@ class CqhttpService {
 
   num _reconnectCount = 0; // 重连次数，并且影响每次重连的时间间隔
   Timer _reconnectTimer;
+  bool autoReconnect = false; // 是否自动断开（网络/休眠）
 
   // ignore: non_constant_identifier_names
   Map<String, String> CQCodeMap = {
@@ -282,6 +283,7 @@ class CqhttpService {
     ac.eventBus.fire(EventFn(Event.loginSuccess, {}));
 
     _reconnectCount = 0; // 登录完成才重置重连次数
+    autoReconnect = true;
   }
 
   void _parseEchoMessage(final obj) {

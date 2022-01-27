@@ -296,7 +296,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   }
 
   void editCustomName() {
-    int keyId = widget.chatObj.senderKeyId();
+    int keyId = MsgBean.privateKeyId(widget.chatObj.friendId);
     String curName = G.st.getLocalNickname(keyId, widget.chatObj.username());
 
     TextEditingController controller = TextEditingController();

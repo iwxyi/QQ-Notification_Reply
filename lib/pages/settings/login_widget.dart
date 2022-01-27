@@ -121,6 +121,7 @@ class LoginWidget extends StatelessWidget {
                     color: Colors.redAccent,
                     onPressed: () {
                       if (host != null && host.isNotEmpty) {
+                        G.cs.autoReconnect = false;
                         G.cs.connect(host, token).then((value) {
                           if (value) {
                             // 连接成功
