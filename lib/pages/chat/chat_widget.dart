@@ -14,6 +14,7 @@ import 'package:image_pickers/image_pickers.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/pages/main/search_page.dart';
 import 'package:qqnotificationreply/pages/profile/group_profile_widget.dart';
 import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
@@ -24,6 +25,7 @@ import 'message_view.dart';
 
 enum ChatMenuItems {
   Info,
+  Members,
   EnableNotification,
   CustomName,
   MessageHistories,
@@ -730,6 +732,11 @@ class _ChatWidgetState extends State<ChatWidget>
     ));
 
     if (widget.chatObj.isGroup()) {
+      menus.add(PopupMenuItem<ChatMenuItems>(
+        value: ChatMenuItems.Members,
+        child: Text('查看成员'),
+      ));
+
       String t =
           G.st.enabledGroups.contains(widget.chatObj.groupId) ? '关闭通知' : '开启通知';
       menus.add(PopupMenuItem<ChatMenuItems>(
@@ -784,6 +791,9 @@ class _ChatWidgetState extends State<ChatWidget>
             } else if (widget.chatObj.isGroup()) {
               showGroupInfo(widget.chatObj);
             }
+            break;
+          case ChatMenuItems.Members:
+            showGroupMembers();
             break;
           case ChatMenuItems.EnableNotification:
             setState(() {
@@ -1234,8 +1244,29 @@ class _ChatWidgetState extends State<ChatWidget>
           return AlertDialog(
             content: Container(
               constraints:
-                  BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 250),
-              child: GroupProfileWidget(chatObj: msg),
+                  BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 300),
+              child: GroupProfileWidget(
+                  chatObj: msg, showGroupMembers: showGroupMembers),
+            ),
+            contentPadding: EdgeInsets.all(5),
+          );
+        });
+  }
+
+  void showGroupMembers() {
+    G.cs.refreshGroupMembers(widget.chatObj.groupId);
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+              constraints: BoxConstraints(minWidth: 350, maxHeight: 500),
+              child: SearchPage(
+                members: G.ac.groupList[widget.chatObj.groupId].members,
+                selectCallback: (MsgBean msg) {
+                  G.rt.showChatPage(msg);
+                },
+              ),
             ),
             contentPadding: EdgeInsets.all(5),
           );

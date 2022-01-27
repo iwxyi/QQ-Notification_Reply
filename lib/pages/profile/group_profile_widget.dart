@@ -7,14 +7,14 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
-enum GroupMenuItems {
-  LocalNickname,
-}
+enum GroupMenuItems { LocalNickname, GroupMembers }
 
 class GroupProfileWidget extends StatefulWidget {
   final MsgBean chatObj;
+  final showGroupMembers;
 
-  const GroupProfileWidget({Key key, this.chatObj}) : super(key: key);
+  const GroupProfileWidget({Key key, this.chatObj, this.showGroupMembers})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _GroupProfileWidgetState();
@@ -149,9 +149,13 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
   Widget _buildMenu(BuildContext context) {
     List<PopupMenuEntry<GroupMenuItems>> menus = [
       PopupMenuItem<GroupMenuItems>(
+        value: GroupMenuItems.GroupMembers,
+        child: Text('查看群成员'),
+      ),
+      PopupMenuItem<GroupMenuItems>(
         value: GroupMenuItems.LocalNickname,
         child: Text('本地昵称'),
-      )
+      ),
     ];
 
     return PopupMenuButton<GroupMenuItems>(
@@ -162,6 +166,11 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
         switch (result) {
           case GroupMenuItems.LocalNickname:
             editCustomName();
+            break;
+          case GroupMenuItems.GroupMembers:
+            if (widget.showGroupMembers != null) {
+              widget.showGroupMembers();
+            }
             break;
         }
       },

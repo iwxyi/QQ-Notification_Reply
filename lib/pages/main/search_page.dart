@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
 class SearchPage extends StatefulWidget {
   final selectCallback;
+  final members;
 
-  const SearchPage({Key key, this.selectCallback}) : super(key: key);
+  const SearchPage({Key key, this.members, this.selectCallback})
+      : super(key: key);
 
   @override
   _SearchPageState createState() => _SearchPageState();
@@ -36,14 +37,23 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void initState() {
+    if (widget.members == null) {
+      initByFriendAndGroup();
+    } else {
+      initByGroupMember(widget.members);
+    }
+
+    super.initState();
+  }
+
+  void initByFriendAndGroup() {
     // 初始化好友内容
     Map<int, FriendInfo> friendList = G.ac.friendList;
     friendList.forEach((id, info) {
       int keyId = MsgBean.privateKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      String localName =
-          G.st.getLocalNickname(MsgBean(friendId: id).keyId(), "");
+      String localName = G.st.getLocalNickname(keyId, "");
       items.add(new FGInfo(
           keyId, id, info.nickname, info.remark, localName, time, false));
     });
@@ -54,8 +64,7 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.groupKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      String localName =
-          G.st.getLocalNickname(MsgBean(groupId: id).keyId(), "");
+      String localName = G.st.getLocalNickname(keyId, "");
       items.add(new FGInfo(keyId, id, info.name, "", localName, time, true));
     });
     items.sort((FGInfo a, FGInfo b) {
@@ -64,14 +73,22 @@ class _SearchPageState extends State<SearchPage> {
 
     // 初始化搜索记录
     searchHistories = G.st.getIntList('recent/search');
-    print(searchHistories);
     items.forEach((element) {
       if (searchHistories.contains(element.keyId)) {
         showItemList.add(element);
       }
     });
+  }
 
-    super.initState();
+  void initByGroupMember(Map<int, FriendInfo> members) {
+    members.forEach((id, info) {
+      int keyId = MsgBean.privateKeyId(id);
+      String localName = G.st.getLocalNickname(keyId, "");
+      FGInfo fg = new FGInfo(
+          keyId, id, info.nickname, info.remark, localName, 0, false);
+      items.add(fg);
+      showItemList.add(fg);
+    });
   }
 
   Widget _buildBody(BuildContext context) {
