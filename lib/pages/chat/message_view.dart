@@ -63,7 +63,13 @@ class _MessageViewState extends State<MessageView> {
 
   /// 一整行通知
   Widget _buildActionLine() {
-    return Text(G.cs.getMessageDisplay(msg));
+    return FlatButton(
+        child: Text(G.cs.getMessageDisplay(msg)),
+        onPressed: () {
+          if (widget.showUserInfoCallback != null) {
+            widget.showUserInfoCallback(msg);
+          }
+        });
   }
 
   /// 一整行用户消息
