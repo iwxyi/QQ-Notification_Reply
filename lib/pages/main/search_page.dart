@@ -40,8 +40,7 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.privateKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(keyId, id, info.nickname.toLowerCase(),
-          info.remark.toLowerCase(), time, false));
+      items.add(new FGInfo(keyId, id, info.nickname, info.remark, time, false));
     });
 
     // 初始化群组内容
@@ -50,7 +49,7 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.groupKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(keyId, id, info.name.toLowerCase(), "", time, true));
+      items.add(new FGInfo(keyId, id, info.name, "", time, true));
     });
     items.sort((FGInfo a, FGInfo b) {
       return b.time.compareTo(a.time);
@@ -108,8 +107,12 @@ class _SearchPageState extends State<SearchPage> {
             itemCount: showItemList.length,
             itemBuilder: (context, index) {
               FGInfo info = showItemList[index];
+              String name = info.remark;
+              if (name == null || name.isEmpty) {
+                name = info.name;
+              }
               return ListTile(
-                  title: Text('${info.name} (${info.id})'),
+                  title: Text('$name (${info.id})'),
                   onTap: () {
                     itemSelected(info);
                   },
@@ -154,10 +157,16 @@ class _SearchPageState extends State<SearchPage> {
   void itemSelected(FGInfo info) {
     // 封装为对象
     MsgBean msg;
+    String name = info.remark;
+    if (name == null || name.isEmpty) {
+      name = info.name;
+    }
     if (info.isGroup) {
-      msg = MsgBean(groupId: info.id, groupName: info.name);
+      name = G.st.getLocalNickname(MsgBean(groupId: info.id).keyId(), name);
+      msg = MsgBean(groupId: info.id, groupName: name);
     } else {
-      msg = MsgBean(targetId: info.id, friendId: info.id, nickname: info.name);
+      name = G.st.getLocalNickname(MsgBean(friendId: info.id).keyId(), name);
+      msg = MsgBean(targetId: info.id, friendId: info.id, nickname: name);
     }
 
     // 保存搜索记录
@@ -178,8 +187,8 @@ class _SearchPageState extends State<SearchPage> {
       setState(() {
         showItemList.clear();
         for (int i = 0; i < items.length; i++) {
-          if (items[i].name.contains(query) ||
-              items[i].remark.contains(query)) {
+          if (items[i].name.toLowerCase().contains(query) ||
+              items[i].remark.toLowerCase().contains(query)) {
             showItemList.add(items[i]);
           }
         }
