@@ -16,7 +16,8 @@ enum Event {
   messageRecall,
   newChat, // 打开聊天对话框
   userInfo, // 用户信息
-  playAudio
+  playAudio,
+  forwardMessages
 }
 
 class EventFn {

@@ -16,6 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/slide_images_page.dart';
 import '../main/search_page.dart';
+import 'forward_widget.dart';
 
 /// 构造发送的信息
 /// 每一条消息显示的复杂对象
@@ -617,6 +618,35 @@ class _MessageViewState extends State<MessageView> {
             }, recursion: recursion)));
             insertFirst = true;
           }
+        } else if (cqCode == 'forward') {
+          RegExp re = RegExp(r'^\[CQ:forward,id=(.+?)\]$');
+          if ((mat = re.firstMatch(mAll)) != null) {
+            String id = mat.group(1);
+            span = new TextSpan(
+                text: "[转发]",
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    print('查看转发：$id');
+                    if (widget.unfocusEditorCallback != null) {
+                      widget.unfocusEditorCallback();
+                    }
+                    // showForwardMessage(id);
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return Scaffold(
+                        appBar: AppBar(
+                          title: Text('转发的内容'),
+                        ),
+                        body: ForwardWidget(forwardId: id),
+                      );
+                    }));
+                  },
+                style: TextStyle(
+                    fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
+          } else {
+            // 意外的视频格式
+            span = new TextSpan(text: '[转发]');
+          }
         } else {
           // 进行替换未处理的CQ码
           if (G.cs.CQCodeMap.containsKey(cqCode)) {
@@ -1192,6 +1222,28 @@ class _MessageViewState extends State<MessageView> {
                 child: Text('取消'),
               ),
             ],
+          );
+        });
+  }
+
+  void showForwardMessage(String id) {
+    final size = MediaQuery.of(context).size;
+    final twidth = size.width / 2;
+    final theight = size.height * 3 / 5;
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+                constraints: BoxConstraints(
+                    minWidth: twidth,
+                    maxWidth: twidth,
+                    minHeight: theight,
+                    maxHeight: theight),
+                child: ForwardWidget(
+                  forwardId: id,
+                )),
           );
         });
   }

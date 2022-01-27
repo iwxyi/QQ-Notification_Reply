@@ -948,8 +948,8 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     }
-    super.dispose();
     eventBusFn.cancel();
+    super.dispose();
   }
 
   ///发送信息

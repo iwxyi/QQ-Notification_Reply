@@ -423,12 +423,30 @@ class CqhttpService {
         String file = match.group(2);
         var data = obj['data'];
         if (data == null) {
-          print('warning: ' + obj['msg']);
+          print('warning: get_record is null: ' + obj['msg']);
           return;
         }
         var url = data['file'];
         ac.eventBus.fire(EventFn(
             Event.playAudio, {'key_id': keyId, 'file': file, 'url': url}));
+      } else {
+        print('无法识别的音频echo: ' + echo);
+      }
+    } else if (echo.startsWith('get_forward_msg')) {
+      // 获取转发的信息
+      RegExp re = RegExp(r'^get_forward_msg:(.+)$');
+      Match match;
+      if ((match = re.firstMatch(echo)) != null) {
+        String forwardId = match.group(1);
+        var data = obj['data'];
+        if (data == null) {
+          print('warning: get_forward_msg is null: ' + obj['msg']);
+          return;
+        }
+        var messages = data['messages'];
+        print('读取到转发的消息：${messages.length}条');
+        ac.eventBus.fire(EventFn(Event.forwardMessages,
+            {'forward_id': forwardId, 'messages': messages}));
       } else {
         print('无法识别的音频echo: ' + echo);
       }
@@ -773,6 +791,14 @@ class CqhttpService {
       'action': 'get_group_msg_history',
       'params': {'message_seq': messageSeq, 'group_id': groupId},
       'echo': 'get_group_msg_history:$groupId'
+    });
+  }
+
+  void getForwardMessages(String forwardId) {
+    send({
+      'action': 'get_forward_msg',
+      'params': {'message_id': forwardId},
+      'echo': 'get_forward_msg:$forwardId'
     });
   }
 
