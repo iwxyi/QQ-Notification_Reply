@@ -14,6 +14,7 @@ import 'package:image_pickers/image_pickers.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/pages/profile/group_profile_widget.dart';
 import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.dart';
@@ -633,13 +634,26 @@ class _ChatWidgetState extends State<ChatWidget>
           },
           icon: Icon(widget.directlyClose ? Icons.close : Icons.arrow_back)),
       Expanded(
-        child: Text(
-          title ?? '',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 20,
-              color: Theme.of(context).textTheme.bodyText2.color,
-              fontWeight: FontWeight.w500),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FlatButton(
+                child: Text(
+                  title ?? '',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 20,
+                      color: Theme.of(context).textTheme.bodyText2.color,
+                      fontWeight: FontWeight.w500),
+                ),
+                onPressed: () {
+                  if (widget.chatObj.isGroup()) {
+                    showGroupInfo(widget.chatObj);
+                  } else if (widget.chatObj.isPrivate()) {
+                    showUserInfo(widget.chatObj);
+                  }
+                })
+          ],
         ),
       ),
       buildMenu()
@@ -713,7 +727,6 @@ class _ChatWidgetState extends State<ChatWidget>
     menus.add(PopupMenuItem<ChatMenuItems>(
       value: ChatMenuItems.Info,
       child: Text(widget.chatObj.isPrivate() ? '用户资料' : '群组资料'),
-      enabled: widget.chatObj.isPrivate(),
     ));
 
     if (widget.chatObj.isGroup()) {
@@ -769,7 +782,7 @@ class _ChatWidgetState extends State<ChatWidget>
               // 显示用户信息
               showUserInfo(widget.chatObj);
             } else if (widget.chatObj.isGroup()) {
-              // TODO:显示群组信息
+              showGroupInfo(widget.chatObj);
             }
             break;
           case ChatMenuItems.EnableNotification:
@@ -1207,6 +1220,22 @@ class _ChatWidgetState extends State<ChatWidget>
               constraints:
                   BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 250),
               child: UserProfileWidget(chatObj: msg),
+            ),
+            contentPadding: EdgeInsets.all(5),
+          );
+        });
+  }
+
+  void showGroupInfo(MsgBean msg) {
+    _removeEditorFocus();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+              constraints:
+                  BoxConstraints(minWidth: 200, minHeight: 100, maxHeight: 250),
+              child: GroupProfileWidget(chatObj: msg),
             ),
             contentPadding: EdgeInsets.all(5),
           );

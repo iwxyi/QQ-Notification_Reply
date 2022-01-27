@@ -364,6 +364,10 @@ class CqhttpService {
       // 获取用户信息
       print(obj['data']);
       ac.eventBus.fire(EventFn(Event.userInfo, obj['data']));
+    } else if (echo.startsWith('get_group_info')) {
+      // 获取群组信息
+      print(obj['data']);
+      ac.eventBus.fire(EventFn(Event.groupInfo, obj['data']));
     } else if (echo.startsWith('get_group_msg_history')) {
       // 获取群组，echo字段格式为：get_group_msg_history:123456
       RegExp re = RegExp(r'^get_group_msg_history:(\d+)$');
