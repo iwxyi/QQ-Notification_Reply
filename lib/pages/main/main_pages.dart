@@ -235,7 +235,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     // 横屏特判
     if (_selectedIndex == 0 && G.rt.horizontal) {
       BoxDecoration deco;
-      if (G.rt.currentChatPage != null &&
+      if (G.st.enableColorfulBackground &&
+          G.rt.currentChatPage != null &&
           G.ac.chatObjColor.containsKey(G.rt.currentChatPage.chatObj.keyId())) {
         deco = BoxDecoration(
           gradient: LinearGradient(
@@ -243,7 +244,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             end: Alignment.bottomCenter,
             colors: [
               G.ac.chatObjColor[G.rt.currentChatPage.chatObj.keyId()]
-                  .withOpacity(0.05),
+                  .withOpacity(G.st.colorfulBackgroundBg),
               Colors.white,
             ],
           ),
@@ -635,7 +636,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         MediaQuery.of(context).size.width > G.rt.chatListFixedWidth * 1.5;
     G.rt.horizontal = hori;
 
-    return Scaffold(
+    Widget sca = Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(context),
       /* bottomNavigationBar:
@@ -647,6 +648,9 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         }
       },
     );
+
+    return sca;
+
     /* // 自定义滑块视图
     return AppRetainWidget(
       child: AnimateTabNavigation(

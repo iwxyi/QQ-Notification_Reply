@@ -333,6 +333,33 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.tv,
+                    color: Colors.blue,
+                  ),
+                  title: Text('窗口背景'),
+                  subtitle: Text('窗口背景使用头像主题色作为背景颜色（不好看）'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableColorfulBackground =
+                            !G.st.enableColorfulBackground;
+                        G.st.setConfig('display/enableColorfulBackground',
+                            G.st.enableColorfulBackground);
+                      });
+                    },
+                    value: G.st.enableColorfulBackground,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableColorfulBackground =
+                          !G.st.enableColorfulBackground;
+                      G.st.setConfig('display/enableColorfulBackground',
+                          G.st.enableColorfulBackground);
+                    });
+                  },
+                ),
               ],
             ),
           ),
