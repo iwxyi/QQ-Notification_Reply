@@ -307,13 +307,16 @@ class _ChatWidgetState extends State<ChatWidget>
           return Container(alignment: Alignment.center, child: btn);
         }
 
-        return MessageView(
-            _messages[index],
-            index >= _messages.length - 1
-                ? false
-                : _messages[index + 1].senderId == _messages[index].senderId &&
-                    _messages[index + 1].action == MessageType.Message,
-            ValueKey(_messages[index].messageId), loadFinishedCallback: () {
+        // 是否是下一个
+        bool isNext = index >= _messages.length - 1
+            ? false
+            : _messages[index + 1].senderId == _messages[index].senderId &&
+                _messages[index + 1].action == MessageType.Message;
+
+        int valueKey = _messages[index].messageId + (isNext ? 1 : 0);
+
+        return MessageView(_messages[index], isNext, ValueKey(valueKey),
+            loadFinishedCallback: () {
           // 图片加载完毕，会影响大小
           if (_keepScrollBottom) {
             if (!hasToBottom.containsKey(_messages[index].messageId)) {
@@ -339,12 +342,13 @@ class _ChatWidgetState extends State<ChatWidget>
           MsgBean msg = _messages[index];
           G.cs.sendMsg(msg, text);
         }, deleteMessageCallback: (MsgBean msg) {
-          // 本地删除消息
-          _messages
-              .removeWhere((element) => element.messageId == msg.messageId);
-          G.ac.allMessages[msg.keyId()]
-              .removeWhere((element) => element.messageId == msg.messageId);
-          setState(() {});
+          setState(() {
+            // 本地删除消息
+            _messages
+                .removeWhere((element) => element.messageId == msg.messageId);
+            G.ac.allMessages[msg.keyId()]
+                .removeWhere((element) => element.messageId == msg.messageId);
+          });
         }, unfocusEditorCallback: () {
           _removeEditorFocus();
         }, showUserInfoCallback: (MsgBean msg) {
