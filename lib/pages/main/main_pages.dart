@@ -234,17 +234,36 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
   Widget _buildBody(BuildContext context) {
     // 横屏特判
     if (_selectedIndex == 0 && G.rt.horizontal) {
-      return Row(
-          children: [
-            Container(
-                constraints: BoxConstraints(
-                    maxWidth: max(G.rt.chatListFixedWidth,
-                        MediaQuery.of(context).size.width / 3)),
-                child: allPages[_selectedIndex].contentWidget),
-            Expanded(child: _buildChatObjView(context))
-          ],
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start);
+      BoxDecoration deco;
+      if (G.rt.currentChatPage != null &&
+          G.ac.chatObjColor.containsKey(G.rt.currentChatPage.chatObj.keyId())) {
+        deco = BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              G.ac.chatObjColor[G.rt.currentChatPage.chatObj.keyId()]
+                  .withOpacity(0.05),
+              Colors.white,
+            ],
+          ),
+        );
+      }
+
+      return Container(
+        child: Row(
+            children: [
+              Container(
+                  constraints: BoxConstraints(
+                      maxWidth: max(G.rt.chatListFixedWidth,
+                          MediaQuery.of(context).size.width / 3)),
+                  child: allPages[_selectedIndex].contentWidget),
+              Expanded(child: _buildChatObjView(context))
+            ],
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start),
+        decoration: deco,
+      );
     }
 
     // 默认状态
