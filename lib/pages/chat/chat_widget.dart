@@ -29,6 +29,7 @@ enum ChatMenuItems {
   EnableNotification,
   CustomName,
   MessageHistories,
+  SendImage,
   InsertFakeLeft,
   InsertFakeRight
 }
@@ -732,10 +733,10 @@ class _ChatWidgetState extends State<ChatWidget>
     ));
 
     if (widget.chatObj.isGroup()) {
-      menus.add(PopupMenuItem<ChatMenuItems>(
-        value: ChatMenuItems.Members,
-        child: Text('查看成员'),
-      ));
+      // menus.add(PopupMenuItem<ChatMenuItems>(
+      //   value: ChatMenuItems.Members,
+      //   child: Text('查看成员'),
+      // ));
 
       String t =
           G.st.enabledGroups.contains(widget.chatObj.groupId) ? '关闭通知' : '开启通知';
@@ -749,6 +750,13 @@ class _ChatWidgetState extends State<ChatWidget>
       value: ChatMenuItems.CustomName,
       child: Text('本地昵称'),
     ));
+
+    if (!widget.innerMode) {
+      menus.add(PopupMenuItem<ChatMenuItems>(
+        value: ChatMenuItems.SendImage,
+        child: Text('发送图片'),
+      ));
+    }
 
     /* menus.add(PopupMenuItem<ChatMenuItems>(
       value: ChatMenuItems.MessageHistories,
@@ -804,6 +812,9 @@ class _ChatWidgetState extends State<ChatWidget>
           case ChatMenuItems.CustomName:
             editCustomName();
             break;
+          case ChatMenuItems.SendImage:
+            getImage();
+            break;
           case ChatMenuItems.MessageHistories:
             _loadNetMsgHistory();
             break;
@@ -833,10 +844,10 @@ class _ChatWidgetState extends State<ChatWidget>
     return new Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: new Row(children: <Widget>[
-          new IconButton(
+          /* new IconButton(
               icon: new Icon(Icons.image),
               onPressed: getImage,
-              color: Theme.of(context).primaryColor),
+              color: Theme.of(context).primaryColor), */
           new IconButton(
               icon: new Icon(Icons.face),
               onPressed: showEmojiList,
@@ -1238,6 +1249,7 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   void showGroupInfo(MsgBean msg) {
+    G.cs.refreshGroupMembers(widget.chatObj.groupId);
     _removeEditorFocus();
     showDialog(
         context: context,
@@ -1255,7 +1267,7 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   void showGroupMembers() {
-    G.cs.refreshGroupMembers(widget.chatObj.groupId);
+    // G.cs.refreshGroupMembers(widget.chatObj.groupId);
     showDialog(
         context: context,
         builder: (context) {
