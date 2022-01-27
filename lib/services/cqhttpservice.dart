@@ -781,6 +781,16 @@ class CqhttpService {
     if (message == null || message.isEmpty) {
       return;
     }
+
+    // 表情包转网络图片
+    if (st.enableEmojiToImage) {
+      message = message
+          .replaceAllMapped(RegExp(r"\[CQ:image,file=.+?,url=(.+)\]"), (match) {
+        var url = match[1];
+        return "[CQ:image,file=$url]";
+      });
+    }
+
     send({
       'action': 'send_group_msg',
       'params': {'group_id': groupId, 'message': message},
