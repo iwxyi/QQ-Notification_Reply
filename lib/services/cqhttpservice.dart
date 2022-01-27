@@ -466,6 +466,7 @@ class CqhttpService {
     int messageId = obj['message_id'];
     int targetId = obj['target_id'];
     int messageSeq = obj['message_seq']; // 私聊是nullptr
+    int time = obj['time'];
 
     var sender = obj['sender'];
     int senderId = sender['user_id']; // 发送者QQ，大概率是别人，也可能是自己
@@ -486,7 +487,7 @@ class CqhttpService {
             ? ac.friendList[friendId].username()
             : null,
         friendId: friendId,
-        timestamp: DateTime.now().millisecondsSinceEpoch);
+        timestamp: time * 1000);
 
     print('收到私聊消息：${msg.username()} : $message');
 
@@ -512,6 +513,7 @@ class CqhttpService {
     String nickname = sender['nickname'];
     String card = sender['card']; // 群名片，可能为空
     String role = sender['role']; // 角色：owner/admin/member
+    int time = obj['time'];
 
     if (subType == 'anonymous') {
       // 匿名消息，不想作处理
@@ -538,7 +540,7 @@ class CqhttpService {
             ? ac.friendList[senderId].username()
             : null,
         role: role,
-        timestamp: DateTime.now().millisecondsSinceEpoch);
+        timestamp: time * 1000);
     return msg;
   }
 
