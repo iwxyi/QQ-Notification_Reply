@@ -68,13 +68,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       G.cs.send({
         'action': 'get_group_member_info',
         'params': {'user_id': userId, 'group_id': widget.chatObj.groupId},
-        'echo': 'get_group_info:$userId'
+        'echo': 'get_user_info:$userId'
       });
     } else {
       G.cs.send({
         'action': 'get_stranger_info',
         'params': {'user_id': userId},
-        'echo': 'get_group_info:$userId'
+        'echo': 'get_user_info:$userId'
       });
     }
   }
@@ -102,7 +102,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   @override
   Widget build(BuildContext context) {
     List<Widget> headerWidgets = [
-      Text(nickname, style: TextStyle(fontSize: 25)),
+      Text(
+        nickname,
+        style: TextStyle(fontSize: 25),
+        overflow: TextOverflow.ellipsis,
+      ),
       GestureDetector(
           child: Text(userId.toString()),
           onTap: () {
@@ -115,7 +119,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
     ];
 
     if (title != null && title != "") {
-      headerWidgets.insert(1, Text("【$title】"));
+      headerWidgets.insert(
+          1,
+          Text(
+            "【$title】",
+            overflow: TextOverflow.ellipsis,
+          ));
     }
 
     // 头像昵称等基础信息
@@ -128,10 +137,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       SizedBox(
         width: 16,
       ),
-      Column(
-          children: headerWidgets,
-          crossAxisAlignment: CrossAxisAlignment.start),
-      Expanded(child: SizedBox(width: 16)),
+      Expanded(
+          child: Column(
+              children: headerWidgets,
+              crossAxisAlignment: CrossAxisAlignment.start)),
       _buildMenu(context)
     ]);
 

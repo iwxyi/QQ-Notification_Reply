@@ -67,7 +67,11 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
   @override
   Widget build(BuildContext context) {
     List<Widget> headerWidgets = [
-      Text(groupName, style: TextStyle(fontSize: 25)),
+      Text(
+        groupName,
+        style: TextStyle(fontSize: 25),
+        overflow: TextOverflow.ellipsis,
+      ),
       GestureDetector(
           child: Text(groupId.toString()),
           onTap: () {
@@ -89,10 +93,10 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
       SizedBox(
         width: 16,
       ),
-      Column(
-          children: headerWidgets,
-          crossAxisAlignment: CrossAxisAlignment.start),
-      Expanded(child: SizedBox(width: 16)),
+      Expanded(
+          child: Column(
+              children: headerWidgets,
+              crossAxisAlignment: CrossAxisAlignment.start)),
       _buildMenu(context)
     ]);
 
