@@ -18,10 +18,12 @@ class FGInfo {
   int id;
   String name;
   String remark;
+  String localName;
   int time;
   bool isGroup;
 
-  FGInfo(this.keyId, this.id, this.name, this.remark, this.time, this.isGroup);
+  FGInfo(this.keyId, this.id, this.name, this.remark, this.localName, this.time,
+      this.isGroup);
 }
 
 class _SearchPageState extends State<SearchPage> {
@@ -40,7 +42,10 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.privateKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(keyId, id, info.nickname, info.remark, time, false));
+      String localName =
+          G.st.getLocalNickname(MsgBean(friendId: id).keyId(), "");
+      items.add(new FGInfo(
+          keyId, id, info.nickname, info.remark, localName, time, false));
     });
 
     // 初始化群组内容
@@ -49,7 +54,9 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.groupKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(keyId, id, info.name, "", time, true));
+      String localName =
+          G.st.getLocalNickname(MsgBean(groupId: id).keyId(), "");
+      items.add(new FGInfo(keyId, id, info.name, "", localName, time, true));
     });
     items.sort((FGInfo a, FGInfo b) {
       return b.time.compareTo(a.time);
@@ -107,7 +114,10 @@ class _SearchPageState extends State<SearchPage> {
             itemCount: showItemList.length,
             itemBuilder: (context, index) {
               FGInfo info = showItemList[index];
-              String name = info.remark;
+              String name = info.localName;
+              if (name == null || name.isEmpty) {
+                name = info.remark;
+              }
               if (name == null || name.isEmpty) {
                 name = info.name;
               }
@@ -157,15 +167,16 @@ class _SearchPageState extends State<SearchPage> {
   void itemSelected(FGInfo info) {
     // 封装为对象
     MsgBean msg;
-    String name = info.remark;
+    String name = info.localName;
+    if (name == null || name.isEmpty) {
+      name = info.remark;
+    }
     if (name == null || name.isEmpty) {
       name = info.name;
     }
     if (info.isGroup) {
-      name = G.st.getLocalNickname(MsgBean(groupId: info.id).keyId(), name);
       msg = MsgBean(groupId: info.id, groupName: name);
     } else {
-      name = G.st.getLocalNickname(MsgBean(friendId: info.id).keyId(), name);
       msg = MsgBean(targetId: info.id, friendId: info.id, nickname: name);
     }
 
