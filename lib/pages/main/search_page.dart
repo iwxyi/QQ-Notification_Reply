@@ -17,10 +17,11 @@ class FGInfo {
   int keyId;
   int id;
   String name;
+  String remark;
   int time;
   bool isGroup;
 
-  FGInfo(this.keyId, this.id, this.name, this.time, this.isGroup);
+  FGInfo(this.keyId, this.id, this.name, this.remark, this.time, this.isGroup);
 }
 
 class _SearchPageState extends State<SearchPage> {
@@ -39,7 +40,8 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.privateKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(keyId, id, info.username(), time, false));
+      items.add(new FGInfo(keyId, id, info.nickname.toLowerCase(),
+          info.remark.toLowerCase(), time, false));
     });
 
     // 初始化群组内容
@@ -48,7 +50,7 @@ class _SearchPageState extends State<SearchPage> {
       int keyId = MsgBean.groupKeyId(id);
       int time =
           G.ac.messageTimes.containsKey(keyId) ? G.ac.messageTimes[keyId] : 0;
-      items.add(new FGInfo(keyId, id, info.name, time, true));
+      items.add(new FGInfo(keyId, id, info.name.toLowerCase(), "", time, true));
     });
     items.sort((FGInfo a, FGInfo b) {
       return b.time.compareTo(a.time);
@@ -171,11 +173,13 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   filterSearch(String query) {
+    query = query.toLowerCase();
     if (query.isNotEmpty) {
       setState(() {
         showItemList.clear();
         for (int i = 0; i < items.length; i++) {
-          if (items[i].name.contains(query)) {
+          if (items[i].name.contains(query) ||
+              items[i].remark.contains(query)) {
             showItemList.add(items[i]);
           }
         }
