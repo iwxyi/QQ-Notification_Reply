@@ -89,6 +89,9 @@ class _SearchPageState extends State<SearchPage> {
       items.add(fg);
       showItemList.add(fg);
     });
+
+    // 初始化搜索记录
+    searchHistories = G.st.getIntList('recent/search');
   }
 
   Widget _buildBody(BuildContext context) {
@@ -155,12 +158,16 @@ class _SearchPageState extends State<SearchPage> {
                           nickname: info.name);
                     }
 
-                    // 取消搜索记录
-                    setState(() {
-                      searchHistories.remove(msg.keyId());
-                      G.st.setList('recent/search', searchHistories);
-                      showItemList.remove(info);
-                    });
+                    if (widget.members != null) {
+                      // 显示用户信息
+                    } else {
+                      // 取消搜索记录
+                      setState(() {
+                        searchHistories.remove(msg.keyId());
+                        G.st.setList('recent/search', searchHistories);
+                        showItemList.remove(info);
+                      });
+                    }
                   });
             },
           ),
