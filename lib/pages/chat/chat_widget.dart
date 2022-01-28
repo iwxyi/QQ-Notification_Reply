@@ -83,7 +83,7 @@ class _ChatWidgetState extends State<ChatWidget>
     // 设置新的聊天对象
     widget.setObject = (MsgBean msg) {
       // 取消旧的
-      _releaseData();
+      _releaseChatObjData();
       widget.jumpMsg = null;
 
       // 设置为新的
@@ -970,7 +970,7 @@ class _ChatWidgetState extends State<ChatWidget>
     }
   }
 
-  void _releaseData() {
+  void _releaseChatObjData() {
     G.ac.gettingChatObjColor.clear();
     if (widget.chatObj != null) {
       if (widget.chatObj.isGroup()) {
@@ -980,12 +980,12 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     }
-    eventBusFn.cancel();
   }
 
   @override
   void dispose() {
-    _releaseData();
+    _releaseChatObjData();
+    eventBusFn.cancel();
     super.dispose();
   }
 
