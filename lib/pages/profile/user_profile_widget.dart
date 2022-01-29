@@ -104,7 +104,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
     List<Widget> headerWidgets = [
       Text(
         nickname,
-        style: TextStyle(fontSize: 25),
+        style: TextStyle(fontSize: 20),
         overflow: TextOverflow.ellipsis,
       ),
       GestureDetector(
@@ -296,9 +296,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   }
 
   void editCustomName() {
-    int keyId = MsgBean.privateKeyId(widget.chatObj.friendId);
+    int keyId = MsgBean.privateKeyId(
+        widget.chatObj.friendId ?? widget.chatObj.senderId);
     String curName = G.st.getLocalNickname(keyId, widget.chatObj.username());
-
     TextEditingController controller = TextEditingController();
     controller.text = curName;
     if (curName.isNotEmpty) {

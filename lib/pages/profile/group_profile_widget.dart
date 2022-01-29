@@ -69,7 +69,7 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
     List<Widget> headerWidgets = [
       Text(
         groupName,
-        style: TextStyle(fontSize: 25),
+        style: TextStyle(fontSize: 20),
         overflow: TextOverflow.ellipsis,
       ),
       GestureDetector(
@@ -184,7 +184,6 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
   void editCustomName() {
     int keyId = MsgBean.groupKeyId(widget.chatObj.groupId);
     String curName = G.st.getLocalNickname(keyId, widget.chatObj.groupName);
-
     TextEditingController controller = TextEditingController();
     controller.text = curName;
     if (curName.isNotEmpty) {
