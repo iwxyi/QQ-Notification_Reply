@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/pages/settings/all_messages_page.dart';
@@ -32,15 +31,6 @@ class _MySettingsWidgetState extends State<MySettingsWidget>
           event.event == Event.groupList ||
           event.event == Event.messageRaw) {
         setState(() {});
-
-        if (event.event == Event.loginInfo) {
-          Fluttertoast.showToast(
-            msg: "登录成功",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-          );
-        }
       }
       // print(event.obj);
     });

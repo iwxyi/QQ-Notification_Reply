@@ -116,6 +116,13 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         if (mounted) {
           setState(() {});
         }
+      } else if (event.event == Event.loginInfo) {
+        Fluttertoast.showToast(
+          msg: "登录成功",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+        );
       }
     });
 
@@ -837,7 +844,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         id: id,
         channelKey: channelKey,
         groupKey: msg.keyId().toString(),
-        summary: msg.isGroup() ? msg.groupName : msg.nickname ?? msg.username(),
+        summary: msg.isGroup()
+            ? G.st.getLocalNickname(msg.keyId(), msg.groupName)
+            : G.st.getLocalNickname(
+                msg.senderKeyId(), msg.nickname ?? msg.username()),
         title: G.st.getLocalNickname(msg.senderKeyId(), msg.username()),
         body: G.cs.getMessageDisplay(msg),
         notificationLayout: NotificationLayout.Messaging,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/appruntime.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/useraccount.dart';
@@ -821,6 +822,17 @@ class CqhttpService {
   void _sendPrivateMessage(int userId, String message) {
     if (message == null || message.isEmpty) {
       return;
+    }
+    if (st.disableDangerousAction) {
+      if (!ac.friendList.containsKey(userId)) {
+        Fluttertoast.showToast(
+          msg: "已禁止风险操作：发送非好友消息",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+        );
+        return ;
+      }
     }
     send({
       'action': 'send_private_msg',

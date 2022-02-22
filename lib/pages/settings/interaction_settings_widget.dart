@@ -126,6 +126,35 @@ class _InteractionSettingsWidgetState extends State<InteractionSettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.bug_report,
+                    color: Colors.blue,
+                  ),
+                  title: Text('禁止风险操作'),
+                  subtitle: Text('禁止一些产生bug、不稳定的操作，如可能会导致账号被冻结的发送非好友消息'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.disableDangerousAction =
+                            !G.st.disableDangerousAction;
+                        G.st.setConfig('function/disableDangerousAction',
+                            G.st.disableDangerousAction);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.disableDangerousAction,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.disableDangerousAction =
+                          !G.st.disableDangerousAction;
+                      G.st.setConfig('function/disableDangerousAction',
+                          G.st.disableDangerousAction);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
               ],
             ),
           ),

@@ -391,6 +391,10 @@ class _ChatWidgetState extends State<ChatWidget>
                 if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
                   _movedLarge = true;
                 } else if (!_movedLarge && deltaX > MAX_X) {
+                  if (G.rt.currentChatPage == null) {
+                    // 可能返回手势已经取消这一页了？
+                    return;
+                  }
                   Navigator.pop(context);
                 }
               },
@@ -627,6 +631,7 @@ class _ChatWidgetState extends State<ChatWidget>
             Navigator.of(context).pop();
             if (widget.directlyClose) {
               // TODO:离开整个程序，模拟返回键
+              // Navigator.of(context).pop();
             }
           },
           icon: Icon(widget.directlyClose ? Icons.close : Icons.arrow_back)),

@@ -34,6 +34,7 @@ class UserSettings extends MySettings {
   bool enableNonsenseMode = false; // 启用胡说八道模式
   bool debugMode = false; // 调试模式
   bool enableEmojiToImage = false; // 群消息表情包转网络图片格式
+  bool disableDangerousAction = false; // 禁止有风险的操作，避免账号被冻结
 
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
@@ -107,6 +108,8 @@ class UserSettings extends MySettings {
     debugMode = getBool('function/enableDebugMode', debugMode);
     enableEmojiToImage =
         getBool('function/enableEmojiToImage', enableEmojiToImage);
+    disableDangerousAction =
+        getBool('function/disableDangerousAction', disableDangerousAction);
 
     enableColorfulChatList =
         getBool('display/enableColorfulChatList', enableColorfulChatList);
