@@ -274,7 +274,7 @@ class _NotificationSettingsWidgetState
       @required String message,
       String largeIcon,
       bool checkPermission = true}) async {
-    await AwesomeNotifications().createNotification(
+    /* await AwesomeNotifications().createNotification(
         content: NotificationContent(
             id: createUniqueID(AwesomeNotifications.maxID),
             groupKey: groupKey,
@@ -297,7 +297,7 @@ class _NotificationSettingsWidgetState
             autoDismissable: true,
             buttonType: ActionButtonType.InputField,
           )
-        ]);
+        ]); */
   }
 
   int _messageIncrement = 0;

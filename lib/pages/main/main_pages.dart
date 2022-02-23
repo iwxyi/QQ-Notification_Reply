@@ -885,7 +885,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         NotificationActionButton(
           key: 'reply',
           label: '回复',
-          buttonType: ActionButtonType.InputField,
+          actionType: ActionType.SilentAction,
+          requireInputText: true
         )
       ],
     );
