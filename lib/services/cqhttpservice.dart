@@ -129,6 +129,7 @@ class CqhttpService {
       return;
     }
     rt.thisDeviceSend = true;
+    rt.thisDeviceSleep = false;
     if (chatObj.isGroup()) {
       _sendGroupMessage(chatObj.groupId, text);
 
