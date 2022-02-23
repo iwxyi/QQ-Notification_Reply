@@ -91,6 +91,9 @@ class _ChatWidgetState extends State<ChatWidget>
       setState(() {
         _messages = [];
         _initMessages();
+        if (G.ac.unsentMessages.containsKey(msg.keyId())) {
+          _setMessage(G.ac.unsentMessages[msg.keyId()]);
+        }
       });
 
       if (!widget.innerMode) {
@@ -976,12 +979,20 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   void _releaseChatObjData() {
+    // 保存状态
+    String unsentText = _textController.text;
+    if (unsentText.isNotEmpty) {
+      G.ac.unsentMessages[widget.chatObj.keyId()] = unsentText;
+    } else {
+      G.ac.unsentMessages.remove(widget.chatObj.keyId());
+    }
+
+    // 清除标记
     G.ac.gettingChatObjColor.clear();
     if (widget.chatObj != null) {
       if (widget.chatObj.isGroup()) {
         G.ac.gettingGroupMembers.remove(widget.chatObj.groupId);
         // G.ac.groupList[widget.chatObj.groupId]?.ignoredMembers?.clear();
-        // print('取消获取群成员');
       }
       G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     }
@@ -1004,6 +1015,12 @@ class _ChatWidgetState extends State<ChatWidget>
 
     print('发送消息：' + text);
     G.cs.sendMsg(widget.chatObj, text);
+  }
+
+  void _setMessage(String text) {
+    _textController.text = text;
+    _textController.selection =
+        TextSelection.fromPosition(TextPosition(offset: text.length));
   }
 
   void _insertMessage(String text) {
