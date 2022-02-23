@@ -432,10 +432,11 @@ class _ChatWidgetState extends State<ChatWidget>
       MsgBean msg = widget.jumpMsg;
       String title = G.cs.getMessageDisplay(msg);
       if (msg.action == MessageType.Message) {
-        title = msg.username() + "：" + title;
+        String username = G.st.getLocalNickname(msg.keyId(), msg.username());
+        title = username + "：" + title;
       }
       if (msg.isGroup()) {
-        String gn = G.st.getLocalNickname(msg.keyId(), msg.groupName);
+        String gn = G.st.getLocalNickname(msg.senderKeyId(), msg.groupName);
         title = '[$gn] ' + title;
       }
       Widget label = Text(
@@ -465,7 +466,9 @@ class _ChatWidgetState extends State<ChatWidget>
       String title = G.cs.getMessageDisplay(msg);
       if (msg.isGroup()) {
         if (msg.action == MessageType.Message) {
-          title = msg.username() + "：" + title;
+          String username =
+              G.st.getLocalNickname(msg.senderKeyId(), msg.username());
+          title = username + "：" + title;
         }
       }
       Widget label = Text(
