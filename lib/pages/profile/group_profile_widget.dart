@@ -7,7 +7,7 @@ import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 
-enum GroupMenuItems { LocalNickname, GroupMembers }
+enum GroupMenuItems { ImportantGroup, LocalNickname, GroupMembers }
 
 class GroupProfileWidget extends StatefulWidget {
   final MsgBean chatObj;
@@ -153,6 +153,11 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
   Widget _buildMenu(BuildContext context) {
     List<PopupMenuEntry<GroupMenuItems>> menus = [
       PopupMenuItem<GroupMenuItems>(
+        value: GroupMenuItems.ImportantGroup,
+        child:
+            Text(G.st.importantGroups.contains(groupId) ? '取消重要群组' : '设为重要群组'),
+      ),
+      PopupMenuItem<GroupMenuItems>(
         value: GroupMenuItems.GroupMembers,
         child: Text('查看群成员'),
       ),
@@ -168,6 +173,18 @@ class _GroupProfileWidgetState extends State<GroupProfileWidget> {
       itemBuilder: (BuildContext context) => menus,
       onSelected: (GroupMenuItems result) {
         switch (result) {
+          case GroupMenuItems.ImportantGroup:
+            setState(() {
+              if (G.st.importantGroups.contains(groupId)) {
+                G.st.importantGroups.remove(groupId);
+              } else {
+                G.st.importantGroups.add(groupId);
+              }
+              G.st.setList(
+                  'notification/importantGroups', G.st.importantGroups);
+              print('重要群组数量：${G.st.importantGroups.length}');
+            });
+            break;
           case GroupMenuItems.LocalNickname:
             editCustomName();
             break;
