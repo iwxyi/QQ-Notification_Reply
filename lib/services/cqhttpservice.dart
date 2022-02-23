@@ -1046,4 +1046,31 @@ class CqhttpService {
 
     return text;
   }
+
+  /// 获取消息重要性
+  /// - -1 很忽略
+  /// -  0 忽略（群组默认）
+  /// -  1 小重要（好友默认、重要群组）
+  /// -  2 很重要（重要好友）
+  MessageImportance getMsgImportance(MsgBean msg) {
+    if (msg.isPrivate()) {
+      if (st.importantFriends.contains(msg.friendId)) {
+        return MessageImportance.Very;
+      } else {
+        return MessageImportance.Little;
+      }
+    } else if (msg.isGroup()) {
+      if (st.importantGroups.contains(msg.groupId)) {
+        // 重要群组
+        return MessageImportance.Little;
+      } else if (st.enabledGroups.contains(msg.groupId)) {
+        // 通知群组
+        return MessageImportance.Normal;
+      } else {
+        // 不通知的群组
+        return MessageImportance.Ignored;
+      }
+    }
+    return MessageImportance.Ignored;
+  }
 }

@@ -317,20 +317,26 @@ class _ChatListPageState extends State<ChatListPage>
   /// 获取未读消息的圆形控件
   /// 不重要的消息只有圆点，其他消息有不同颜色的数字
   Widget _buildItemUnreadCountPoint(MsgBean msg, int unreadCount) {
-    Color c = Colors.grey;
+    Color c = Colors.blue;
+    MessageImportance imp = G.cs.getMsgImportance(msg);
     bool showNum = true;
     if (msg.isGroup()) {
-      if (G.st.importantGroups.contains(msg.groupId)) {
-        // 重要群组，红色
+      if (imp == MessageImportance.Very) {
+        c = Colors.red;
+      } else if (imp == MessageImportance.Little) {
+        // 重要群组
         c = Colors.blue;
-      } else if (G.st.enabledGroups.contains(msg.groupId)) {
-        // 通知群组，橙色
+      } else if (imp == MessageImportance.Normal) {
+        // 通知群组
         c = Colors.grey;
       } else {
         // 不通知的群组，淡蓝色
         c = Colors.grey;
         showNum = false;
       }
+    } else {
+      // 好友
+      c = Colors.blue;
     }
 
     // 添加未读消息计数

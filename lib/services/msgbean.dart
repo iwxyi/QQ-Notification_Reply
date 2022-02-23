@@ -6,6 +6,13 @@ enum MessageType {
   SystemLog,
 }
 
+enum MessageImportance {
+  Ignored,
+  Normal,
+  Little,
+  Very
+}
+
 class MsgBean {
   int senderId;
   String nickname; // 用户昵称

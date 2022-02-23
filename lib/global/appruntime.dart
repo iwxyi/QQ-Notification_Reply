@@ -9,7 +9,7 @@ class AppRuntime {
   var currentChatPage; // 当前聊天页面
   var showChatPage; // 显示当前聊天页面的函数
   var mainContext; // 当前上下文
-  var chatObjList;
+  var chatObjList; // 所有会话列表
   var updateChatPageUnreadCount; // 刷新未读计数
   var showUserInfo;
   var showGroupInfo;

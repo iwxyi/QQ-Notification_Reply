@@ -80,6 +80,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   }
 
   void _readJson(data) {
+    if (data == null) {
+      // 如果退群了，则取不到信息
+      return;
+    }
     userId = data['user_id'];
     nickname = data['nickname'];
     sex = data['sex'];
