@@ -112,6 +112,8 @@ class UserSettings extends MySettings {
         getBool('function/enableEmojiToImage', enableEmojiToImage);
     disableDangerousAction =
         getBool('function/disableDangerousAction', disableDangerousAction);
+    enableHorizontalSwitch =
+        getBool('function/enableHorizontalSwitch', enableHorizontalSwitch);
 
     enableColorfulChatList =
         getBool('display/enableColorfulChatList', enableColorfulChatList);

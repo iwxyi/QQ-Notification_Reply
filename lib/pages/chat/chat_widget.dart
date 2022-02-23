@@ -91,9 +91,6 @@ class _ChatWidgetState extends State<ChatWidget>
       setState(() {
         _messages = [];
         _initMessages();
-        if (G.ac.unsentMessages.containsKey(msg.keyId())) {
-          _setMessage(G.ac.unsentMessages[msg.keyId()]);
-        }
       });
 
       if (!widget.innerMode) {
@@ -239,6 +236,10 @@ class _ChatWidgetState extends State<ChatWidget>
     _scrollToLatest(false);
     _textController.text = "";
 
+    // 一些标记变量
+    if (G.ac.unsentMessages.containsKey(msg.keyId())) {
+      _setMessage(G.ac.unsentMessages[msg.keyId()]);
+    }
     G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     G.rt.updateChatPageUnreadCount();
   }
@@ -390,15 +391,35 @@ class _ChatWidgetState extends State<ChatWidget>
                 const MAX_Y = 20;
                 var deltaX = movePointEvent.position.dx - _pointMoveX;
                 var deltaY = movePointEvent.position.dy - _pointMoveY;
-                // 右滑
                 if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
+                  // 上下划过超过距离，无视
                   _movedLarge = true;
-                } else if (!_movedLarge && deltaX > MAX_X) {
-                  if (G.rt.currentChatPage == null) {
-                    // 可能返回手势已经取消这一页了？
-                    return;
+                } else if (!_movedLarge) {
+                  if (deltaX > MAX_X) {
+                    _movedLarge = true;
+                    // #右滑
+                    if (!G.st.enableHorizontalSwitch) {
+                      // 返回到上一页
+                      if (G.rt.currentChatPage == null) {
+                        // 可能返回手势已经取消这一页了
+                        return;
+                      }
+                      Navigator.pop(context);
+                    } else {
+                      // 切换到上一个聊天对象
+                      switchToPreviousObject();
+                    }
+                  } else if (deltaX < -MAX_X) {
+                    _movedLarge = true;
+                    // #左滑
+                    if (!G.st.enableHorizontalSwitch) {
+                      // 下一条未读消息
+                      switchToUnreadObject();
+                    } else {
+                      // 切换到下一个聊天对象
+                      switchToNextObject();
+                    }
                   }
-                  Navigator.pop(context);
                 }
               },
               child: _buildMessageList(context))
@@ -1001,6 +1022,7 @@ class _ChatWidgetState extends State<ChatWidget>
   @override
   void dispose() {
     _releaseChatObjData();
+    _movedLarge = true;
     eventBusFn.cancel();
     super.dispose();
   }
@@ -1471,6 +1493,76 @@ class _ChatWidgetState extends State<ChatWidget>
             ],
           );
         });
+  }
+
+  /// 切换到快速切换的第一条未读消息
+  void switchToUnreadObject() {
+    List<MsgBean> timedMsgs = G.rt.chatObjList;
+    if (timedMsgs == null || timedMsgs.length <= 1) {
+      return;
+    }
+
+    // 生成列表
+    List<MsgBean> msgs = [];
+    List<MessageImportance> imps = [];
+    for (int i = 0; i < timedMsgs.length; i++) {
+      MsgBean msg = timedMsgs[i];
+      if (G.ac.unreadMessageCount.containsKey(msg.keyId()) &&
+          G.ac.unreadMessageCount[msg.keyId()] > 0) {
+        msgs.add(msg);
+        imps.add(G.cs.getMsgImportance(msg));
+      }
+    }
+
+    // 很重要消息
+    for (int i = 0; i < msgs.length; i++) {
+      if (imps[i] == MessageImportance.Very) {
+        widget.setObject(msgs[i]);
+        return;
+      }
+    }
+
+    // 小重要消息
+    for (int i = 0; i < msgs.length; i++) {
+      if (imps[i] == MessageImportance.Little) {
+        widget.setObject(msgs[i]);
+        return;
+      }
+    }
+
+    // 普通消息消息
+    for (int i = 0; i < msgs.length; i++) {
+      if (imps[i] == MessageImportance.Normal) {
+        widget.setObject(msgs[i]);
+        return;
+      }
+    }
+  }
+
+  /// 切换到快速切换的上一条消息
+  void switchToPreviousObject() {
+    List<MsgBean> timedMsgs = G.rt.chatObjList;
+    if (timedMsgs == null || timedMsgs.length <= 1) {
+      return;
+    }
+    int index = timedMsgs.indexOf(widget.chatObj);
+    if (index == -1 || index == 0) {
+      return;
+    }
+    widget.setObject(timedMsgs[index - 1]);
+  }
+
+  /// 切换到快速切换的下一条消息
+  void switchToNextObject() {
+    List<MsgBean> timedMsgs = G.rt.chatObjList;
+    if (timedMsgs == null || timedMsgs.length <= 1) {
+      return;
+    }
+    int index = timedMsgs.indexOf(widget.chatObj);
+    if (index == -1 || index == timedMsgs.length - 1) {
+      return;
+    }
+    widget.setObject(timedMsgs[index + 1]);
   }
 }
 

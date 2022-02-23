@@ -27,6 +27,48 @@ class _InteractionSettingsWidgetState extends State<InteractionSettingsWidget> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
+              '手势',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ),
+          Card(
+            color: Colors.white,
+            elevation: 4.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.horizontal_rule,
+                    color: Colors.blue,
+                  ),
+                  title: Text('左右滑动'),
+                  subtitle: Text('聊天页面横向滑动的手势更改为切换聊天对象'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableHorizontalSwitch =
+                            !G.st.enableHorizontalSwitch;
+                        G.st.setConfig('function/enableHorizontalSwitch',
+                            G.st.enableHorizontalSwitch);
+                      });
+                    },
+                    value: G.st.enableHorizontalSwitch,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableHorizontalSwitch =
+                          !G.st.enableHorizontalSwitch;
+                      G.st.setConfig('function/enableHorizontalSwitch',
+                          G.st.enableHorizontalSwitch);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
               '补充',
               style: TextStyle(color: Colors.grey.shade700),
             ),
