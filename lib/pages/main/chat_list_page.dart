@@ -54,9 +54,6 @@ class _ChatListPageState extends State<ChatListPage>
   }
 
   Widget _buildChatListView(BuildContext context) {
-    DateTime currentDay = DateTime.now();
-    int currentTimestamp = currentDay.millisecondsSinceEpoch;
-
     // 填充空白
     if (timedMsgs.length == 0) {
       return new Center(
@@ -98,56 +95,7 @@ class _ChatListPageState extends State<ChatListPage>
             // 只显示最近一条消息
           } else {
             // 显示多条未读消息
-            List<MsgBean> msgs = G.ac.allMessages[msg.keyId()];
-            // 如果最后一条是自己发的，那么只显示自己的
-            if (msgs != null &&
-                msgs.length > 0 &&
-                msgs.last.senderId != G.ac.myId) {
-              List<Widget> widgets = [];
-              int maxCount = G.st.chatListHistoriesCount; // 最大显示几条消息
-              int count = 0;
-              for (int i = msgs.length - 1;
-                  i >= 0 && count < maxCount;
-                  i--, count++) {
-                MsgBean msg = msgs[i];
-                if (msg.senderId == G.ac.myId) {
-                  break;
-                }
-
-                // 显示消息
-                String text;
-                if (msg.isPrivate()) {
-                  // 私聊消息，只显示消息
-                  text = G.cs.getMessageDisplay(msg);
-                } else if (msg.isGroup()) {
-                  if (msg.action == MessageType.Message) {
-                    // 群聊还是需要显示昵称的
-                    if (msg.senderId != null) {
-                      String nickname =
-                          G.st.getLocalNickname(msg.senderKeyId(), null) ??
-                              msg.usernameSimplify();
-                      if (nickname != null) {
-                        text = nickname + ": " + G.cs.getMessageDisplay(msg);
-                      }
-                    }
-                  } else {
-                    text = G.cs.getMessageDisplay(msg);
-                  }
-                } else {
-                  print('未知的消息类型');
-                }
-                if (text != null) {
-                  if (widgets.length > 0) {
-                    widgets.insert(0, SizedBox(height: 6));
-                  }
-                  widgets.insert(0, Text(text, maxLines: 3));
-                }
-              }
-              widgets.insert(0, SizedBox(height: 3));
-              subTitleWidget = Column(
-                  children: widgets,
-                  crossAxisAlignment: CrossAxisAlignment.start);
-            }
+            subTitleWidget = _buildItemMultipleSubtitleWidget(msg);
           }
           if (subTitleWidget == null) {
             // 不需要多条消息，直接显示最后一条
@@ -155,22 +103,8 @@ class _ChatListPageState extends State<ChatListPage>
           }
 
           // 时间
-          String timeStr;
           DateTime dt = DateTime.fromMillisecondsSinceEpoch(msg.timestamp);
-          int delta = currentTimestamp - msg.timestamp;
-          if (delta > 3600 * 24 * 1000) {
-            // 超过24小时，显示日月
-            timeStr = formatDate(dt, ['mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
-          } else if (delta < 15000) {
-            // 15秒内
-            timeStr = '刚刚';
-          } else if (dt.day == currentDay.day) {
-            // 今天
-            timeStr = formatDate(dt, ['HH', ':', 'nn']);
-          } else {
-            // 昨天
-            timeStr = "昨天 " + formatDate(dt, ['HH', ':', 'nn']);
-          }
+          String timeStr = getTimeDeltaString(dt);
 
           // 侧边
           List<Widget> tailWidgets = [
@@ -181,61 +115,7 @@ class _ChatListPageState extends State<ChatListPage>
             unreadCount = G.ac.unreadMessageCount[msg.keyId()];
           }
           if (unreadCount > 0) {
-            Color c = Colors.blue; // 重要消息：红色
-            bool showNum = true;
-            if (msg.isGroup()) {
-              if (G.st.importantGroups.contains(msg.groupId)) {
-                // 重要群组，也是红色
-                c = Colors.blue;
-              } else if (G.st.enabledGroups.contains(msg.groupId)) {
-                // 通知群组，橙色
-                c = Colors.grey;
-              } else {
-                // 不通知的群组，淡蓝色
-                c = Colors.grey;
-                showNum = false;
-              }
-            }
-
-            // 添加未读消息计数
-            Widget container;
-            if (showNum) {
-              container = new Container(
-                padding: EdgeInsets.all(2),
-                decoration: new BoxDecoration(
-                  color: c,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                constraints: BoxConstraints(
-                  minWidth: 20,
-                  minHeight: 20,
-                ),
-                child: new Text(
-                  unreadCount.toString(), //通知数量
-                  style: new TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              );
-            } else {
-              // 只添加一个点
-              container = new Container(
-                  padding: EdgeInsets.all(2),
-                  margin: EdgeInsets.all(6),
-                  decoration: new BoxDecoration(
-                    color: c,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  constraints: BoxConstraints(
-                    minWidth: 8,
-                    minHeight: 8,
-                  ),
-                  child: SizedBox());
-            }
-
-            tailWidgets.add(container);
+            tailWidgets.add(_buildItemUnreadCountPoint(msg, unreadCount));
           }
 
           Widget gd = InkWell(
@@ -380,6 +260,136 @@ class _ChatListPageState extends State<ChatListPage>
             key: Key(msg.keyId().toString()),
           );
         });
+  }
+
+  /// 每个item的多条消息
+  Widget _buildItemMultipleSubtitleWidget(MsgBean msg) {
+    List<MsgBean> msgs = G.ac.allMessages[msg.keyId()];
+    // 如果最后一条是自己发的，那么只显示自己的
+    if (msgs == null || msgs.length == 0) {
+      return null;
+    }
+    if (msgs.last.senderId == G.ac.myId) {
+      return null;
+    }
+    List<Widget> widgets = [];
+    int maxCount = G.st.chatListHistoriesCount; // 最大显示几条消息
+    int count = 0;
+    for (int i = msgs.length - 1; i >= 0 && count < maxCount; i--, count++) {
+      MsgBean msg = msgs[i];
+      if (msg.senderId == G.ac.myId) {
+        break;
+      }
+
+      // 显示消息
+      String text;
+      if (msg.isPrivate()) {
+        // 私聊消息，只显示消息
+        text = G.cs.getMessageDisplay(msg);
+      } else if (msg.isGroup()) {
+        if (msg.action == MessageType.Message) {
+          // 群聊还是需要显示昵称的
+          if (msg.senderId != null) {
+            String nickname = G.st.getLocalNickname(msg.senderKeyId(), null) ??
+                msg.usernameSimplify();
+            if (nickname != null) {
+              text = nickname + ": " + G.cs.getMessageDisplay(msg);
+            }
+          }
+        } else {
+          text = G.cs.getMessageDisplay(msg);
+        }
+      } else {
+        print('未知的消息类型');
+      }
+      if (text != null) {
+        if (widgets.length > 0) {
+          widgets.insert(0, SizedBox(height: 6));
+        }
+        widgets.insert(0, Text(text, maxLines: 3));
+      }
+    }
+    widgets.insert(0, SizedBox(height: 3));
+    return Column(
+        children: widgets, crossAxisAlignment: CrossAxisAlignment.start);
+  }
+
+  /// 获取未读消息的圆形控件
+  /// 不重要的消息只有圆点，其他消息有不同颜色的数字
+  Widget _buildItemUnreadCountPoint(MsgBean msg, int unreadCount) {
+    Color c = Colors.grey;
+    bool showNum = true;
+    if (msg.isGroup()) {
+      if (G.st.importantGroups.contains(msg.groupId)) {
+        // 重要群组，红色
+        c = Colors.blue;
+      } else if (G.st.enabledGroups.contains(msg.groupId)) {
+        // 通知群组，橙色
+        c = Colors.grey;
+      } else {
+        // 不通知的群组，淡蓝色
+        c = Colors.grey;
+        showNum = false;
+      }
+    }
+
+    // 添加未读消息计数
+    Widget container;
+    if (showNum) {
+      container = new Container(
+        padding: EdgeInsets.all(2),
+        decoration: new BoxDecoration(
+          color: c,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        constraints: BoxConstraints(
+          minWidth: 20,
+          minHeight: 20,
+        ),
+        child: new Text(
+          unreadCount.toString(), //通知数量
+          style: new TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    } else {
+      // 只添加一个点
+      container = new Container(
+          padding: EdgeInsets.all(2),
+          margin: EdgeInsets.all(6),
+          decoration: new BoxDecoration(
+            color: c,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          constraints: BoxConstraints(
+            minWidth: 8,
+            minHeight: 8,
+          ),
+          child: SizedBox());
+    }
+    return container;
+  }
+
+  /// 获取目标时间与当前时间的差的字符串
+  String getTimeDeltaString(DateTime comp) {
+    DateTime curr = DateTime.now();
+    int delta = curr.millisecondsSinceEpoch - comp.millisecondsSinceEpoch;
+    if (delta > 3600 * 24 * 1000) {
+      // 超过24小时，显示日月
+      return formatDate(comp, ['mm', '-', 'dd', ' ', 'HH', ':', 'nn']);
+    } else if (delta < 15000) {
+      // 15秒内
+      return '刚刚';
+    } else if (comp.day == curr.day) {
+      // 今天
+      return formatDate(comp, ['HH', ':', 'nn']);
+    } else {
+      // 昨天
+      return "昨天 " + formatDate(comp, ['HH', ':', 'nn']);
+    }
   }
 
   @override

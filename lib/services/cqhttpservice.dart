@@ -43,6 +43,7 @@ class CqhttpService {
   Future<bool> connect(String host, String token) async {
     // 清理之前的数据
     wsReceives.clear();
+    autoReconnect = false;
 
     // 预处理输入
     if (!host.contains('://')) {
@@ -831,7 +832,7 @@ class CqhttpService {
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
         );
-        return ;
+        return;
       }
     }
     send({
