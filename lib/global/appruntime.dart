@@ -16,9 +16,12 @@ class AppRuntime {
   var currentAudioFile; // 当前正在播放音频的file（默认为null）
 
   bool horizontal = false;
+  double chatListFixedWidth = 400; // 横屏时左边聊天列表的固定宽度
+
   bool enableNotification = true;
   bool runOnForeground = true;
-  double chatListFixedWidth = 400; // 横屏时左边聊天列表的固定宽度
+  bool thisDeviceSleep = false; // 非本设备聊天，不显示通知，直到重新打开
+  bool thisDeviceSend = false; // 自己发送消息，表示是自己发的
 
   AppRuntime({@required this.dataPath, this.cachePath, this.storagePath}) {
     FileUtil.createDir(dataPath);

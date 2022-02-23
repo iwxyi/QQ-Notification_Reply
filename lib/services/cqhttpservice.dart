@@ -128,6 +128,7 @@ class CqhttpService {
     if (text == null) {
       return;
     }
+    rt.thisDeviceSend = true;
     if (chatObj.isGroup()) {
       _sendGroupMessage(chatObj.groupId, text);
 
@@ -922,6 +923,17 @@ class CqhttpService {
     ac.allMessages[msg.keyId()].add(msg);
     if (ac.allMessages[msg.keyId()].length > st.keepMsgHistoryCount) {
       ac.allMessages[msg.keyId()].removeAt(0);
+    }
+
+    // 判断状态
+    if (msg.senderId == ac.myId) {
+      if (!rt.thisDeviceSend &&
+          !rt.runOnForeground &&
+          st.enableNotificationSleep) {
+        rt.thisDeviceSleep = true;
+        print('非本设备发送消息，暂停通知');
+      }
+      rt.thisDeviceSend = false;
     }
 
     // 刷新收到消息的时间（用于简单选择时的排序）

@@ -37,6 +37,7 @@ class UserSettings extends MySettings {
   bool enableEmojiToImage = false; // 群消息表情包转网络图片格式
   bool disableDangerousAction = false; // 禁止有风险的操作，避免账号被冻结
   bool enableHorizontalSwitch = false; // 左右滑动切换消息
+  bool enableNotificationSleep = true; // 启用暂停通知功能
 
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
@@ -125,6 +126,8 @@ class UserSettings extends MySettings {
         getBool('display/enableColorfulReplyBubble', enableColorfulReplyBubble);
     enableColorfulBackground =
         getBool('display/enableColorfulBackground', enableColorfulBackground);
+    enableNotificationSleep =
+        getBool('display/enableNotificationSleep', enableNotificationSleep);
 
     // 读取启用的群组数组
     enabledGroups = getIntList('notification/enabledGroups');

@@ -88,6 +88,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       print('应用状态：' + _notification.index.toString());
       if (_notification.index == 1 || _notification.index == 0) {
         G.rt.runOnForeground = true;
+        if (G.rt.thisDeviceSleep) {
+          print('从暂停通知状态回复');
+          G.rt.thisDeviceSleep = false;
+        }
       } else if (_notification.index == 2) {
         G.rt.runOnForeground = false;
       }
@@ -837,6 +841,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       }
     }
 
+    // 本设备休眠
+    if (G.rt.thisDeviceSleep) {
+      return;
+    }
     // 在前台
     if (G.rt.runOnForeground) {
       if (G.rt.currentChatPage != null && !G.rt.horizontal) {

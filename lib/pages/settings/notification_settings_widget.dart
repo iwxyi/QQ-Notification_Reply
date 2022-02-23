@@ -93,8 +93,8 @@ class _NotificationSettingsWidgetState
                     onChanged: (bool val) {
                       setState(() {
                         G.st.groupSmartFocus = !G.st.groupSmartFocus;
-                        G.st.setConfig(
-                            'notification/groupSmartFocus', G.st.groupSmartFocus);
+                        G.st.setConfig('notification/groupSmartFocus',
+                            G.st.groupSmartFocus);
                       });
                     },
                     value: G.st.groupSmartFocus,
@@ -117,18 +117,20 @@ class _NotificationSettingsWidgetState
                   trailing: Checkbox(
                     onChanged: (bool val) {
                       setState(() {
-                        G.st.groupDynamicImportance = !G.st.groupDynamicImportance;
-                        G.st.setConfig(
-                            'notification/groupDynamicImportance', G.st.groupDynamicImportance);
+                        G.st.groupDynamicImportance =
+                            !G.st.groupDynamicImportance;
+                        G.st.setConfig('notification/groupDynamicImportance',
+                            G.st.groupDynamicImportance);
                       });
                     },
                     value: G.st.groupDynamicImportance,
                   ),
                   onTap: () {
                     setState(() {
-                      G.st.groupDynamicImportance = !G.st.groupDynamicImportance;
-                      G.st.setConfig(
-                          'notification/groupDynamicImportance', G.st.groupDynamicImportance);
+                      G.st.groupDynamicImportance =
+                          !G.st.groupDynamicImportance;
+                      G.st.setConfig('notification/groupDynamicImportance',
+                          G.st.groupDynamicImportance);
                     });
                   },
                 ),
@@ -154,6 +156,33 @@ class _NotificationSettingsWidgetState
                       G.st.notificationAtAll = !G.st.notificationAtAll;
                       G.st.setConfig(
                           'notification/atAll', G.st.notificationAtAll);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.no_cell,
+                    color: Colors.blue,
+                  ),
+                  title: Text('暂停通知'),
+                  subtitle: Text('通过其他设备发送消息后暂停本设备的通知，直至下次打开'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableNotificationSleep =
+                            !G.st.enableNotificationSleep;
+                        G.st.setConfig('notification/enableNotificationSleep',
+                            G.st.enableNotificationSleep);
+                      });
+                    },
+                    value: G.st.enableNotificationSleep,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableNotificationSleep =
+                          !G.st.enableNotificationSleep;
+                      G.st.setConfig('notification/enableNotificationSleep',
+                          G.st.enableNotificationSleep);
                     });
                   },
                 ),
