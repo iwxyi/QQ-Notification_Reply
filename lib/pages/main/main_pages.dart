@@ -750,7 +750,13 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     bool isDynamicImportance = false; // 是否是动态重要性，添加关闭
     if (msg.isPrivate()) {
       // 私聊消息
-      channelKey = 'private_chats';
+      if (G.st.specialUsers.contains(msg.senderId)) {
+        channelKey = 'special_chats';
+      } else if (!G.st.blockedUsers.contains(msg.senderId)) {
+        channelKey = 'private_chats';
+      } else {
+        channelKey = '';
+      }
     } else if (msg.isGroup()) {
       if (msg.isPureMessage()) {
         // 群消息智能聚焦：有没有 @我 或者 回复我 的消息
@@ -810,6 +816,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       } else {
         // 不是消息类通知
         channelKey = 'normal_group_chats';
+      }
+
+      // 不通知的
+      if (channelKey == null || channelKey.isEmpty) {
+        return;
       }
 
       // 重要群组消息，强制设置为重要

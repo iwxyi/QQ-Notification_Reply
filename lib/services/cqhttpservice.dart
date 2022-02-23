@@ -1065,7 +1065,7 @@ class CqhttpService {
   /// -  2 很重要（重要好友）
   MessageImportance getMsgImportance(MsgBean msg) {
     if (msg.isPrivate()) {
-      if (st.importantFriends.contains(msg.friendId)) {
+      if (st.specialUsers.contains(msg.friendId)) {
         return MessageImportance.Very;
       } else if (!st.blockedUsers.contains(msg.friendId)) {
         return MessageImportance.Little;

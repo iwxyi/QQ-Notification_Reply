@@ -321,7 +321,8 @@ class _ChatWidgetState extends State<ChatWidget>
         bool isNext = index >= _messages.length - 1
             ? false
             : _messages[index + 1].senderId == _messages[index].senderId &&
-                _messages[index + 1].action == MessageType.Message;
+                _messages[index + 1].action == MessageType.Message &&
+                !G.st.blockedUsers.contains(_messages[index].senderId);
 
         int valueKey = (_messages[index].messageId ?? 0) + (isNext ? 1 : 0);
 

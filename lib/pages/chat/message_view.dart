@@ -54,6 +54,7 @@ class _MessageViewState extends State<MessageView> {
   bool hasCompleted = false;
   GlobalKey anchorKey = GlobalKey();
   bool pressing = false;
+  bool unblocked = false; // 临时展开屏蔽
 
   // 媒体播放
   AudioPlayer audioPlayer;
@@ -69,6 +70,18 @@ class _MessageViewState extends State<MessageView> {
           if (widget.showUserInfoCallback != null) {
             widget.showUserInfoCallback(msg);
           }
+        });
+  }
+
+  /// 屏蔽的消息
+  Widget _buildBlockedBlock() {
+    String username = G.st.getLocalNickname(msg.senderId, msg.username());
+    return FlatButton(
+        child: Text('[已屏蔽: $username]'),
+        onPressed: () {
+          setState(() {
+            this.unblocked = true;
+          });
         });
   }
 
@@ -968,6 +981,11 @@ class _MessageViewState extends State<MessageView> {
   Widget build(BuildContext context) {
     // 用户消息
     if (msg.action == MessageType.Message) {
+      // 显示屏蔽状态
+      if (G.st.blockedUsers.contains(msg.senderId) && !unblocked) {
+        return _buildBlockedBlock();
+      }
+      // 正常显示消息
       return new Container(
         child: _buildMessageLine(),
       );
