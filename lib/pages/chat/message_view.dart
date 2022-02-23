@@ -662,13 +662,14 @@ class _MessageViewState extends State<MessageView> {
               text: "[$cqCode]", style: TextStyle(fontSize: G.st.msgFontSize));
         }
       } else if ((RegExp(r"^https?://\S+$").firstMatch(matchedText)) != null) {
+        String url = replaceHtmlCode(matchedText);
         // 网址
         span = TextSpan(
-            text: matchedText,
+            text: url,
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                print('launch url: $matchedText');
-                launch(matchedText);
+                print('launch url: $url');
+                launch(url);
               },
             style: TextStyle(
                 fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
@@ -688,15 +689,16 @@ class _MessageViewState extends State<MessageView> {
             style: TextStyle(
                 fontSize: G.st.msgFontSize, color: G.st.msgLinkColor));
       } else if ((RegExp(r"^\w+@[\w\.]+$").firstMatch(matchedText)) != null) {
+        String url = replaceHtmlCode(matchedText);
         // 邮箱
         span = TextSpan(
-            text: matchedText,
+            text: url,
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                print('email: $matchedText');
-                Clipboard.setData(ClipboardData(text: matchedText));
+                print('email: $url');
+                Clipboard.setData(ClipboardData(text: url));
                 Fluttertoast.showToast(
-                    msg: "已复制：$matchedText",
+                    msg: "已复制：$url",
                     gravity: ToastGravity.CENTER,
                     textColor: Colors.grey);
               },
