@@ -502,6 +502,17 @@ class CqhttpService {
     MsgBean msg = createGroupMsgFromJson(obj);
     print('收到群消息：${msg.groupName ?? ''} - ${msg.nickname}  : ${msg.message}');
     _notifyOuter(msg);
+
+    // 判断@和回复的消息
+    String text = msg.message;
+    if (text != null && text.isNotEmpty) {
+      if (text
+          .contains(RegExp("\\[CQ:reply,.+\\]\\s*\\[CQ:at,qq=${ac.myId}\\]"))) {
+        ac.replyMeGroups.add(msg.groupId);
+      } else if (text.contains('[CQ:at,qq=${ac.myId}]')) {
+        ac.atMeGroups.add(msg.groupId);
+      }
+    }
   }
 
   MsgBean createGroupMsgFromJson(final obj) {

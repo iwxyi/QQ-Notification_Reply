@@ -46,6 +46,8 @@ class UserAccount {
   Map<int, int> unreadMessageCount = {}; // 未读消息数量（仅显示需要通知的）
   Map<int, int> receivedCountAfterMySent = {}; // 自自己发送消息后收到了多少未读通知，用来提升动态重要性
   Map<int, String> unsentMessages = {}; // 已编辑但是未发送的消息列表
+  Set<int> atMeGroups = {};
+  Set<int> replyMeGroups = {};
 
   // 聊天对象的变量
   Map<int, bool> chatListShowReply = {}; // 聊天记录显示回复框

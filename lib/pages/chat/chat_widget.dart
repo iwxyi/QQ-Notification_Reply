@@ -1530,9 +1530,17 @@ class _ChatWidgetState extends State<ChatWidget>
       }
     }
 
-    // 普通消息消息
+    // 普通消息
     for (int i = 0; i < msgs.length; i++) {
       if (imps[i] == MessageImportance.Normal) {
+        widget.setObject(msgs[i]);
+        return;
+      }
+    }
+
+    // 不重要消息
+    for (int i = 0; i < msgs.length; i++) {
+      if (imps[i] == MessageImportance.Ignored) {
         widget.setObject(msgs[i]);
         return;
       }

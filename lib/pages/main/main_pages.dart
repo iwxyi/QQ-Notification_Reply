@@ -139,10 +139,18 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         }
       }
 
-      if (G.st.groupSmartFocus && msg.isGroup()) {
-        GroupInfo group = G.ac.groupList[msg.groupId];
-        group.focusAsk = false;
-        group.focusAt = null;
+      if (msg.isGroup()) {
+        if (G.st.groupSmartFocus) {
+          GroupInfo group = G.ac.groupList[msg.groupId];
+          group.focusAsk = false;
+          group.focusAt = null;
+        }
+        if (G.ac.atMeGroups.contains(msg.groupId)) {
+          G.ac.atMeGroups.remove(msg.groupId);
+        }
+        if (G.ac.replyMeGroups.contains(msg.groupId)) {
+          G.ac.replyMeGroups.remove(msg.groupId);
+        }
       }
 
       // 当前页面直接替换

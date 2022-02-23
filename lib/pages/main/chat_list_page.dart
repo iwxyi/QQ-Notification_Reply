@@ -90,6 +90,21 @@ class _ChatListPageState extends State<ChatListPage>
             headerUrl = API.userHeader(msg.friendId);
           }
 
+          List<Widget> titleWidgets = [Text(titleStr ?? "Error Title")];
+          if (msg.isGroup()) {
+            double spacing = 8;
+            if (G.ac.atMeGroups.contains(msg.groupId)) {
+              titleWidgets.add(SizedBox(width: spacing));
+              titleWidgets
+                  .add(Text('[@我]', style: TextStyle(color: Colors.orange)));
+            }
+            if (G.ac.replyMeGroups.contains(msg.groupId)) {
+              titleWidgets.add(SizedBox(width: spacing));
+              titleWidgets
+                  .add(Text('[回复]', style: TextStyle(color: Colors.orange)));
+            }
+          }
+
           Widget subTitleWidget;
           if (!G.st.enableChatListHistories) {
             // 只显示最近一条消息
@@ -147,7 +162,7 @@ class _ChatListPageState extends State<ChatListPage>
                 },
               ),
             ),
-            title: Text(titleStr ?? "Error Title"),
+            title: Row(children: titleWidgets),
             subtitle: subTitleWidget,
             trailing: gd,
             onTap: () {
