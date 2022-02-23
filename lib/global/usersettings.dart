@@ -14,12 +14,12 @@ class UserSettings extends MySettings {
   String server; // 后台服务地址
 
   // 消息选项
-  List<int> importantFriends = []; //设置重要的好友
   List<int> enabledGroups = []; // 开启通知的群组
   List<int> importantGroups = []; // 设为重要的群组
   Map<int, int> friendImportance = {}; // 好友的重要性
   Map<int, int> groupImportance = {}; // 群组的重要性
-  List<int> specialGroupMember = []; // 群内特别关注（全部群）
+  List<int> specialUsers = []; // 群内特别关注（全部群）
+  List<int> blockedUsers = []; // 屏蔽的成员
 
   // 功能选项
   bool enableSelfChats = true; // 启用本身的聊天功能
@@ -133,7 +133,7 @@ class UserSettings extends MySettings {
     importantGroups = getIntList('notification/importantGroups');
 
     // 读取群内特别关注
-    specialGroupMember = getIntList('notification/specialGroupMember');
+    specialUsers = getIntList('notification/specialUsers');
 
     // 读取本地名字
     List<String> sl = getStringList('display/localNickname', strSplit);
@@ -150,6 +150,9 @@ class UserSettings extends MySettings {
       String name = match[2];
       localNickname[id] = name;
     });
+
+    // 读取屏蔽的用户
+    blockedUsers = getIntList('notification/blockedUsers');
 
     // 读取表情包
     emojiList = getStringList('emoji/list', ';');

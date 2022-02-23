@@ -1067,8 +1067,10 @@ class CqhttpService {
     if (msg.isPrivate()) {
       if (st.importantFriends.contains(msg.friendId)) {
         return MessageImportance.Very;
-      } else {
+      } else if (!st.blockedUsers.contains(msg.friendId)) {
         return MessageImportance.Little;
+      } else {
+        return MessageImportance.Normal;
       }
     } else if (msg.isGroup()) {
       if (st.importantGroups.contains(msg.groupId)) {

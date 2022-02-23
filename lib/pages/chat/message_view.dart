@@ -300,7 +300,7 @@ class _MessageViewState extends State<MessageView> {
       RegExp re = new RegExp(r"\[CQ:reply,id=(-?\w+)\]\s*(\[CQ:at,qq=\d+\])?");
       RegExpMatch match = re.firstMatch(message);
       if (match != null) {
-        message = message.replaceAll(match.group(0), ""); // 去掉回复的代码
+        message = message.replaceAll(match.group(0), "").trim(); // 去掉回复的代码
         int messageId = int.parse(match.group(1)); // 回复ID
         replyWidget =
             _buildReplyRichWidget(msg, messageId, recursion: recursion + 1);

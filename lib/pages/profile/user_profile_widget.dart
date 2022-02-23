@@ -11,7 +11,8 @@ enum UserMenuItems {
   SpecialAttention,
   LocalNickname,
   MessageHistory,
-  ModifyNickname
+  ModifyNickname,
+  BlockUser
 }
 
 class UserProfileWidget extends StatefulWidget {
@@ -248,9 +249,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
     List<PopupMenuEntry<UserMenuItems>> menus = [
       PopupMenuItem<UserMenuItems>(
         value: UserMenuItems.SpecialAttention,
-        child: Text(
-            G.st.specialGroupMember.contains(userId) ? '取消群内特别关注' : '设为群内特别关注'),
-        enabled: widget.chatObj.isGroup(),
+        child: Text(G.st.specialUsers.contains(userId) ? '取消特别关注' : '设为特别关注'),
       ),
       PopupMenuItem<UserMenuItems>(
           value: UserMenuItems.ModifyNickname,
@@ -264,7 +263,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
         value: UserMenuItems.MessageHistory,
         child: Text('消息历史'),
         enabled: false,
-      )
+      ),
+      PopupMenuItem<UserMenuItems>(
+        value: UserMenuItems.BlockUser,
+        child: Text(G.st.blockedUsers.contains(userId) ? '取消屏蔽' : '屏蔽用户'),
+      ),
     ];
 
     return PopupMenuButton<UserMenuItems>(
@@ -275,14 +278,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
         switch (result) {
           case UserMenuItems.SpecialAttention:
             setState(() {
-              if (G.st.specialGroupMember.contains(userId)) {
-                G.st.specialGroupMember.remove(userId);
+              if (G.st.specialUsers.contains(userId)) {
+                G.st.specialUsers.remove(userId);
               } else {
-                G.st.specialGroupMember.add(userId);
+                G.st.specialUsers.add(userId);
               }
-              G.st.setList(
-                  'notification/specialGroupMember', G.st.specialGroupMember);
-              print('群内特别关注人数：${G.st.specialGroupMember.length}');
+              G.st.setList('notification/specialUsers', G.st.specialUsers);
+              print('特别关注数量：${G.st.specialUsers.length}');
             });
             break;
           case UserMenuItems.LocalNickname:
@@ -293,6 +295,17 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
             break;
           case UserMenuItems.ModifyNickname:
             // TODO:修改名片（但好像一直都是不可修改的状态）
+            break;
+          case UserMenuItems.BlockUser:
+            setState(() {
+              if (G.st.blockedUsers.contains(userId)) {
+                G.st.blockedUsers.remove(userId);
+              } else {
+                G.st.blockedUsers.add(userId);
+              }
+              G.st.setList('notification/blockedUsers', G.st.blockedUsers);
+              print('屏蔽用户数量：${G.st.blockedUsers.length}');
+            });
             break;
         }
       },
