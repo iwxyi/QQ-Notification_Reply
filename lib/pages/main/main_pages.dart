@@ -730,7 +730,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
 
     // 判断通知类型和级别
     String channelKey = 'notice';
-    bool isSmartFocus = false; // 是否是智能聚焦，添加关闭（理论上来说不需要，因为是一次性的）
+    bool isSmartFocus = false; // 是否是智能聚焦，添加关闭（理论上来说不需要，打开就没了）
     bool isDynamicImportance = false; // 是否是动态重要性，添加关闭
     if (msg.isPrivate()) {
       // 私聊消息
@@ -743,7 +743,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       }
     } else if (msg.isGroup()) {
       if (msg.isPureMessage()) {
-        // 群消息智能聚焦：有没有 @我 或者 回复我 的消息
+        // @我、回复我、群消息智能聚焦
         String text = msg.message ?? '';
         bool contains = false;
         if (text.contains('[CQ:at,qq=${G.ac.myId}]')) {
@@ -758,18 +758,19 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             if (group.focusAsk) {
               // 疑问聚焦
               contains = true;
+              isSmartFocus = true;
               print('群消息.疑问聚焦');
             } else if (group.focusAt != null &&
                 group.focusAt.contains(msg.senderId)) {
               // 艾特聚焦
               contains = true;
+              isSmartFocus = true;
               print('群消息.艾特聚焦');
             }
           }
         }
         if (contains) {
           channelKey = 'important_group_chats';
-          isSmartFocus = true;
         } else {
           channelKey = 'normal_group_chats';
         }
@@ -846,6 +847,25 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return;
     }
 
+    List<NotificationActionButton> actions = [];
+    actions.add(NotificationActionButton(
+        key: 'REPLY',
+        label: '回复',
+        actionType: ActionType.SilentAction,
+        requireInputText: true));
+    if (isSmartFocus) {
+      actions.add(NotificationActionButton(
+          key: 'CLOSE_SMART_FOCUS',
+          label: '取消聚焦',
+          actionType: ActionType.SilentAction));
+    }
+    if (isDynamicImportance) {
+      actions.add(NotificationActionButton(
+          key: 'CLOSE_DYNAMIC_IMPORTANCE',
+          label: '取消重要',
+          actionType: ActionType.SilentAction));
+    }
+
     AwesomeNotifications().createNotification(
       content: NotificationContent(
         id: id,
@@ -861,12 +881,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         displayOnForeground: false,
         payload: {'id': msg.keyId().toString()},
       ),
-      actionButtons: [
-        NotificationActionButton(
-          key: 'reply',
-          label: '回复',
-        )
-      ],
+      actionButtons: actions,
     );
   }
 

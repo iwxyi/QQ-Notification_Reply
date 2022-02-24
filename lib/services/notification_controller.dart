@@ -2,6 +2,7 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/utils/string_util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -81,13 +82,20 @@ class NotificationController {
       // 输入
       onNotificationReply(keyId, receivedAction.buttonKeyInput);
     } else if (StringUtil.isNotEmpty(receivedAction.buttonKeyPressed)) {
+      int groupId = -keyId;
+      GroupInfo group = G.ac.groupList[groupId];
       // 点击动作按钮（输入也会触发）
       switch (receivedAction.buttonKeyPressed) {
         case 'CLOSE_SMART_FOCUS':
-          // TODO:关闭智能聚焦
+          // 关闭智能聚焦
+          print('关闭智能聚焦：$groupId');
+          group.focusAsk = false;
+          group.focusAt = null;
           break;
         case 'CLOSE_DYNAMIC_IMPORTANCE':
-          // TODO:关闭动态重要性
+          // 关闭动态重要性
+          print('关闭动态重要性：$keyId');
+          G.ac.messageMyTimes.remove(keyId);
           break;
       }
     } else {
@@ -116,8 +124,7 @@ class NotificationController {
   }
 
   /// 点击通知
-  static Future<dynamic> onSelectNotification(int notificationId) async {
-    int keyId = notificationId;
+  static Future<dynamic> onSelectNotification(int keyId) async {
     MsgBean msg;
     if (G.ac.allMessages.containsKey(keyId))
       msg = G.ac.allMessages[keyId].last ?? null;
