@@ -76,6 +76,7 @@ class UserSettings extends MySettings {
   bool enableChatListLoose = true; // 会话列表更加宽松（一般和上面一起用）
   bool enableChatWidgetRoundedRect = false; // 聊天界面使用大圆角矩形
   bool enableChatBubbleLoose = false; // 气泡之间的距离更加宽松
+  bool enableMessagePreviewSingleLine = false; // 预览的消息单行显示（会话列表、跳转）
 
   // 表情包
   List<String> emojiList = []; // 表情包的CQ码（理论上可以是任意消息），但只显示face或image
@@ -140,6 +141,9 @@ class UserSettings extends MySettings {
         getBool('display/enableChatListLoose', enableChatListLoose);
     enableChatBubbleLoose =
         getBool('display/enableChatBubbleLoose', enableChatBubbleLoose);
+    enableMessagePreviewSingleLine = getBool(
+        'display/enableMessagePreviewSingleLine',
+        enableMessagePreviewSingleLine);
 
     // 读取启用的群组数组
     enabledGroups = getIntList('notification/enabledGroups');

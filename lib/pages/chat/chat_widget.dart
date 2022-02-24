@@ -473,7 +473,7 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       Widget label = Text(
         title,
-        maxLines: 2,
+        maxLines: G.st.enableMessagePreviewSingleLine ? 1 : 2,
         style: TextStyle(fontSize: G.st.msgFontSize),
       );
       stack.add(Positioned(
@@ -505,7 +505,7 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       Widget label = Text(
         title,
-        maxLines: 2,
+        maxLines: G.st.enableMessagePreviewSingleLine ? 1 : 2,
         style: TextStyle(fontSize: G.st.msgFontSize),
       );
       stack.add(Positioned(

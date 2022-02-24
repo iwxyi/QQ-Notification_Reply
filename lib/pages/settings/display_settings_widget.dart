@@ -176,6 +176,35 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('单行消息'),
+                  subtitle: Text('预览的消息只显示一行（默认最多3行）'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableMessagePreviewSingleLine =
+                            !G.st.enableMessagePreviewSingleLine;
+                        G.st.setConfig('display/enableMessagePreviewSingleLine',
+                            G.st.enableMessagePreviewSingleLine);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableMessagePreviewSingleLine,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableMessagePreviewSingleLine =
+                          !G.st.enableMessagePreviewSingleLine;
+                      G.st.setConfig('display/enableMessagePreviewSingleLine',
+                          G.st.enableMessagePreviewSingleLine);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
               ],
             ),
           ),

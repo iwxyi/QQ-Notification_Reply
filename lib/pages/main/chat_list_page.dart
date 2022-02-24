@@ -108,7 +108,8 @@ class _ChatListPageState extends State<ChatListPage>
           Widget subTitleWidget;
           if (!G.st.enableChatListHistories) {
             // 只显示最近一条消息
-            subTitleWidget = Text(subTitleStr, maxLines: 3);
+            subTitleWidget = Text(subTitleStr,
+                maxLines: G.st.enableMessagePreviewSingleLine ? 1 : 3);
           } else {
             // 显示多条未读消息
             subTitleWidget = _buildItemMultipleSubtitleWidget(msg);
@@ -328,7 +329,8 @@ class _ChatListPageState extends State<ChatListPage>
         if (widgets.length > 0) {
           widgets.insert(0, SizedBox(height: 6));
         }
-        widgets.insert(0, Text(text, maxLines: 3));
+        widgets.insert(0,
+            Text(text, maxLines: G.st.enableMessagePreviewSingleLine ? 1 : 3));
       }
     }
     widgets.insert(0, SizedBox(height: 3));
