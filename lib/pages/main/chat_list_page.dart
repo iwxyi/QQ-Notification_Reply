@@ -222,15 +222,32 @@ class _ChatListPageState extends State<ChatListPage>
               G.rt.currentChatPage != null &&
               G.rt.currentChatPage.chatObj.isObj(msg);
 
-          Color cardBg = Color(0xFFEEEEEE);
-          if (G.st.enableColorfulChatList) {
-            if (G.ac.chatObjColor.containsKey(msg.keyId())) {
-              cardBg = ColorUtil.fixedLight(
-                  G.ac.chatObjColor[msg.keyId()], G.st.colorfulChatListBg);
-            } else if (!G.ac.gettingChatObjColor.contains(msg.keyId())) {
-              _getChatObjColor(msg);
+          Color cardBg;
+          if (G.st.enableChatListRoundedRect || showingChat) {
+            cardBg = Color(0xFFEEEEEE);
+            if (G.st.enableColorfulChatList) {
+              if (G.ac.chatObjColor.containsKey(msg.keyId())) {
+                cardBg = ColorUtil.fixedLight(
+                    G.ac.chatObjColor[msg.keyId()], G.st.colorfulChatListBg);
+              } else if (!G.ac.gettingChatObjColor.contains(msg.keyId())) {
+                _getChatObjColor(msg);
+              }
             }
+          } else {
+            cardBg = Colors.transparent;
           }
+
+          RoundedRectangleBorder border = RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(G.st.cardRadiusM)),
+              side: showingChat && G.st.enableChatListRoundedRect
+                  ? BorderSide(
+                      color: G.st.enableColorfulChatList &&
+                              G.ac.chatObjColor.containsKey(msg.keyId())
+                          ? ColorUtil.fixedLight(G.ac.chatObjColor[msg.keyId()],
+                              G.st.colorfulChatListSelecting)
+                          : Theme.of(context).primaryColor,
+                      width: 1)
+                  : BorderSide.none);
 
           // 单条消息的外部容器
           return new Dismissible(
@@ -242,25 +259,7 @@ class _ChatListPageState extends State<ChatListPage>
                 elevation: 0.0,
                 // 投影
                 child: Column(children: bodyWidgets),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                    //设定 Card 的倒角大小
-                    /* borderRadius: BorderRadius.only(
-                  //设定 Card 的每个角的倒角大小
-                  topLeft: Radius.circular(20.0),
-                  topRight: Radius.zero,
-                  bottomLeft: Radius.zero,
-                  bottomRight: Radius.circular(20.0)),*/
-                    side: showingChat
-                        ? BorderSide(
-                            color: G.st.enableColorfulChatList &&
-                                    G.ac.chatObjColor.containsKey(msg.keyId())
-                                ? ColorUtil.fixedLight(
-                                    G.ac.chatObjColor[msg.keyId()],
-                                    G.st.colorfulChatListSelecting)
-                                : Theme.of(context).primaryColor,
-                            width: 1)
-                        : BorderSide.none),
+                shape: border,
                 // 设置边框
                 clipBehavior:
                     Clip.antiAlias, //对Widget截取的行为，比如这里 Clip.antiAlias 指抗锯齿

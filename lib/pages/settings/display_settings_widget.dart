@@ -120,6 +120,35 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('卡片列表'),
+                  subtitle: Text('每条记录使用圆角矩形包裹'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatListRoundedRect =
+                            !G.st.enableChatListRoundedRect;
+                        G.st.setConfig('display/enableChatListRoundedRect',
+                            G.st.enableChatListRoundedRect);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatListRoundedRect,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatListRoundedRect =
+                          !G.st.enableChatListRoundedRect;
+                      G.st.setConfig('display/enableChatListRoundedRect',
+                          G.st.enableChatListRoundedRect);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
               ],
             ),
           ),
