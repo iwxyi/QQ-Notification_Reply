@@ -716,13 +716,16 @@ class CqhttpService {
     // ignore: unused_local_variable
     String cardOld = obj['card_old'];
 
+    String nickname = getGroupMemberName(userId, groupId);
+    String groupName = getGroupName(groupId);
+    if (cardOld == null || cardOld.isEmpty) {
+      cardOld = nickname;
+    }
+
     // 群名片一样的话不进行提示
     if (cardNew == cardOld) {
       return;
     }
-
-    String nickname = getGroupMemberName(userId, groupId);
-    String groupName = getGroupName(groupId);
 
     print("修改群名片：$cardOld -> $cardNew");
     MsgBean msg = new MsgBean(
@@ -732,7 +735,7 @@ class CqhttpService {
         senderId: userId,
         subType: subType,
         action: MessageType.Action,
-        message: "{{username}} 修改名片为 $cardNew",
+        message: "$cardOld 修改名片为 $cardNew",
         messageId: DateTime.now().millisecondsSinceEpoch,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
