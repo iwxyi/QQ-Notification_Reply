@@ -108,13 +108,10 @@ class _ChatListPageState extends State<ChatListPage>
           Widget subTitleWidget;
           if (!G.st.enableChatListHistories) {
             // 只显示最近一条消息
+            subTitleWidget = Text(subTitleStr, maxLines: 3);
           } else {
             // 显示多条未读消息
             subTitleWidget = _buildItemMultipleSubtitleWidget(msg);
-          }
-          if (subTitleWidget == null) {
-            // 不需要多条消息，直接显示最后一条
-            subTitleWidget = Text(subTitleStr, maxLines: 3);
           }
 
           // 时间
@@ -148,6 +145,9 @@ class _ChatListPageState extends State<ChatListPage>
           // 消息内容
           List<Widget> bodyWidgets = [];
           bodyWidgets.add(ListTile(
+            visualDensity: G.st.enableChatListLoose
+                ? VisualDensity.standard
+                : VisualDensity(horizontal: -4.0, vertical: -4.0),
             leading: new ClipOval(
               // 圆形头像
               child: new FadeInImage.assetNetwork(
@@ -249,10 +249,18 @@ class _ChatListPageState extends State<ChatListPage>
                       width: 1)
                   : BorderSide.none);
 
+          EdgeInsets margin;
+          if (G.st.enableChatListRoundedRect) {
+            // 显示卡片，需要多一些上下间距
+            margin = EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0);
+          } else {
+            margin = EdgeInsets.only(left: 8, right: 8);
+          }
+
           // 单条消息的外部容器
           return new Dismissible(
             child: new Container(
-              padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0.0),
+              padding: margin,
               child: new Card(
                 color: cardBg,
                 // 背景颜色

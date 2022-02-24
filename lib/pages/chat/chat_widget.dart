@@ -674,9 +674,29 @@ class _ChatWidgetState extends State<ChatWidget>
     // 全面屏底部必须要添加一些空白，否则很难点到
     widgets.add(SizedBox(height: 8));
 
-    return new Column(
+    Widget body = new Column(
       children: widgets,
     );
+
+    if (G.st.enableChatWidgetRoundedRect) {
+      BorderRadius radius;
+      if (widget.innerMode) {
+        radius = new BorderRadius.all(Radius.circular(G.st.cardRadiusL));
+      } else {
+        radius = new BorderRadius.only(
+            topLeft: Radius.circular(G.st.cardRadiusL),
+            topRight: Radius.circular(G.st.cardRadiusL));
+      }
+
+      body = Container(
+        child: body,
+        decoration:
+            new BoxDecoration(color: Color(0xFFEEEEEE), borderRadius: radius),
+        margin: EdgeInsets.only(left: 4, right: 4, bottom: 4),
+      );
+    }
+
+    return body;
   }
 
   AppBar _buildAppBar(BuildContext context) {

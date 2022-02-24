@@ -149,6 +149,33 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('宽松列表'),
+                  subtitle: Text('增加卡片留空，一般和上一项同时开启'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatListLoose = !G.st.enableChatListLoose;
+                        G.st.setConfig('display/enableChatListLoose',
+                            G.st.enableChatListLoose);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatListLoose,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatListLoose = !G.st.enableChatListLoose;
+                      G.st.setConfig('display/enableChatListLoose',
+                          G.st.enableChatListLoose);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
               ],
             ),
           ),
@@ -236,6 +263,35 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                       G.st.enableQuickSwitcher = !G.st.enableQuickSwitcher;
                       G.st.setConfig('function/enableQuickSwitcher',
                           G.st.enableQuickSwitcher);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('卡片背景'),
+                  subtitle: Text('使用大圆角矩形包括聊天区域'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatWidgetRoundedRect =
+                            !G.st.enableChatWidgetRoundedRect;
+                        G.st.setConfig('display/enableChatWidgetRoundedRect',
+                            G.st.enableChatWidgetRoundedRect);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatWidgetRoundedRect,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatWidgetRoundedRect =
+                          !G.st.enableChatWidgetRoundedRect;
+                      G.st.setConfig('display/enableChatWidgetRoundedRect',
+                          G.st.enableChatWidgetRoundedRect);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                     });
                   },
                 ),
