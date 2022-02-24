@@ -108,11 +108,15 @@ class _ChatListPageState extends State<ChatListPage>
           Widget subTitleWidget;
           if (!G.st.enableChatListHistories) {
             // 只显示最近一条消息
-            subTitleWidget = Text(subTitleStr,
-                maxLines: G.st.enableMessagePreviewSingleLine ? 1 : 3);
           } else {
             // 显示多条未读消息
+            // 如果最后一条是自己发的，则显示0条消息，即返回值为null
             subTitleWidget = _buildItemMultipleSubtitleWidget(msg);
+          }
+          if (subTitleWidget == null) {
+            // 只显示一条消息
+            subTitleWidget = Text(subTitleStr,
+                maxLines: G.st.enableMessagePreviewSingleLine ? 1 : 3);
           }
 
           // 时间

@@ -406,6 +406,42 @@ class _ChatWidgetState extends State<ChatWidget>
 
   double _pointMoveX = 0, _pointMoveY = 0;
   bool _movedLarge = false;
+  void onPointerMove(movePointEvent) {
+    const MAX_X = 35;
+    const MAX_Y = 20;
+    var deltaX = movePointEvent.position.dx - _pointMoveX;
+    var deltaY = movePointEvent.position.dy - _pointMoveY;
+    if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
+      // 上下划过超过距离，无视
+      _movedLarge = true;
+    } else if (!_movedLarge) {
+      if (deltaX > MAX_X) {
+        _movedLarge = true;
+        // #右滑
+        if (!G.st.enableHorizontalSwitch) {
+          // 返回到上一页
+          if (G.rt.currentChatPage == null) {
+            // 可能返回手势已经取消这一页了
+            return;
+          }
+          Navigator.pop(context);
+        } else {
+          // 切换到上一个聊天对象
+          switchToPreviousObject();
+        }
+      } else if (deltaX < -MAX_X) {
+        _movedLarge = true;
+        // #左滑
+        if (!G.st.enableHorizontalSwitch) {
+          // 下一条未读消息
+          switchToUnreadObject();
+        } else {
+          // 切换到下一个聊天对象
+          switchToNextObject();
+        }
+      }
+    }
+  }
 
   Widget _buildListStack(BuildContext context) {
     // 消息列表
@@ -418,42 +454,7 @@ class _ChatWidgetState extends State<ChatWidget>
                 _pointMoveY = dowPointEvent.position.dy;
                 _movedLarge = false;
               },
-              onPointerMove: (movePointEvent) {
-                const MAX_X = 35;
-                const MAX_Y = 20;
-                var deltaX = movePointEvent.position.dx - _pointMoveX;
-                var deltaY = movePointEvent.position.dy - _pointMoveY;
-                if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
-                  // 上下划过超过距离，无视
-                  _movedLarge = true;
-                } else if (!_movedLarge) {
-                  if (deltaX > MAX_X) {
-                    _movedLarge = true;
-                    // #右滑
-                    if (!G.st.enableHorizontalSwitch) {
-                      // 返回到上一页
-                      if (G.rt.currentChatPage == null) {
-                        // 可能返回手势已经取消这一页了
-                        return;
-                      }
-                      Navigator.pop(context);
-                    } else {
-                      // 切换到上一个聊天对象
-                      switchToPreviousObject();
-                    }
-                  } else if (deltaX < -MAX_X) {
-                    _movedLarge = true;
-                    // #左滑
-                    if (!G.st.enableHorizontalSwitch) {
-                      // 下一条未读消息
-                      switchToUnreadObject();
-                    } else {
-                      // 切换到下一个聊天对象
-                      switchToNextObject();
-                    }
-                  }
-                }
-              },
+              onPointerMove: onPointerMove,
               child: _buildMessageList(context))
     ];
 

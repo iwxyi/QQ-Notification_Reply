@@ -300,6 +300,34 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     Icons.multiline_chart,
                     color: Colors.blue,
                   ),
+                  title: Text('宽松列表'),
+                  subtitle: Text('留白更大的聊天界面'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatBubbleLoose =
+                            !G.st.enableChatBubbleLoose;
+                        G.st.setConfig('display/enableChatBubbleLoose',
+                            G.st.enableChatBubbleLoose);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatBubbleLoose,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatBubbleLoose = !G.st.enableChatBubbleLoose;
+                      G.st.setConfig('display/enableChatBubbleLoose',
+                          G.st.enableChatBubbleLoose);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
                   title: Text('卡片背景'),
                   subtitle: Text('使用大圆角矩形包括聊天区域'),
                   trailing: Checkbox(
