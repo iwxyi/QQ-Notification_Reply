@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:image_pickers/image_pickers.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/main/search_page.dart';
 import 'package:qqnotificationreply/pages/profile/group_profile_widget.dart';
 import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
@@ -90,12 +92,12 @@ class _ChatWidgetState extends State<ChatWidget>
       widget.chatObj = msg;
       setState(() {
         _messages = [];
-        _initMessages();
+        _initChatObjData();
       });
 
-      if (!widget.innerMode) {
+      /* if (!widget.innerMode) {
         G.rt.updateChatPageUnreadCount();
-      }
+      } */
     };
 
     widget.buildChatMenu = () {
@@ -210,10 +212,10 @@ class _ChatWidgetState extends State<ChatWidget>
     // 默认获取焦点
     // FocusScope.of(context).requestFocus(_editorFocus);
 
-    _initMessages();
+    _initChatObjData();
   }
 
-  void _initMessages() {
+  void _initChatObjData() {
     MsgBean msg = widget.chatObj;
     // 获取历史消息
     _messages = [];
@@ -242,6 +244,35 @@ class _ChatWidgetState extends State<ChatWidget>
     }
     G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     G.rt.updateChatPageUnreadCount();
+
+    if (msg.isGroup()) {
+      // 智能聚焦
+      if (G.st.groupSmartFocus) {
+        GroupInfo group = G.ac.groupList[msg.groupId];
+        if (group.focusAsk) {
+          group.focusAsk = false;
+          print('群消息.关闭疑问聚焦');
+        }
+        if (group.focusAt != null) {
+          group.focusAt = null;
+          print('群消息.关闭艾特聚焦');
+        }
+      }
+      if (G.ac.atMeGroups.contains(msg.groupId)) {
+        G.ac.atMeGroups.remove(msg.groupId);
+      }
+      if (G.ac.replyMeGroups.contains(msg.groupId)) {
+        G.ac.replyMeGroups.remove(msg.groupId);
+      }
+    }
+
+    // 清除通知（遗留在 showChatPage 中）
+    if (G.rt.enableNotification) {
+      if (UserAccount.notificationIdMap.containsKey(msg.keyId())) {
+        AwesomeNotifications()
+            .cancel(UserAccount.notificationIdMap[msg.keyId()]);
+      }
+    }
   }
 
   /// 跳转到最新的位置
