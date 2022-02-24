@@ -705,6 +705,11 @@ class CqhttpService {
     // ignore: unused_local_variable
     String cardOld = obj['card_old'];
 
+    // 群名片一样的话不进行提示
+    if (cardNew == cardOld) {
+      return;
+    }
+
     String nickname = getGroupMemberName(userId, groupId);
     String groupName = getGroupName(groupId);
 

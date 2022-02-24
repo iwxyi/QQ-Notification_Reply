@@ -146,8 +146,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       if (msg.isGroup()) {
         if (G.st.groupSmartFocus) {
           GroupInfo group = G.ac.groupList[msg.groupId];
-          group.focusAsk = false;
-          group.focusAt = null;
+          if (group.focusAsk) {
+            group.focusAsk = false;
+            print('群消息.关闭疑问聚焦');
+          }
+          if (group.focusAt != null) {
+            group.focusAt = null;
+            print('群消息.关闭艾特聚焦');
+          }
         }
         if (G.ac.atMeGroups.contains(msg.groupId)) {
           G.ac.atMeGroups.remove(msg.groupId);
