@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:image_pickers/image_pickers.dart';
 import 'package:qqnotificationreply/global/api.dart';
 import 'package:qqnotificationreply/global/event_bus.dart';
 import 'package:qqnotificationreply/global/g.dart';
+import 'package:qqnotificationreply/global/useraccount.dart';
 import 'package:qqnotificationreply/pages/main/search_page.dart';
 import 'package:qqnotificationreply/pages/profile/group_profile_widget.dart';
 import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
@@ -90,12 +92,12 @@ class _ChatWidgetState extends State<ChatWidget>
       widget.chatObj = msg;
       setState(() {
         _messages = [];
-        _initMessages();
+        _initChatObjData();
       });
 
-      if (!widget.innerMode) {
+      /* if (!widget.innerMode) {
         G.rt.updateChatPageUnreadCount();
-      }
+      } */
     };
 
     widget.buildChatMenu = () {
@@ -210,10 +212,10 @@ class _ChatWidgetState extends State<ChatWidget>
     // 默认获取焦点
     // FocusScope.of(context).requestFocus(_editorFocus);
 
-    _initMessages();
+    _initChatObjData();
   }
 
-  void _initMessages() {
+  void _initChatObjData() {
     MsgBean msg = widget.chatObj;
     // 获取历史消息
     _messages = [];
@@ -242,6 +244,35 @@ class _ChatWidgetState extends State<ChatWidget>
     }
     G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     G.rt.updateChatPageUnreadCount();
+
+    if (msg.isGroup()) {
+      // 智能聚焦
+      if (G.st.groupSmartFocus) {
+        GroupInfo group = G.ac.groupList[msg.groupId];
+        if (group.focusAsk) {
+          group.focusAsk = false;
+          print('群消息.关闭疑问聚焦');
+        }
+        if (group.focusAt != null) {
+          group.focusAt = null;
+          print('群消息.关闭艾特聚焦');
+        }
+      }
+      if (G.ac.atMeGroups.contains(msg.groupId)) {
+        G.ac.atMeGroups.remove(msg.groupId);
+      }
+      if (G.ac.replyMeGroups.contains(msg.groupId)) {
+        G.ac.replyMeGroups.remove(msg.groupId);
+      }
+    }
+
+    // 清除通知（遗留在 showChatPage 中）
+    if (G.rt.enableNotification) {
+      if (UserAccount.notificationIdMap.containsKey(msg.keyId())) {
+        AwesomeNotifications()
+            .cancel(UserAccount.notificationIdMap[msg.keyId()]);
+      }
+    }
   }
 
   /// 跳转到最新的位置
@@ -375,6 +406,42 @@ class _ChatWidgetState extends State<ChatWidget>
 
   double _pointMoveX = 0, _pointMoveY = 0;
   bool _movedLarge = false;
+  void onPointerMove(movePointEvent) {
+    const MAX_X = 35;
+    const MAX_Y = 20;
+    var deltaX = movePointEvent.position.dx - _pointMoveX;
+    var deltaY = movePointEvent.position.dy - _pointMoveY;
+    if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
+      // 上下划过超过距离，无视
+      _movedLarge = true;
+    } else if (!_movedLarge) {
+      if (deltaX > MAX_X) {
+        _movedLarge = true;
+        // #右滑
+        if (!G.st.enableHorizontalSwitch) {
+          // 返回到上一页
+          if (G.rt.currentChatPage == null) {
+            // 可能返回手势已经取消这一页了
+            return;
+          }
+          Navigator.pop(context);
+        } else {
+          // 切换到上一个聊天对象
+          switchToPreviousObject();
+        }
+      } else if (deltaX < -MAX_X) {
+        _movedLarge = true;
+        // #左滑
+        if (!G.st.enableHorizontalSwitch) {
+          // 下一条未读消息
+          switchToUnreadObject();
+        } else {
+          // 切换到下一个聊天对象
+          switchToNextObject();
+        }
+      }
+    }
+  }
 
   Widget _buildListStack(BuildContext context) {
     // 消息列表
@@ -387,42 +454,7 @@ class _ChatWidgetState extends State<ChatWidget>
                 _pointMoveY = dowPointEvent.position.dy;
                 _movedLarge = false;
               },
-              onPointerMove: (movePointEvent) {
-                const MAX_X = 35;
-                const MAX_Y = 20;
-                var deltaX = movePointEvent.position.dx - _pointMoveX;
-                var deltaY = movePointEvent.position.dy - _pointMoveY;
-                if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
-                  // 上下划过超过距离，无视
-                  _movedLarge = true;
-                } else if (!_movedLarge) {
-                  if (deltaX > MAX_X) {
-                    _movedLarge = true;
-                    // #右滑
-                    if (!G.st.enableHorizontalSwitch) {
-                      // 返回到上一页
-                      if (G.rt.currentChatPage == null) {
-                        // 可能返回手势已经取消这一页了
-                        return;
-                      }
-                      Navigator.pop(context);
-                    } else {
-                      // 切换到上一个聊天对象
-                      switchToPreviousObject();
-                    }
-                  } else if (deltaX < -MAX_X) {
-                    _movedLarge = true;
-                    // #左滑
-                    if (!G.st.enableHorizontalSwitch) {
-                      // 下一条未读消息
-                      switchToUnreadObject();
-                    } else {
-                      // 切换到下一个聊天对象
-                      switchToNextObject();
-                    }
-                  }
-                }
-              },
+              onPointerMove: onPointerMove,
               child: _buildMessageList(context))
     ];
 
@@ -442,7 +474,7 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       Widget label = Text(
         title,
-        maxLines: 2,
+        maxLines: G.st.enableMessagePreviewSingleLine ? 1 : 2,
         style: TextStyle(fontSize: G.st.msgFontSize),
       );
       stack.add(Positioned(
@@ -474,7 +506,7 @@ class _ChatWidgetState extends State<ChatWidget>
       }
       Widget label = Text(
         title,
-        maxLines: 2,
+        maxLines: G.st.enableMessagePreviewSingleLine ? 1 : 2,
         style: TextStyle(fontSize: G.st.msgFontSize),
       );
       stack.add(Positioned(
@@ -643,9 +675,29 @@ class _ChatWidgetState extends State<ChatWidget>
     // 全面屏底部必须要添加一些空白，否则很难点到
     widgets.add(SizedBox(height: 8));
 
-    return new Column(
+    Widget body = new Column(
       children: widgets,
     );
+
+    if (G.st.enableChatWidgetRoundedRect) {
+      BorderRadius radius;
+      if (widget.innerMode) {
+        radius = new BorderRadius.all(Radius.circular(G.st.cardRadiusL));
+      } else {
+        radius = new BorderRadius.only(
+            topLeft: Radius.circular(G.st.cardRadiusL),
+            topRight: Radius.circular(G.st.cardRadiusL));
+      }
+
+      body = Container(
+        child: body,
+        decoration:
+            new BoxDecoration(color: Color(0xFFEEEEEE), borderRadius: radius),
+        margin: EdgeInsets.only(left: 4, right: 4, bottom: 4),
+      );
+    }
+
+    return body;
   }
 
   AppBar _buildAppBar(BuildContext context) {
@@ -1253,6 +1305,11 @@ class _ChatWidgetState extends State<ChatWidget>
     final size = MediaQuery.of(context).size;
     final twidth = size.width / 2;
     final theight = size.height * 3 / 5;
+
+    // 如果是直接发送图片，则取消输入焦点
+    if (_textController.text == null || _textController.text.isEmpty) {
+      _removeEditorFocus();
+    }
 
     showDialog(
         context: context,

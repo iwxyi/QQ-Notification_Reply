@@ -1,4 +1,8 @@
 class StringUtil {
+  static bool isNotEmpty(String s) {
+    return s != null && s.isNotEmpty;
+  }
+
   static String toXml(String str, String tag) {
     return '<' + tag + '>' + str + '</' + tag + '>';
   }
@@ -10,11 +14,10 @@ class StringUtil {
     if (right == -1) return '';
     return str.substring(left + 2 + tag.length, right).trim();
   }
-  
+
   static int getXmlInt(String str, String tag) {
     String text = getXml(str, tag);
-    if (text.trim().isEmpty)
-      return 0;
+    if (text.trim().isEmpty) return 0;
     return int.parse(text);
   }
 

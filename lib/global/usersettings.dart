@@ -14,6 +14,7 @@ class UserSettings extends MySettings {
   String server; // 后台服务地址
 
   // 消息选项
+  Map<int, String> localNickname = {}; // 本地昵称
   List<int> enabledGroups = []; // 开启通知的群组
   List<int> importantGroups = []; // 设为重要的群组
   Map<int, int> friendImportance = {}; // 好友的重要性
@@ -52,13 +53,14 @@ class UserSettings extends MySettings {
   double msgFontSize = 16; // 聊天界面字体大小
   Color msgLinkColor = Colors.blue; // 链接的颜色
   double replyFontSize = 14; // 回复字体的大小
+  double cardRadiusS = 5;
+  double cardRadiusM = 10;
+  double cardRadiusL = 15;
   Color msgNicknameColor = Colors.grey; // 昵称颜色
   Color msgBubbleColor = Color(0xFFEEEEEE); // 消息气泡颜色
   Color msgBubbleColor2 = Color(0xFFE6E6FA); // 自己的消息气泡颜色
   Color replyBubbleColor = Color(0x10000000); // 回复气泡颜色
   Color replyFontColor = Color(0xFF222222); // 回复消息颜色
-
-  // 彩色
   bool enableColorfulChatList = false; // 会话列表使用头像颜色作为背景
   double colorfulChatListBg = 0.93;
   double colorfulChatListSelecting = 0.5;
@@ -70,9 +72,11 @@ class UserSettings extends MySettings {
   double colorfulReplyBubbleBg = 0.9;
   bool enableColorfulBackground = false; // 使用彩色窗口背景
   double colorfulBackgroundBg = 0.05;
-
-  // 本地昵称
-  Map<int, String> localNickname = {};
+  bool enableChatListRoundedRect = true; // 会话列表使用圆角矩形
+  bool enableChatListLoose = true; // 会话列表更加宽松（一般和上面一起用）
+  bool enableChatWidgetRoundedRect = false; // 聊天界面使用大圆角矩形
+  bool enableChatBubbleLoose = false; // 气泡之间的距离更加宽松
+  bool enableMessagePreviewSingleLine = false; // 预览的消息单行显示（会话列表、跳转）
 
   // 表情包
   List<String> emojiList = []; // 表情包的CQ码（理论上可以是任意消息），但只显示face或image
@@ -87,6 +91,8 @@ class UserSettings extends MySettings {
     host = getStr('account/host', '');
     token = getStr('account/token', '');
     server = getStr('account/server', '');
+
+    // 功能
     enableSelfChats = getBool('function/selfChats', enableSelfChats);
     enableChatListHistories =
         getBool('function/chatListHistories', enableChatListHistories);
@@ -116,6 +122,7 @@ class UserSettings extends MySettings {
     enableHorizontalSwitch =
         getBool('function/enableHorizontalSwitch', enableHorizontalSwitch);
 
+    // 显示
     enableColorfulChatList =
         getBool('display/enableColorfulChatList', enableColorfulChatList);
     enableColorfulChatName =
@@ -128,13 +135,20 @@ class UserSettings extends MySettings {
         getBool('display/enableColorfulBackground', enableColorfulBackground);
     enableNotificationSleep =
         getBool('display/enableNotificationSleep', enableNotificationSleep);
+    enableChatListRoundedRect =
+        getBool('display/enableChatListRoundedRect', enableChatListRoundedRect);
+    enableChatListLoose =
+        getBool('display/enableChatListLoose', enableChatListLoose);
+    enableChatBubbleLoose =
+        getBool('display/enableChatBubbleLoose', enableChatBubbleLoose);
+    enableMessagePreviewSingleLine = getBool(
+        'display/enableMessagePreviewSingleLine',
+        enableMessagePreviewSingleLine);
 
     // 读取启用的群组数组
     enabledGroups = getIntList('notification/enabledGroups');
-
     // 读取重要的群组数组
     importantGroups = getIntList('notification/importantGroups');
-
     // 读取群内特别关注
     specialUsers = getIntList('notification/specialUsers');
 

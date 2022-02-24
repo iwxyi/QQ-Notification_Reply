@@ -120,6 +120,91 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('卡片列表'),
+                  subtitle: Text('每条记录使用圆角矩形包裹'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatListRoundedRect =
+                            !G.st.enableChatListRoundedRect;
+                        G.st.setConfig('display/enableChatListRoundedRect',
+                            G.st.enableChatListRoundedRect);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatListRoundedRect,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatListRoundedRect =
+                          !G.st.enableChatListRoundedRect;
+                      G.st.setConfig('display/enableChatListRoundedRect',
+                          G.st.enableChatListRoundedRect);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('宽松列表'),
+                  subtitle: Text('增加卡片留空，一般和上一项同时开启'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatListLoose = !G.st.enableChatListLoose;
+                        G.st.setConfig('display/enableChatListLoose',
+                            G.st.enableChatListLoose);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatListLoose,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatListLoose = !G.st.enableChatListLoose;
+                      G.st.setConfig('display/enableChatListLoose',
+                          G.st.enableChatListLoose);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('单行消息'),
+                  subtitle: Text('预览的消息只显示一行（默认最多3行）'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableMessagePreviewSingleLine =
+                            !G.st.enableMessagePreviewSingleLine;
+                        G.st.setConfig('display/enableMessagePreviewSingleLine',
+                            G.st.enableMessagePreviewSingleLine);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableMessagePreviewSingleLine,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableMessagePreviewSingleLine =
+                          !G.st.enableMessagePreviewSingleLine;
+                      G.st.setConfig('display/enableMessagePreviewSingleLine',
+                          G.st.enableMessagePreviewSingleLine);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
               ],
             ),
           ),
@@ -207,6 +292,63 @@ class _DisplaySettingsWidgetState extends State<DisplaySettingsWidget> {
                       G.st.enableQuickSwitcher = !G.st.enableQuickSwitcher;
                       G.st.setConfig('function/enableQuickSwitcher',
                           G.st.enableQuickSwitcher);
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('宽松列表'),
+                  subtitle: Text('留白更大的聊天界面'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatBubbleLoose =
+                            !G.st.enableChatBubbleLoose;
+                        G.st.setConfig('display/enableChatBubbleLoose',
+                            G.st.enableChatBubbleLoose);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatBubbleLoose,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatBubbleLoose = !G.st.enableChatBubbleLoose;
+                      G.st.setConfig('display/enableChatBubbleLoose',
+                          G.st.enableChatBubbleLoose);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                    });
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.multiline_chart,
+                    color: Colors.blue,
+                  ),
+                  title: Text('卡片背景'),
+                  subtitle: Text('使用大圆角矩形包括聊天区域'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableChatWidgetRoundedRect =
+                            !G.st.enableChatWidgetRoundedRect;
+                        G.st.setConfig('display/enableChatWidgetRoundedRect',
+                            G.st.enableChatWidgetRoundedRect);
+                        G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
+                      });
+                    },
+                    value: G.st.enableChatWidgetRoundedRect,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableChatWidgetRoundedRect =
+                          !G.st.enableChatWidgetRoundedRect;
+                      G.st.setConfig('display/enableChatWidgetRoundedRect',
+                          G.st.enableChatWidgetRoundedRect);
+                      G.ac.eventBus.fire(EventFn(Event.refreshState, {}));
                     });
                   },
                 ),

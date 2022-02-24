@@ -495,7 +495,7 @@ class CqhttpService {
         friendId: friendId,
         timestamp: time * 1000);
 
-    print('收到私聊消息：${msg.username()} : $message');
+    print('收到私聊消息：$nickname : $message');
 
     _notifyOuter(msg);
   }
@@ -506,13 +506,24 @@ class CqhttpService {
     _notifyOuter(msg);
 
     // 判断@和回复的消息
-    String text = msg.message;
-    if (text != null && text.isNotEmpty) {
-      if (text
-          .contains(RegExp("\\[CQ:reply,.+\\]\\s*\\[CQ:at,qq=${ac.myId}\\]"))) {
-        ac.replyMeGroups.add(msg.groupId);
-      } else if (text.contains('[CQ:at,qq=${ac.myId}]')) {
-        ac.atMeGroups.add(msg.groupId);
+    if (msg.senderId == ac.myId) {
+      // 自己发的消息，取消@或回复的标记
+      if (ac.replyMeGroups.contains(msg.groupId)) {
+        ac.replyMeGroups.remove(msg.groupId);
+      }
+      if (ac.atMeGroups.contains(msg.groupId)) {
+        ac.atMeGroups.remove(msg.groupId);
+      }
+    } else {
+      // 别人@或回复我
+      String text = msg.message;
+      if (text != null && text.isNotEmpty) {
+        if (text.contains(
+            RegExp("\\[CQ:reply,.+\\]\\s*\\[CQ:at,qq=${ac.myId}\\]"))) {
+          ac.replyMeGroups.add(msg.groupId);
+        } else if (text.contains('[CQ:at,qq=${ac.myId}]')) {
+          ac.atMeGroups.add(msg.groupId);
+        }
       }
     }
   }
@@ -707,6 +718,14 @@ class CqhttpService {
 
     String nickname = getGroupMemberName(userId, groupId);
     String groupName = getGroupName(groupId);
+    if (cardOld == null || cardOld.isEmpty) {
+      cardOld = nickname;
+    }
+
+    // 群名片一样的话不进行提示
+    if (cardNew == cardOld) {
+      return;
+    }
 
     print("修改群名片：$cardOld -> $cardNew");
     MsgBean msg = new MsgBean(
@@ -716,7 +735,7 @@ class CqhttpService {
         senderId: userId,
         subType: subType,
         action: MessageType.Action,
-        message: "{{username}} 修改名片为 $cardNew",
+        message: "$cardOld 修改名片为 $cardNew",
         messageId: DateTime.now().millisecondsSinceEpoch,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);

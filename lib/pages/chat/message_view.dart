@@ -94,6 +94,7 @@ class _MessageViewState extends State<MessageView> {
     List<Widget> vWidgets = [];
     if (!isSelf && !isNext && msg.isGroup()) {
       vWidgets.add(_buildNicknameView());
+      vWidgets.add(SizedBox(height: G.st.enableChatBubbleLoose ? 4 : 0));
     }
     vWidgets.add(_buildMessageContainer());
 
@@ -118,7 +119,9 @@ class _MessageViewState extends State<MessageView> {
               isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: hWidgets),
-      padding: EdgeInsets.only(top: isNext ? 0 : 6),
+      padding: G.st.enableChatBubbleLoose
+          ? EdgeInsets.only(top: isNext ? 6 : 10)
+          : EdgeInsets.only(top: isNext ? 0 : 4),
     );
 
     // 撤回的消息变成半透明
@@ -202,7 +205,8 @@ class _MessageViewState extends State<MessageView> {
   /// 构建消息控件
   /// 最外层的直接方法
   Widget _buildMessageContainer() {
-    EdgeInsets bubblePadding = EdgeInsets.all(8.0); // 消息内部间距
+    EdgeInsets bubblePadding =
+        EdgeInsets.all(G.st.enableChatBubbleLoose ? 10.0 : 8.0); // 消息内部间距
     EdgeInsets bubbleMargin = EdgeInsets.only(top: 3.0, bottom: 3.0);
     Widget bubbleContent;
 

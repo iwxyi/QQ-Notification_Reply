@@ -288,14 +288,12 @@ class _NotificationSettingsWidgetState
           NotificationActionButton(
             key: 'REPLY',
             label: 'Reply',
-            buttonType: ActionButtonType.InputField,
-            autoDismissable: false,
+            // buttonType: ActionButtonType.InputField,
           ),
           NotificationActionButton(
             key: 'READ',
             label: 'Mark as Read',
-            autoDismissable: true,
-            buttonType: ActionButtonType.InputField,
+            // buttonType: ActionButtonType.InputField,
           )
         ]); */
   }

@@ -15,6 +15,7 @@ import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
 import 'package:qqnotificationreply/pages/settings/my_settings_widget.dart';
 import 'package:qqnotificationreply/pages/settings/notification_settings_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/services/notification_controller.dart';
 
 // ignore: unused_import
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
@@ -87,12 +88,18 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       _notification = state;
       print('应用状态：' + _notification.index.toString());
       if (_notification.index == 1 || _notification.index == 0) {
+        // 打开前台
         G.rt.runOnForeground = true;
+        if (!G.cs.isConnected() && G.cs.autoReconnect) {
+          print('检测到断开，重新连接');
+          G.cs.reconnect(G.cs.host, G.cs.token);
+        }
         if (G.rt.thisDeviceSleep) {
           print('从暂停通知状态回复');
           G.rt.thisDeviceSleep = false;
         }
       } else if (_notification.index == 2) {
+        // 退到后台
         G.rt.runOnForeground = false;
       }
     });
@@ -137,25 +144,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     G.rt.mainContext = context;
     G.rt.showChatPage = (MsgBean msg, {directlyClose: false}) {
       // 清除通知
-      if (G.rt.enableNotification) {
+      /* if (G.rt.enableNotification) {
         if (UserAccount.notificationIdMap.containsKey(msg.keyId())) {
           _cancelNotification(UserAccount.notificationIdMap[msg.keyId()]);
         }
-      }
-
-      if (msg.isGroup()) {
-        if (G.st.groupSmartFocus) {
-          GroupInfo group = G.ac.groupList[msg.groupId];
-          group.focusAsk = false;
-          group.focusAt = null;
-        }
-        if (G.ac.atMeGroups.contains(msg.groupId)) {
-          G.ac.atMeGroups.remove(msg.groupId);
-        }
-        if (G.ac.replyMeGroups.contains(msg.groupId)) {
-          G.ac.replyMeGroups.remove(msg.groupId);
-        }
-      }
+      } */
 
       // 当前页面直接替换
       if (G.rt.currentChatPage != null) {
@@ -708,21 +701,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     requireNotificationPermission();
 
     // 监听tap
-    AwesomeNotifications().actionStream.listen((receivedNotification) {
-      int keyId = int.parse(receivedNotification.payload['id']);
-      print(
-          'notification chatId: $keyId, keyButton: ${receivedNotification.buttonKeyPressed}, keyInput:${receivedNotification.buttonKeyInput}');
-      if (receivedNotification.buttonKeyInput.isNotEmpty) {
-        // 输入
-        onNotificationReply(keyId, receivedNotification.buttonKeyInput);
-      } else if (receivedNotification.buttonKeyPressed.isNotEmpty) {
-        // 点击动作按钮（输入也会触发）
-      } else {
-        // 点击通知
-        print('点击通知');
-        onSelectNotification(keyId);
-      }
-    });
+    AwesomeNotifications().setListeners(
+        onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+        onNotificationCreatedMethod:
+            NotificationController.onNotificationCreatedMethod,
+        onNotificationDisplayedMethod:
+            NotificationController.onNotificationDisplayedMethod,
+        onDismissActionReceivedMethod:
+            NotificationController.onDismissActionReceivedMethod);
   }
 
   /// 取消通知
@@ -731,6 +717,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     if (!G.rt.enableNotification) {
       return;
     }
+    // TODO: 取消通知无效
     AwesomeNotifications().cancel(id);
   }
 
@@ -741,16 +728,23 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     int id = UserAccount.getNotificationId(msg);
 
     // 判断自己的通知
+    String senderName = msg.username(); // title
+    String summaryName = msg.nickname ?? msg.username(); // summary
     if (msg.senderId == G.ac.myId) {
       // 自己发的，一定不需要再通知了
       // 还需要消除掉该聊天对象的通知
-      _cancelNotification(id);
-      return;
+      // TODO: 无法消除通知，只能再重复发送自己的通知
+      //_cancelNotification(id);
+      //return;
+      if (msg.isPrivate()) {
+        summaryName = msg.username();
+        senderName = G.ac.myNickname;
+      }
     }
 
     // 判断通知类型和级别
     String channelKey = 'notice';
-    bool isSmartFocus = false; // 是否是智能聚焦，添加关闭（理论上来说不需要，因为是一次性的）
+    bool isSmartFocus = false; // 是否是智能聚焦，添加关闭（理论上来说不需要，打开就没了）
     bool isDynamicImportance = false; // 是否是动态重要性，添加关闭
     if (msg.isPrivate()) {
       // 私聊消息
@@ -763,7 +757,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       }
     } else if (msg.isGroup()) {
       if (msg.isPureMessage()) {
-        // 群消息智能聚焦：有没有 @我 或者 回复我 的消息
+        // @我、回复我、群消息智能聚焦
         String text = msg.message ?? '';
         bool contains = false;
         if (text.contains('[CQ:at,qq=${G.ac.myId}]')) {
@@ -778,18 +772,19 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
             if (group.focusAsk) {
               // 疑问聚焦
               contains = true;
+              isSmartFocus = true;
               print('群消息.疑问聚焦');
             } else if (group.focusAt != null &&
                 group.focusAt.contains(msg.senderId)) {
               // 艾特聚焦
               contains = true;
+              isSmartFocus = true;
               print('群消息.艾特聚焦');
             }
           }
         }
         if (contains) {
           channelKey = 'important_group_chats';
-          isSmartFocus = true;
         } else {
           channelKey = 'normal_group_chats';
         }
@@ -866,6 +861,29 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       return;
     }
 
+    List<NotificationActionButton> actions = [];
+    actions.add(NotificationActionButton(
+        key: 'REPLY',
+        label: '回复',
+        actionType: ActionType.SilentAction,
+        requireInputText: true,
+        autoDismissible: true));
+    if (isSmartFocus) {
+      actions.add(NotificationActionButton(
+          key: 'CLOSE_SMART_FOCUS',
+          label: '取消聚焦',
+          actionType: ActionType.SilentAction,
+          autoDismissible: true));
+    }
+    if (isDynamicImportance) {
+      actions.add(NotificationActionButton(
+          key: 'CLOSE_DYNAMIC_IMPORTANCE',
+          label: '取消重要',
+          actionType: ActionType.SilentAction,
+          autoDismissible: true));
+    }
+
+    // TODO: 解决无法折叠的问题
     AwesomeNotifications().createNotification(
       content: NotificationContent(
         id: id,
@@ -874,108 +892,19 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         summary: msg.isGroup()
             ? G.st.getLocalNickname(msg.keyId(), msg.groupName)
             : G.st.getLocalNickname(
-                msg.senderKeyId(), msg.nickname ?? msg.username()),
-        title: G.st.getLocalNickname(msg.senderKeyId(), msg.username()),
+                msg.senderKeyId(), summaryName),
+        title: G.st.getLocalNickname(msg.senderKeyId(), senderName),
         body: G.cs.getMessageDisplay(msg),
+        largeIcon: API.userHeader(msg.senderId),
         notificationLayout: NotificationLayout.Messaging,
         displayOnForeground: false,
         payload: {'id': msg.keyId().toString()},
+        category: NotificationCategory.Message,
+        autoDismissible: true
       ),
-      actionButtons: [
-        NotificationActionButton(
-          key: 'reply',
-          label: '回复',
-          actionType: ActionType.SilentAction,
-          requireInputText: true
-        )
-      ],
+      actionButtons: actions,
     );
   }
-
-  /// 通知点击回调
-  Future<dynamic> onSelectNotification(int notificationId) async {
-    int keyId = notificationId;
-    MsgBean msg;
-    if (G.ac.allMessages.containsKey(keyId))
-      msg = G.ac.allMessages[keyId].last ?? null;
-    if (msg == null) {
-      print('未找到payload:$keyId');
-      return;
-    }
-
-    G.ac.clearUnread(msg);
-
-    // 打开会话
-    if (!G.st.notificationLaunchQQ) {
-      // 后台通知打开的聊天界面，则在左上角显示一个叉，直接退出程序
-      G.rt.showChatPage(msg, directlyClose: !G.rt.runOnForeground);
-    } else {
-      String url;
-      // android 和 ios 的 QQ 启动 url scheme 是不同的
-      if (msg.isPrivate()) {
-        url = 'mqq://im/chat?chat_type=wpa&uin=' +
-            msg.friendId.toString() +
-            '&version=1&src_type=web';
-        // &web_src=qq.com
-      } else {
-        url = 'mqq://im/chat?chat_type=group&uin=' +
-            msg.groupId.toString() +
-            '&version=1&src_type=web';
-      }
-      //      G.ac.unreadMessages[msg.keyId()].clear();
-
-      // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
-      // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
-
-      if (url == null || url.isEmpty) {
-        print('没有可打开URL');
-        return;
-      }
-
-      // 确认一下url是否可启动
-      const forceTry = true;
-      if (await canLaunch(url) || forceTry) {
-        print('打开URL: ' + url);
-        try {
-          await launch(url); // 启动QQ
-        } catch (e) {
-          print('打开URL失败：' + e.toString());
-          Fluttertoast.showToast(
-            msg: "打开URL失败：" + url,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-          );
-        }
-      } else {
-        // 自己封装的一个 Toast
-        print('无法打开URL: ' + url);
-        Fluttertoast.showToast(
-          msg: "无法打开URL：" + url,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-        );
-      }
-    }
-  }
-
-  void onNotificationReply(int keyId, String text) {
-    MsgBean msg;
-    if (G.ac.allMessages.containsKey(keyId))
-      msg = G.ac.allMessages[keyId].last ?? null;
-    if (msg == null) {
-      print('未找到payload:$keyId');
-      return;
-    }
-
-    G.cs.sendMsg(msg, text);
-  }
-
-  /// 这个是 iOS 的通知回调
-  // ignore: missing_return
-  Future onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) {}
 
   /// 对于 iOS 和 MacOS，需要获取通知权限
   void requireNotificationPermission() async {
