@@ -1285,6 +1285,11 @@ class _ChatWidgetState extends State<ChatWidget>
     final twidth = size.width / 2;
     final theight = size.height * 3 / 5;
 
+    // 如果是直接发送图片，则取消输入焦点
+    if (_textController.text == null || _textController.text.isEmpty) {
+      _removeEditorFocus();
+    }
+
     showDialog(
         context: context,
         builder: (context) {
