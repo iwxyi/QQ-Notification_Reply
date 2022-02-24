@@ -15,6 +15,7 @@ import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
 import 'package:qqnotificationreply/pages/settings/my_settings_widget.dart';
 import 'package:qqnotificationreply/pages/settings/notification_settings_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/services/notification_controller.dart';
 
 // ignore: unused_import
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
@@ -694,21 +695,14 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     requireNotificationPermission();
 
     // 监听tap
-    AwesomeNotifications().actionStream.listen((receivedNotification) {
-      int keyId = int.parse(receivedNotification.payload['id']);
-      print(
-          'notification chatId: $keyId, keyButton: ${receivedNotification.buttonKeyPressed}, keyInput:${receivedNotification.buttonKeyInput}');
-      if (receivedNotification.buttonKeyInput.isNotEmpty) {
-        // 输入
-        onNotificationReply(keyId, receivedNotification.buttonKeyInput);
-      } else if (receivedNotification.buttonKeyPressed.isNotEmpty) {
-        // 点击动作按钮（输入也会触发）
-      } else {
-        // 点击通知
-        print('点击通知');
-        onSelectNotification(keyId);
-      }
-    });
+    AwesomeNotifications().setListeners(
+        onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+        onNotificationCreatedMethod:
+            NotificationController.onNotificationCreatedMethod,
+        onNotificationDisplayedMethod:
+            NotificationController.onNotificationDisplayedMethod,
+        onDismissActionReceivedMethod:
+            NotificationController.onDismissActionReceivedMethod);
   }
 
   /// 取消通知
@@ -871,96 +865,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
         NotificationActionButton(
           key: 'reply',
           label: '回复',
-          buttonType: ActionButtonType.InputField,
         )
       ],
     );
   }
-
-  /// 通知点击回调
-  Future<dynamic> onSelectNotification(int notificationId) async {
-    int keyId = notificationId;
-    MsgBean msg;
-    if (G.ac.allMessages.containsKey(keyId))
-      msg = G.ac.allMessages[keyId].last ?? null;
-    if (msg == null) {
-      print('未找到payload:$keyId');
-      return;
-    }
-
-    G.ac.clearUnread(msg);
-
-    // 打开会话
-    if (!G.st.notificationLaunchQQ) {
-      // 后台通知打开的聊天界面，则在左上角显示一个叉，直接退出程序
-      G.rt.showChatPage(msg, directlyClose: !G.rt.runOnForeground);
-    } else {
-      String url;
-      // android 和 ios 的 QQ 启动 url scheme 是不同的
-      if (msg.isPrivate()) {
-        url = 'mqq://im/chat?chat_type=wpa&uin=' +
-            msg.friendId.toString() +
-            '&version=1&src_type=web';
-        // &web_src=qq.com
-      } else {
-        url = 'mqq://im/chat?chat_type=group&uin=' +
-            msg.groupId.toString() +
-            '&version=1&src_type=web';
-      }
-      //      G.ac.unreadMessages[msg.keyId()].clear();
-
-      // 打开我的资料卡：mqqapi://card/show_pslcard?src_type=internal&source=sharecard&version=1&uin=1600631528
-      // QQ群资料卡：mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&source=qrcode&uin=123456
-
-      if (url == null || url.isEmpty) {
-        print('没有可打开URL');
-        return;
-      }
-
-      // 确认一下url是否可启动
-      const forceTry = true;
-      if (await canLaunch(url) || forceTry) {
-        print('打开URL: ' + url);
-        try {
-          await launch(url); // 启动QQ
-        } catch (e) {
-          print('打开URL失败：' + e.toString());
-          Fluttertoast.showToast(
-            msg: "打开URL失败：" + url,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-          );
-        }
-      } else {
-        // 自己封装的一个 Toast
-        print('无法打开URL: ' + url);
-        Fluttertoast.showToast(
-          msg: "无法打开URL：" + url,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-        );
-      }
-    }
-  }
-
-  void onNotificationReply(int keyId, String text) {
-    MsgBean msg;
-    if (G.ac.allMessages.containsKey(keyId))
-      msg = G.ac.allMessages[keyId].last ?? null;
-    if (msg == null) {
-      print('未找到payload:$keyId');
-      return;
-    }
-
-    G.cs.sendMsg(msg, text);
-  }
-
-  /// 这个是 iOS 的通知回调
-  // ignore: missing_return
-  Future onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) {}
 
   /// 对于 iOS 和 MacOS，需要获取通知权限
   void requireNotificationPermission() async {
