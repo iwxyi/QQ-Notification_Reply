@@ -465,7 +465,8 @@ class _ChatWidgetState extends State<ChatWidget>
       MsgBean msg = widget.jumpMsg;
       String title = G.cs.getMessageDisplay(msg);
       if (msg.action == MessageType.Message) {
-        String username = G.st.getLocalNickname(msg.keyId(), msg.username());
+        String username =
+            G.st.getLocalNickname(msg.senderKeyId(), msg.username());
         title = username + "：" + title;
       }
       if (msg.isGroup()) {
