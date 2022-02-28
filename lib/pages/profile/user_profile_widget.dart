@@ -65,7 +65,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
         widget.chatObj.senderId ??
         widget.chatObj.targetId;
     this.nickname = widget.chatObj.nickname;
-    if (widget.chatObj.groupId != null && widget.chatObj.groupId != 0) {
+    int groupId = widget.chatObj.groupId;
+    if (groupId != null &&
+        groupId != 0 &&
+        G.ac.groupList[groupId].members != null &&
+        G.ac.groupList[groupId].members.containsKey(this.userId)) {
       G.cs.send({
         'action': 'get_group_member_info',
         'params': {'user_id': userId, 'group_id': widget.chatObj.groupId},

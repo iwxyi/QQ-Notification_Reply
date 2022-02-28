@@ -675,6 +675,10 @@ class CqhttpService {
         messageId: DateTime.now().millisecondsSinceEpoch,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
+
+    if (ac.groupList[groupId].members != null) {
+      ac.groupList[groupId].members[userId] = FriendInfo(userId, nickname, '');
+    }
   }
 
   void _parseGroupDecrease(final obj) {
@@ -705,6 +709,10 @@ class CqhttpService {
         messageId: DateTime.now().millisecondsSinceEpoch,
         timestamp: DateTime.now().millisecondsSinceEpoch);
     _notifyOuter(msg);
+
+    if (ac.groupList[groupId].members != null) {
+      ac.groupList[groupId].members.remove(userId);
+    }
   }
 
   /// 修改群名片（不保证时效性，且名片任意时刻都有可能为空）
