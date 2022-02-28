@@ -27,6 +27,46 @@ class _InteractionSettingsWidgetState extends State<InteractionSettingsWidget> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
+              '聊天',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ),
+          Card(
+            color: Colors.white,
+            elevation: 4.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.architecture,
+                    color: Colors.blue,
+                  ),
+                  title: Text('回复包含@'),
+                  subtitle: Text('回复消息时@该用户'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableReplyWithAt = !G.st.enableReplyWithAt;
+                        G.st.setConfig('function/enableReplyWithAt',
+                            G.st.enableReplyWithAt);
+                      });
+                    },
+                    value: G.st.enableReplyWithAt,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableReplyWithAt = !G.st.enableReplyWithAt;
+                      G.st.setConfig(
+                          'function/enableReplyWithAt', G.st.enableReplyWithAt);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
               '手势',
               style: TextStyle(color: Colors.grey.shade700),
             ),

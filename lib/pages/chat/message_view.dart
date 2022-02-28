@@ -1122,7 +1122,11 @@ class _MessageViewState extends State<MessageView> {
     if (value == 'copy') {
       Clipboard.setData(ClipboardData(text: G.cs.getMessageDisplay(msg)));
     } else if (value == 'reply') {
-      widget.addMessageCallback('[CQ:reply,id=${msg.messageId}] ');
+      String s = '[CQ:reply,id=${msg.messageId}] ';
+      if (G.st.enableReplyWithAt) {
+        s += '[CQ:at,id=${msg.senderId}] ';
+      }
+      widget.addMessageCallback(s);
     } else if (value == 'forward') {
       showDialog(
           context: context,

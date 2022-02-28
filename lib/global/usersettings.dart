@@ -39,6 +39,7 @@ class UserSettings extends MySettings {
   bool disableDangerousAction = false; // 禁止有风险的操作，避免账号被冻结
   bool enableHorizontalSwitch = false; // 左右滑动切换消息
   bool enableNotificationSleep = true; // 启用暂停通知功能
+  bool enableReplyWithAt = true; // 回复消息时包含@
 
   // 通知选项
   bool notificationLaunchQQ = false; // 点击通知是打开QQ还是程序本身
@@ -125,6 +126,8 @@ class UserSettings extends MySettings {
         getBool('function/disableDangerousAction', disableDangerousAction);
     enableHorizontalSwitch =
         getBool('function/enableHorizontalSwitch', enableHorizontalSwitch);
+    enableReplyWithAt =
+        getBool('function/enableReplyWithAt', enableReplyWithAt);
 
     // 显示
     enableColorfulChatList =
