@@ -109,7 +109,7 @@ class _NotificationSettingsWidgetState
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.center_focus_strong,
+                    Icons.notification_important,
                     color: Colors.blue,
                   ),
                   title: Text('群消息动态重要性'),
@@ -159,33 +159,6 @@ class _NotificationSettingsWidgetState
                     });
                   },
                 ),
-                ListTile(
-                  leading: Icon(
-                    Icons.no_cell,
-                    color: Colors.blue,
-                  ),
-                  title: Text('暂停通知'),
-                  subtitle: Text('通过其他设备发送消息后暂停本设备的通知，直至下次打开'),
-                  trailing: Checkbox(
-                    onChanged: (bool val) {
-                      setState(() {
-                        G.st.enableNotificationSleep =
-                            !G.st.enableNotificationSleep;
-                        G.st.setConfig('notification/enableNotificationSleep',
-                            G.st.enableNotificationSleep);
-                      });
-                    },
-                    value: G.st.enableNotificationSleep,
-                  ),
-                  onTap: () {
-                    setState(() {
-                      G.st.enableNotificationSleep =
-                          !G.st.enableNotificationSleep;
-                      G.st.setConfig('notification/enableNotificationSleep',
-                          G.st.enableNotificationSleep);
-                    });
-                  },
-                ),
               ],
             ),
           ),
@@ -201,6 +174,35 @@ class _NotificationSettingsWidgetState
             elevation: 4.0,
             child: Column(
               children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.remove_circle,
+                    color: Colors.blue,
+                  ),
+                  title: Text('通知同步'),
+                  subtitle: Text('通知被移除时标记为已读'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.removeUnreadOnDismissNotification =
+                            !G.st.removeUnreadOnDismissNotification;
+                        G.st.setConfig(
+                            'notification/removeUnreadOnDismissNotification',
+                            G.st.removeUnreadOnDismissNotification);
+                      });
+                    },
+                    value: G.st.removeUnreadOnDismissNotification,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.removeUnreadOnDismissNotification =
+                          !G.st.removeUnreadOnDismissNotification;
+                      G.st.setConfig(
+                          'notification/removeUnreadOnDismissNotification',
+                          G.st.removeUnreadOnDismissNotification);
+                    });
+                  },
+                ),
                 ListTile(
                   leading: Icon(
                     Icons.golf_course,
@@ -241,6 +243,33 @@ class _NotificationSettingsWidgetState
             elevation: 4.0,
             child: Column(
               children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.no_cell,
+                    color: Colors.blue,
+                  ),
+                  title: Text('暂停通知'),
+                  subtitle: Text('通过其他设备发送消息后暂停本设备的通知，直至下次打开本程序'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableNotificationSleep =
+                            !G.st.enableNotificationSleep;
+                        G.st.setConfig('notification/enableNotificationSleep',
+                            G.st.enableNotificationSleep);
+                      });
+                    },
+                    value: G.st.enableNotificationSleep,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableNotificationSleep =
+                          !G.st.enableNotificationSleep;
+                      G.st.setConfig('notification/enableNotificationSleep',
+                          G.st.enableNotificationSleep);
+                    });
+                  },
+                ),
                 ListTile(
                   leading: Icon(
                     Icons.text_fields_sharp,

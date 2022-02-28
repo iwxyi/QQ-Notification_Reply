@@ -69,7 +69,12 @@ class NotificationController {
   /// Use this method to detect if the user dismissed a notification
   static Future<void> onDismissActionReceivedMethod(
       ReceivedAction receivedAction) async {
-    // TODO:同步移除未读消息（设置项开关）
+    // 同步移除未读消息
+    if (G.st.removeUnreadOnDismissNotification) {
+      int keyId = int.parse(receivedAction.payload['id']);
+      G.ac.unreadMessageCount.remove(keyId);
+    }
+    // 取消 badge
   }
 
   /// Use this method to detect when the user taps on a notification or action button

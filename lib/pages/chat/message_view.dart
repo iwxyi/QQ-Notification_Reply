@@ -1037,7 +1037,6 @@ class _MessageViewState extends State<MessageView> {
         _menuSelected(value);
       },
       onCanceled: () {
-        print('menu.onCanceled');
         // bgColor = Colors.white;
         setState(() {});
       },

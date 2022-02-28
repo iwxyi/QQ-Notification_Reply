@@ -46,6 +46,7 @@ class UserSettings extends MySettings {
   bool notificationAtAll = false; // @全体成员 与 @自己 同一级
   bool groupDynamicImportance = false; // 群消息动态重要性
   int chatTopMsgDisplayMSecond = 5000; // 聊天界面顶部消息显示
+  bool removeUnreadOnDismissNotification = true; // 移除通知时标为已读
 
   // 界面显示
   bool inputEnterSend = false;
@@ -107,6 +108,9 @@ class UserSettings extends MySettings {
     groupDynamicImportance =
         getBool('notification/groupDynamicImportance', groupDynamicImportance);
     notificationAtAll = getBool('notification/atAll', notificationAtAll);
+    removeUnreadOnDismissNotification = getBool(
+        'notification/removeUnreadOnDismissNotification',
+        removeUnreadOnDismissNotification);
     showRecursionReply =
         getBool('display/showRecursionReply', showRecursionReply);
     inputEnterSend = getBool('display/inputEnterSend', inputEnterSend);
