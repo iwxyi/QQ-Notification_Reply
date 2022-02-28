@@ -1023,6 +1023,9 @@ class CqhttpService {
   /// 简易版数据展示
   /// 替换所有CQ标签
   String getMessageDisplay(MsgBean msg) {
+    if (msg.displayCache != null) {
+      return msg.displayCache;
+    }
     String text = msg.message ?? '';
     switch (msg.action) {
       case MessageType.Message:
@@ -1051,7 +1054,7 @@ class CqhttpService {
           Match mat = RegExp(r'\[CQ:json,data=.+?"(?:prompt)":"(.+?)".*?\]')
               .firstMatch(text);
           if (mat != null) {
-            text = mat[1];
+            text = "[${mat[1]}]";
           }
           // 中文名字
           text = text.replaceAllMapped(RegExp(r"\[CQ:([^,]+),.+?\]"), (match) {
@@ -1087,7 +1090,7 @@ class CqhttpService {
         break;
     }
 
-    return text;
+    return msg.displayCache = text;
   }
 
   /// 获取消息重要性

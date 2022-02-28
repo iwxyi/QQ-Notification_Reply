@@ -24,6 +24,7 @@ class MsgBean {
   int targetId; // 准备发给谁，给对方还是给自己
   MessageType action = MessageType.Message;
   int messageSeq;
+  String displayCache; // 显示的文字，默认为null
 
   int friendId;
   int groupId;
