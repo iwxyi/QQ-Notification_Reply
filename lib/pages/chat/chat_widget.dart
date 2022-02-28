@@ -297,6 +297,7 @@ class _ChatWidgetState extends State<ChatWidget>
     DateTime zero = DateTime(now.year, now.month, now.day);
     return new ListView.separated(
       separatorBuilder: (BuildContext context, int index) {
+        // 计算时间差，显示时间
         if (index >= 0) {
           int ts0 = _messages[index].timestamp;
           int ts1 = 0;
@@ -331,21 +332,34 @@ class _ChatWidgetState extends State<ChatWidget>
       itemBuilder: (context, int index) {
         // 点击加载历史消息
         if (index >= _messages.length) {
-          Widget btn = FlatButton(
-              child: Container(
-                  padding: new EdgeInsets.all(6),
-                  child: Text('查看历史消息', style: TextStyle(color: Colors.grey))),
-              onPressed: () {
-                _loadMsgHistory();
-              });
-          if (!widget.chatObj.isGroup()) {
-            btn = new Divider(
-              color: Colors.transparent,
-              height: 0.0,
-              indent: 0,
-            );
+          Widget header = CircleAvatar(
+            backgroundImage: NetworkImage(API.chatObjHeader(widget.chatObj)),
+            radius: 48.0,
+            backgroundColor: Colors.transparent,
+          );
+
+          List<Widget> widgets = [header];
+          if (_messages.length <= 0) {
+            Widget name = Text(widget.chatObj.title(),
+                style: TextStyle(fontSize: 20, color: Colors.grey));
+            widgets.add(SizedBox(height: 12));
+            widgets.add(name);
+            widgets.add(SizedBox(height: 2));
           }
-          return Container(alignment: Alignment.center, child: btn);
+
+          if (widget.chatObj.isGroup()) {
+            Widget btn = FlatButton(
+                child: Container(
+                    padding: new EdgeInsets.all(6),
+                    child:
+                        Text('查看历史消息', style: TextStyle(color: Colors.grey))),
+                onPressed: () {
+                  _loadMsgHistory();
+                });
+            widgets.add(btn);
+          }
+          return Container(
+              alignment: Alignment.center, child: Column(children: widgets));
         }
 
         // 是否是下一个
