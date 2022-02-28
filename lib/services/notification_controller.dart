@@ -26,6 +26,13 @@ class NotificationController {
             defaultColor: Color(0xFF9D50DD),
             ledColor: Colors.white),
         NotificationChannel(
+            channelKey: 'my_sents',
+            channelName: '回复消息',
+            channelDescription: '通知栏快速回复的消息',
+            defaultColor: Color(0xFF9D50DD),
+            ledColor: Colors.white,
+            importance: NotificationImportance.Low),
+        NotificationChannel(
             channelKey: 'private_chats',
             channelName: '私聊通知',
             channelDescription: '私聊消息',

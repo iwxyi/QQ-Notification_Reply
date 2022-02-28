@@ -836,6 +836,11 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       }
     }
 
+    // 自己发送的消息，使用单独的通知渠道
+    if (msg.senderId == G.ac.myId) {
+      channelKey = 'my_sents';
+    }
+
     // 本设备休眠
     if (G.rt.thisDeviceSleep) {
       return;
@@ -886,22 +891,20 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     // TODO: 解决无法折叠的问题
     AwesomeNotifications().createNotification(
       content: NotificationContent(
-        id: id,
-        channelKey: channelKey,
-        groupKey: msg.keyId().toString(),
-        summary: msg.isGroup()
-            ? G.st.getLocalNickname(msg.keyId(), msg.groupName)
-            : G.st.getLocalNickname(
-                msg.senderKeyId(), summaryName),
-        title: G.st.getLocalNickname(msg.senderKeyId(), senderName),
-        body: G.cs.getMessageDisplay(msg),
-        largeIcon: API.userHeader(msg.senderId),
-        notificationLayout: NotificationLayout.Messaging,
-        displayOnForeground: false,
-        payload: {'id': msg.keyId().toString()},
-        category: NotificationCategory.Message,
-        autoDismissible: true
-      ),
+          id: id,
+          channelKey: channelKey,
+          groupKey: msg.keyId().toString(),
+          summary: msg.isGroup()
+              ? G.st.getLocalNickname(msg.keyId(), msg.groupName)
+              : G.st.getLocalNickname(msg.senderKeyId(), summaryName),
+          title: G.st.getLocalNickname(msg.senderKeyId(), senderName),
+          body: G.cs.getMessageDisplay(msg),
+          largeIcon: API.userHeader(msg.senderId),
+          notificationLayout: NotificationLayout.Messaging,
+          displayOnForeground: false,
+          payload: {'id': msg.keyId().toString()},
+          category: NotificationCategory.Message,
+          autoDismissible: true),
       actionButtons: actions,
     );
   }
