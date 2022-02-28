@@ -404,18 +404,31 @@ class _ChatWidgetState extends State<ChatWidget>
     );
   }
 
-  double _pointMoveX = 0, _pointMoveY = 0;
-  bool _movedLarge = false;
+  double _pointPressX = 0, _pointPressY = 0;
+  bool _movedLarge = false, hidedKeyboard = false;
   void onPointerMove(movePointEvent) {
-    const MAX_X = 35;
-    const MAX_Y = 20;
-    var deltaX = movePointEvent.position.dx - _pointMoveX;
-    var deltaY = movePointEvent.position.dy - _pointMoveY;
-    if (deltaY >= MAX_Y || deltaY <= -MAX_Y) {
+    const DIS_L = 50; // 隐藏键盘的方向
+    const DIS_M = 35; // 同方向滑动，生效的距离
+    const DIS_S = 20; // 垂直方向滑动，导致不生效的距离
+
+    if (_movedLarge) {
+      if (!hidedKeyboard && G.st.hideKeyboardOnSlide) {
+        if (movePointEvent.position.dy - _pointPressY > DIS_L) {
+          hidedKeyboard = true;
+          // 隐藏键盘
+          FocusScope.of(context).requestFocus(FocusNode());
+        }
+      }
+      return;
+    }
+
+    var deltaX = movePointEvent.position.dx - _pointPressX;
+    var deltaY = movePointEvent.position.dy - _pointPressY;
+    if (deltaY >= DIS_S || deltaY <= -DIS_S) {
       // 上下划过超过距离，无视
       _movedLarge = true;
     } else if (!_movedLarge) {
-      if (deltaX > MAX_X) {
+      if (deltaX > DIS_M) {
         _movedLarge = true;
         // #右滑
         if (!G.st.enableHorizontalSwitch) {
@@ -429,7 +442,7 @@ class _ChatWidgetState extends State<ChatWidget>
           // 切换到上一个聊天对象
           switchToPreviousObject();
         }
-      } else if (deltaX < -MAX_X) {
+      } else if (deltaX < -DIS_M) {
         _movedLarge = true;
         // #左滑
         if (!G.st.enableHorizontalSwitch) {
@@ -450,8 +463,8 @@ class _ChatWidgetState extends State<ChatWidget>
           ? _buildMessageList(context)
           : Listener(
               onPointerDown: (dowPointEvent) {
-                _pointMoveX = dowPointEvent.position.dx;
-                _pointMoveY = dowPointEvent.position.dy;
+                _pointPressX = dowPointEvent.position.dx;
+                _pointPressY = dowPointEvent.position.dy;
                 _movedLarge = false;
               },
               onPointerMove: onPointerMove,

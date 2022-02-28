@@ -1124,7 +1124,7 @@ class _MessageViewState extends State<MessageView> {
     } else if (value == 'reply') {
       String s = '[CQ:reply,id=${msg.messageId}] ';
       if (G.st.enableReplyWithAt) {
-        s += '[CQ:at,id=${msg.senderId}] ';
+        s += '[CQ:at,qq=${msg.senderId}] ';
       }
       widget.addMessageCallback(s);
     } else if (value == 'forward') {

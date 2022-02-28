@@ -103,6 +103,31 @@ class _InteractionSettingsWidgetState extends State<InteractionSettingsWidget> {
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.keyboard,
+                    color: Colors.blue,
+                  ),
+                  title: Text('滑动隐藏键盘'),
+                  subtitle: Text('聊天页面下拉时隐藏输入法键盘'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.hideKeyboardOnSlide = !G.st.hideKeyboardOnSlide;
+                        G.st.setConfig('function/hideKeyboardOnSlide',
+                            G.st.hideKeyboardOnSlide);
+                      });
+                    },
+                    value: G.st.hideKeyboardOnSlide,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.hideKeyboardOnSlide = !G.st.hideKeyboardOnSlide;
+                      G.st.setConfig('function/hideKeyboardOnSlide',
+                          G.st.hideKeyboardOnSlide);
+                    });
+                  },
+                ),
               ],
             ),
           ),
