@@ -892,14 +892,15 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     NotificationLayout layout = NotificationLayout.Messaging;
     String pictureUrl;
     if (G.st.enableLargeImageNotification &&
-        !StringUtil.isNotEmpty(msg.message)) {
+        StringUtil.isNotEmpty(msg.message)) {
       Match match;
-      if ((match = RegExp(r"^\[CQ:image,file=([^\]]+?)\]$")
+      if (((match = RegExp(
+                      r"^\[CQ:image,file=[^\],]+?,url=(http[^\],]+)(,.+)?\]$")
                   .firstMatch(msg.message)) !=
-              null ||
-          ((match = RegExp(r"^\[CQ:image,file=[^\]]+,url=([^\]]+?)\]$")
+              null) ||
+          (match = RegExp(r"^\[CQ:image,file=(http[^\],]+?)(,.+)?\]$")
                   .firstMatch(msg.message)) !=
-              null)) {
+              null) {
         pictureUrl = match[1];
       }
     }
