@@ -20,6 +20,7 @@ import 'package:qqnotificationreply/pages/main/search_page.dart';
 import 'package:qqnotificationreply/pages/profile/group_profile_widget.dart';
 import 'package:qqnotificationreply/pages/profile/user_profile_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
+import 'package:qqnotificationreply/utils/string_util.dart';
 import 'package:qqnotificationreply/widgets/customfloatingactionbuttonlocation.dart';
 
 import 'emoji_grid.dart';
@@ -1335,7 +1336,7 @@ class _ChatWidgetState extends State<ChatWidget>
     final theight = size.height * 3 / 5;
 
     // 如果是直接发送图片，则取消输入焦点
-    if (_textController.text == null || _textController.text.isEmpty) {
+    if (!StringUtil.isNotEmpty(_textController.text)) {
       _removeEditorFocus();
     }
 
@@ -1352,10 +1353,11 @@ class _ChatWidgetState extends State<ChatWidget>
                     maxHeight: theight),
                 child: EmojiGrid(
                   sendEmojiCallback: (cq) {
-                    if (_textController.text.isEmpty) {
-                      _sendMessage(cq);
-                    } else {
+                    if (StringUtil.isNotEmpty(_textController.text)) {
                       _insertMessage(cq);
+                    } else {
+                      print('发送表情包：' + cq);
+                      G.cs.sendMsg(widget.chatObj, cq);
                     }
                   },
                 )),
