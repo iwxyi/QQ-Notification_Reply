@@ -889,19 +889,20 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           autoDismissible: true));
     }
 
-    NotificationLayout layout = NotificationLayout.Messaging;
+    NotificationLayout layout = NotificationLayout.MessagingGroup;
     String pictureUrl;
     if (G.st.enableLargeImageNotification &&
         StringUtil.isNotEmpty(msg.message)) {
-      Match match;
-      if (((match = RegExp(
-                      r"^\[CQ:image,file=[^\],]+?,url=(http[^\],]+)(,.+)?\]$")
-                  .firstMatch(msg.message)) !=
-              null) ||
-          (match = RegExp(r"^\[CQ:image,file=(http[^\],]+?)(,.+)?\]$")
-                  .firstMatch(msg.message)) !=
-              null) {
-        pictureUrl = match[1];
+      if (msg.message.startsWith('[CQ:image,')) {
+        Match match;
+        if ((match = RegExp(r"=(http[^\],]+)").firstMatch(msg.message)) !=
+            null) {
+          pictureUrl = match[1];
+          layout = NotificationLayout.BigPicture;
+          print('图片URL：$pictureUrl');
+        } else {
+          print('不匹配图片，无法获取URL');
+        }
       }
     }
 
