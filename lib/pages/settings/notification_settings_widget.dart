@@ -159,6 +159,35 @@ class _NotificationSettingsWidgetState
                     });
                   },
                 ),
+                ListTile(
+                  leading: Icon(
+                    Icons.image_outlined,
+                    color: Colors.blue,
+                  ),
+                  title: Text('显示通知图片'),
+                  subtitle: Text('纯图片消息将展示图片内容'),
+                  trailing: Checkbox(
+                    onChanged: (bool val) {
+                      setState(() {
+                        G.st.enableLargeImageNotification =
+                            !G.st.enableLargeImageNotification;
+                        G.st.setConfig(
+                            'notification/enableLargeImageNotification',
+                            G.st.enableLargeImageNotification);
+                      });
+                    },
+                    value: G.st.enableLargeImageNotification,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      G.st.enableLargeImageNotification =
+                          !G.st.enableLargeImageNotification;
+                      G.st.setConfig(
+                          'notification/enableLargeImageNotification',
+                          G.st.enableLargeImageNotification);
+                    });
+                  },
+                ),
               ],
             ),
           ),

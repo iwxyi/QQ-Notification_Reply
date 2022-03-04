@@ -16,6 +16,7 @@ import 'package:qqnotificationreply/pages/settings/my_settings_widget.dart';
 import 'package:qqnotificationreply/pages/settings/notification_settings_widget.dart';
 import 'package:qqnotificationreply/services/msgbean.dart';
 import 'package:qqnotificationreply/services/notification_controller.dart';
+import 'package:qqnotificationreply/utils/string_util.dart';
 
 // ignore: unused_import
 import 'package:qqnotificationreply/widgets/app_retain_widget.dart';
@@ -888,6 +889,21 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           autoDismissible: true));
     }
 
+    NotificationLayout layout = NotificationLayout.Messaging;
+    String pictureUrl;
+    if (G.st.enableLargeImageNotification &&
+        !StringUtil.isNotEmpty(msg.message)) {
+      Match match;
+      if ((match = RegExp(r"^\[CQ:image,file=([^\]]+?)\]$")
+                  .firstMatch(msg.message)) !=
+              null ||
+          ((match = RegExp(r"^\[CQ:image,file=[^\]]+,url=([^\]]+?)\]$")
+                  .firstMatch(msg.message)) !=
+              null)) {
+        pictureUrl = match[1];
+      }
+    }
+
     // TODO: 解决无法折叠的问题
     AwesomeNotifications().createNotification(
       content: NotificationContent(
@@ -900,7 +916,8 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
           title: G.st.getLocalNickname(msg.senderKeyId(), senderName),
           body: G.cs.getMessageDisplay(msg),
           largeIcon: API.userHeader(msg.senderId),
-          notificationLayout: NotificationLayout.Messaging,
+          notificationLayout: layout,
+          bigPicture: pictureUrl,
           displayOnForeground: false,
           payload: {'id': msg.keyId().toString()},
           category: NotificationCategory.Message,

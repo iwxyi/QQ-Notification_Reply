@@ -49,6 +49,7 @@ class UserSettings extends MySettings {
   bool groupDynamicImportance = false; // 群消息动态重要性
   int chatTopMsgDisplayMSecond = 5000; // 聊天界面顶部消息显示
   bool removeUnreadOnDismissNotification = true; // 移除通知时标为已读
+  bool enableLargeImageNotification = false; // 显示大图片消息
 
   // 界面显示
   bool inputEnterSend = false;
