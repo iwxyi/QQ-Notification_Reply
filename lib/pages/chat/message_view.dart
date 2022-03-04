@@ -87,12 +87,9 @@ class _MessageViewState extends State<MessageView> {
 
   /// 一整行用户消息
   Widget _buildMessageLine() {
-    // 判断左右
-    bool isSelf = msg.senderId == G.ac.myId;
-
     // 消息列的上下控件，是否显示昵称
     List<Widget> vWidgets = [];
-    if (!isSelf && !isNext && msg.isGroup()) {
+    if (!msg.isSelf && !isNext && msg.isGroup()) {
       vWidgets.add(_buildNicknameView());
       vWidgets.add(SizedBox(height: G.st.enableChatBubbleLoose ? 4 : 0));
     }
@@ -107,7 +104,7 @@ class _MessageViewState extends State<MessageView> {
 
     // 头像和消息的左右顺序
     List<Widget> hWidgets;
-    if (isSelf) {
+    if (msg.isSelf) {
       hWidgets = [SizedBox(width: 72, height: 48), vWidget, _buildHeaderView()];
     } else {
       hWidgets = [_buildHeaderView(), vWidget, SizedBox(width: 72, height: 48)];
@@ -116,7 +113,7 @@ class _MessageViewState extends State<MessageView> {
     Widget container = new Container(
       child: new Row(
           mainAxisAlignment:
-              isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
+              msg.isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: hWidgets),
       padding: G.st.enableChatBubbleLoose
@@ -227,7 +224,7 @@ class _MessageViewState extends State<MessageView> {
 
     // 显示圆角、间距、背景气泡
     Color c =
-        msg.senderId != G.ac.myId ? G.st.msgBubbleColor : G.st.msgBubbleColor2;
+        (msg.isSelf || msg.atMe) ? G.st.msgBubbleColor2 : G.st.msgBubbleColor;
     if (G.st.enableColorfulChatBubble &&
         !G.ac.gettingChatObjColor.contains(msg.senderKeyId())) {
       if (G.ac.chatObjColor.containsKey(msg.senderKeyId())) {
@@ -1077,7 +1074,7 @@ class _MessageViewState extends State<MessageView> {
       items.insert(insertPos++,
           PopupMenuItem(value: 'recall', child: Text('已撤回'), enabled: false));
     } else {
-      if (msg.senderId == G.ac.myId) {
+      if (msg.isSelf) {
         // 自己的消息，可以撤回
         items.insert(
             insertPos++,

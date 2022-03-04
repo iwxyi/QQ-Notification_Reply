@@ -497,16 +497,20 @@ class CqhttpService {
 
     print('收到私聊消息：$nickname : $message');
 
+    if (msg.senderId == ac.myId) {
+      msg.isSelf = true;
+    }
+
     _notifyOuter(msg);
   }
 
   void parseGroupMessage(final obj) {
     MsgBean msg = createGroupMsgFromJson(obj);
     print('收到群消息：${msg.groupName ?? ''} - ${msg.nickname}  : ${msg.message}');
-    _notifyOuter(msg);
 
     // 判断@和回复的消息
     if (msg.senderId == ac.myId) {
+      msg.isSelf = true;
       // 自己发的消息，取消@或回复的标记
       if (ac.replyMeGroups.contains(msg.groupId)) {
         ac.replyMeGroups.remove(msg.groupId);
@@ -521,11 +525,15 @@ class CqhttpService {
         if (text.contains(
             RegExp("\\[CQ:reply,.+\\]\\s*\\[CQ:at,qq=${ac.myId}\\]"))) {
           ac.replyMeGroups.add(msg.groupId);
+          msg.atMe = true;
         } else if (text.contains('[CQ:at,qq=${ac.myId}]')) {
           ac.atMeGroups.add(msg.groupId);
+          msg.atMe = true;
         }
       }
     }
+
+    _notifyOuter(msg);
   }
 
   MsgBean createGroupMsgFromJson(final obj) {

@@ -730,7 +730,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     // 判断自己的通知
     String senderName = msg.username(); // title
     String summaryName = msg.nickname ?? msg.username(); // summary
-    if (msg.senderId == G.ac.myId) {
+    if (msg.isSelf) {
       // 自己发的，一定不需要再通知了
       // 还需要消除掉该聊天对象的通知
       // TODO: 无法消除通知，只能再重复发送自己的通知
@@ -837,7 +837,7 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
     }
 
     // 自己发送的消息，使用单独的通知渠道
-    if (msg.senderId == G.ac.myId) {
+    if (msg.isSelf) {
       channelKey = 'my_sents';
     }
 

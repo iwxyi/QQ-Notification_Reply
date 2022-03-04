@@ -293,7 +293,7 @@ class _ChatListPageState extends State<ChatListPage>
     if (msgs == null || msgs.length == 0) {
       return null;
     }
-    if (msgs.last.senderId == G.ac.myId) {
+    if (msgs.last.isSelf) {
       return null;
     }
     List<Widget> widgets = [];
@@ -301,7 +301,7 @@ class _ChatListPageState extends State<ChatListPage>
     int count = 0;
     for (int i = msgs.length - 1; i >= 0 && count < maxCount; i--, count++) {
       MsgBean msg = msgs[i];
-      if (msg.senderId == G.ac.myId) {
+      if (msg.isSelf) {
         break;
       }
 

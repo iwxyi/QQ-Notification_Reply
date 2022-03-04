@@ -6,12 +6,7 @@ enum MessageType {
   SystemLog,
 }
 
-enum MessageImportance {
-  Ignored,
-  Normal,
-  Little,
-  Very
-}
+enum MessageImportance { Ignored, Normal, Little, Very }
 
 class MsgBean {
   int senderId;
@@ -42,6 +37,9 @@ class MsgBean {
   int timestamp; // 毫秒级时间戳
   bool recalled = false; // 是否已撤回
   int operatorId; // 操作者ID
+
+  bool isSelf = false;
+  bool atMe = false;
 
   MsgBean(
       {this.senderId,
