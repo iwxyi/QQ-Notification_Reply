@@ -67,7 +67,8 @@ class NotificationController {
 
   /// Use this method to detect when a new notification or a schedule is created
   static Future<void> onNotificationCreatedMethod(
-      ReceivedNotification receivedNotification) async {}
+      ReceivedNotification receivedNotification) async {
+  }
 
   /// Use this method to detect every time that a new notification is displayed
   static Future<void> onNotificationDisplayedMethod(
@@ -82,6 +83,8 @@ class NotificationController {
       G.ac.unreadMessageCount.remove(keyId);
     }
     // 取消 badge
+    // print('---------------------bdg-1');
+    // AwesomeNotifications().decrementGlobalBadgeCounter();
   }
 
   /// Use this method to detect when the user taps on a notification or action button
@@ -94,6 +97,7 @@ class NotificationController {
       // 输入
       onNotificationReply(keyId, receivedAction.buttonKeyInput);
     } else if (StringUtil.isNotEmpty(receivedAction.buttonKeyPressed)) {
+      // 点击按钮
       int groupId = -keyId;
       GroupInfo group = G.ac.groupList[groupId];
       // 点击动作按钮（输入也会触发）
@@ -112,9 +116,10 @@ class NotificationController {
       }
     } else {
       // 点击通知本身
-      print('点击通知');
       onSelectNotification(keyId);
     }
+    // print('---------------------bdg-1');
+    // AwesomeNotifications().decrementGlobalBadgeCounter();
   }
 
   static Future<void> receiveButtonInputText(
