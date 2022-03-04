@@ -338,14 +338,13 @@ class _ChatWidgetState extends State<ChatWidget>
             backgroundColor: Colors.transparent,
           );
 
-          List<Widget> widgets = [header];
+          List<Widget> widgets = [header, SizedBox(height: 9)];
           if (_messages.length <= 0) {
             Widget name = Text(widget.chatObj.title(),
                 style: TextStyle(fontSize: 20, color: Colors.grey));
-            widgets.add(SizedBox(height: 12));
             widgets.add(name);
             widgets.add(SizedBox(height: 2));
-          }
+          } else {}
 
           if (widget.chatObj.isGroup()) {
             Widget btn = FlatButton(
@@ -419,16 +418,16 @@ class _ChatWidgetState extends State<ChatWidget>
   }
 
   double _pointPressX = 0, _pointPressY = 0;
-  bool _movedLarge = false, hidedKeyboard = false;
+  bool _movedLarge = false, _hidedKeyboard = false;
   void onPointerMove(movePointEvent) {
     const DIS_L = 50; // 隐藏键盘的方向
     const DIS_M = 35; // 同方向滑动，生效的距离
     const DIS_S = 20; // 垂直方向滑动，导致不生效的距离
 
     if (_movedLarge) {
-      if (!hidedKeyboard && G.st.hideKeyboardOnSlide) {
+      if (!_hidedKeyboard && G.st.hideKeyboardOnSlide) {
         if (movePointEvent.position.dy - _pointPressY > DIS_L) {
-          hidedKeyboard = true;
+          _hidedKeyboard = true;
           // 隐藏键盘
           FocusScope.of(context).requestFocus(FocusNode());
         }
@@ -480,6 +479,7 @@ class _ChatWidgetState extends State<ChatWidget>
                 _pointPressX = dowPointEvent.position.dx;
                 _pointPressY = dowPointEvent.position.dy;
                 _movedLarge = false;
+                _hidedKeyboard = false;
               },
               onPointerMove: onPointerMove,
               child: _buildMessageList(context))
