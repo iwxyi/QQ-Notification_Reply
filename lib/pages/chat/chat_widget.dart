@@ -1096,9 +1096,19 @@ class _ChatWidgetState extends State<ChatWidget>
     // 清除标记
     G.ac.gettingChatObjColor.clear();
     if (widget.chatObj != null) {
+      // 群组专用的一些标记
       if (widget.chatObj.isGroup()) {
-        G.ac.gettingGroupMembers.remove(widget.chatObj.groupId);
-        // G.ac.groupList[widget.chatObj.groupId]?.ignoredMembers?.clear();
+        int groupId = widget.chatObj.groupId;
+        // 获取数据的状态
+        G.ac.gettingGroupMembers.remove(groupId);
+        // G.ac.groupList[groupId]?.ignoredMembers?.clear();
+        // @和回复的标记
+        if (G.ac.replyMeGroups.contains(groupId)) {
+          G.ac.replyMeGroups.remove(groupId);
+        }
+        if (G.ac.atMeGroups.contains(groupId)) {
+          G.ac.atMeGroups.remove(groupId);
+        }
       }
       G.ac.unreadMessageCount.remove(widget.chatObj.keyId());
     }
