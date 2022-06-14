@@ -91,8 +91,10 @@ class _MainPagesState extends State<MainPages> with WidgetsBindingObserver {
       if (_notification.index == 1 || _notification.index == 0) {
         // 打开前台
         G.rt.runOnForeground = true;
-        if (!G.cs.isConnected() && G.cs.autoReconnect) {
-          print('检测到断开，重新连接');
+        if (!G.cs.isConnected() ||
+            (DateTime.now().millisecondsSinceEpoch - G.cs.lastHeartTime) >
+                10000) {
+          print(G.cs.log('打开界面检测到断开，重新连接'));
           G.cs.reconnect(G.cs.host, G.cs.token);
         }
         if (G.rt.thisDeviceSleep) {

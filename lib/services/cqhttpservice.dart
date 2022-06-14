@@ -181,8 +181,12 @@ class CqhttpService {
       return;
     }
 
+    int second = _reconnectCount * _reconnectCount;
+    if (second > 60) {
+      second = 60;
+    }
     _reconnectTimer = new Timer.periodic(
-        Duration(seconds: _reconnectCount * _reconnectCount), (timer) {
+        Duration(seconds: second), (timer) {
       print(log('重连检测$_reconnectCount：' + (isConnected() ? '已连接' : '尝试重连...')));
       // 已经连接上了
       if (isConnected()) {
